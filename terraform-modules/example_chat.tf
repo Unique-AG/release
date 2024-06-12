@@ -1,0 +1,233 @@
+locals {
+  base_subnet   = "10.113.0.0/16"
+  project       = "client"
+  project_child = "moduleName"
+  environment   = "zone"
+  locations = {
+    deployment = "germanywestcentral"
+    monitor    = "germanywestcentral"
+    openai     = "francecentral"
+  }
+  base_domain         = "client.unique.app"
+  management_group_id = "uqe-lz-${local.project}"
+}
+module "context" {
+  source      = "./context"
+  namespace   = "uq"
+  project     = local.project
+  environment = local.environment
+  resource_group = {
+    id       = "/subscriptions/${var.subscription_id}/resourceGroups/${var.resource_group_name}"
+    name     = var.resource_group_name
+    location = local.locations.deployment
+  }
+  tags = {
+    ManagedBy   = "Terraform"
+    Client      = local.project
+    Environment = local.environment
+  }
+}
+module "vnet" {
+  source      = "./vnet"
+  context     = module.context
+  base_subnet = local.base_subnet
+  subnets = [
+    {
+      name = "AppGW"
+      size = 28
+    },
+    {
+      name                                      = "TykRedis",
+      size                                      = 28
+      private_endpoint_network_policies_enabled = false
+    },
+    {
+      name = "Postgres"
+      size = 28
+      delegations = [
+        {
+          name = "fs"
+          service_delegations = [{
+            name = "Microsoft.DBforPostgreSQL/flexibleServers"
+            actions = [
+              "Microsoft.Network/virtualNetworks/subnets/join/action",
+            ]
+          }]
+        }
+      ]
+      service_endpoints = ["Microsoft.Storage"]
+    },
+    {
+      name = "AzureBastionSubnet"
+      size = 26
+    },
+    {
+      name = "Jumpbox"
+      size = 28
+    },
+    {
+      name              = "AksNodes"
+      size              = 24
+      service_endpoints = ["Microsoft.Storage"]
+    },
+    {
+      name = "AksPods"
+      size = 20
+      delegations = [
+        {
+          name = "aks-delegation"
+          service_delegations = [{
+            actions = [
+              "Microsoft.Network/virtualNetworks/subnets/join/action",
+            ]
+            name = "Microsoft.ContainerService/managedClusters"
+          }]
+        }
+      ]
+      service_endpoints = ["Microsoft.Storage"]
+    },
+  ]
+}
+module "monitor" {
+  source  = "./az-monitor"
+  context = module.context
+  p0_email_addresses = {
+    "slack" = {
+      email_address = "recipient@example.com"
+    }
+  }
+}
+module "cluster" {
+  source                        = "./cluster-mk2"
+  context                       = module.context
+  subnet_nodes                  = module.vnet.subnets["AksNodes"]
+  subnet_pods                   = module.vnet.subnets["AksPods"]
+  subnet_appgw                  = module.vnet.subnets["AppGW"]
+  storage_retention_period_days = 1865
+  keyvault_access_principals    = [module.jumpbox.vm_identity]
+  domain_config = {
+    name        = local.base_domain
+    sub_domains = ["gateway", "id"]
+  }
+  azure_prometheus_grafana_monitor = {
+    enabled                = true
+    azure_monitor_location = local.locations.monitor
+  }
+  audit_containers = [
+    "node-chat",
+    "node-ingestion",
+    "node-ingestion-worker",
+  ]
+  monitor_action_group_ids = {
+    p0 = module.monitor.monitor_action_group_ids.p0
+    p1 = module.monitor.monitor_action_group_ids.p0
+    p2 = module.monitor.monitor_action_group_ids.p0
+    p3 = module.monitor.monitor_action_group_ids.p0
+    p4 = module.monitor.monitor_action_group_ids.p0
+  }
+}
+module "jumpbox" {
+  source                     = "./jumpbox"
+  name                       = "jumpbox"
+  context                    = module.context
+  jumpbox_subnet             = module.vnet.subnets["Jumpbox"]
+  bastion_subnet             = module.vnet.subnets["AzureBastionSubnet"]
+  log_analytics_workspace_id = module.cluster.log_analytics_workspace_id
+  cloud_init_scripts_version = "2024-04"
+}
+module "postgres" {
+  source                     = "./postgres"
+  name                       = local.project_child
+  context                    = module.context
+  flex_storage_mb            = 131072
+  virtual_network_id         = module.vnet.virtual_network_id
+  delegated_subnet_id        = module.vnet.subnets["Postgres"].id
+  keyvault_access_principals = [module.jumpbox.vm_identity]
+}
+module "workload_identities" {
+  source              = "./az-workload-identity"
+  context             = module.context
+  aks_oidc_issuer_url = module.cluster.aks_oidc_issuer_url
+  management_group_id = local.management_group_id
+  identities = {
+    node-chat = {
+      keyvault_id = module.chat.keyvault_id
+      namespace   = "chat"
+      roles       = ["Cognitive Services OpenAI User"]
+    }
+    node-ingestion = {
+      keyvault_id = module.chat.keyvault_id
+      namespace   = "chat"
+      roles       = ["Cognitive Services OpenAI User"]
+    }
+    node-ingestion-worker = {
+      keyvault_id = module.chat.keyvault_id
+      namespace   = "chat"
+      roles       = ["Cognitive Services User" /* Document Intelligence */]
+    }
+  }
+}
+module "chat" {
+  source                         = "./chat"
+  name                           = "chat"
+  context                        = module.context
+  openai_account_location        = local.locations.openai
+  keyvault_access_principals     = [module.jumpbox.vm_identity]
+  aks_oidc_issuer_url            = module.cluster.aks_oidc_issuer_url
+  gpt_35_turbo_tpm_thousands     = 120
+  gpt_35_turbo_16k_tpm_thousands = 120
+  storage_account_cors_rules = [
+    {
+      allowed_origins    = ["https://${local.base_domain}"]
+      allowed_methods    = ["OPTIONS", "PUT", "GET"]
+      allowed_headers    = ["*"]
+      exposed_headers    = ["*"]
+      max_age_in_seconds = 3600
+    },
+    {
+      allowed_origins    = ["https://*.${local.base_domain}"]
+      allowed_methods    = ["OPTIONS", "PUT", "GET"]
+      allowed_headers    = ["*"]
+      exposed_headers    = ["*"]
+      max_age_in_seconds = 3600
+    },
+  ]
+  azure_openai_endpoints                = []
+  azure_document_intelligence_endpoints = []
+  postgres_server_id                    = module.postgres.server_id
+  user_assigned_identity_ids = [
+    module.workload_identities.user_assigned_identity_ids["node-chat"],
+    module.workload_identities.user_assigned_identity_ids["node-ingestion"],
+    module.workload_identities.user_assigned_identity_ids["node-ingestion-worker"]
+  ]
+}
+module "automation" {
+  source                     = "./automation"
+  name                       = "automation"
+  context                    = module.context
+  keyvault_access_principals = [module.jumpbox.vm_identity]
+}
+module "tyk" {
+  source                     = "./az-redis"
+  name                       = "tyk"
+  context                    = module.context
+  subnet_pods                = module.vnet.subnets["AksPods"]
+  subnet_redis               = module.vnet.subnets["TykRedis"]
+  keyvault_access_principals = [module.jumpbox.vm_identity]
+  virtual_network_id         = module.vnet.virtual_network_id
+  monitor_action_group_ids = {
+    p0 = module.monitor.monitor_action_group_ids.p0
+  }
+}
+module "ad-app-registration" {
+  source      = "./aad-app-registration"
+  context     = module.context
+  keyvault_id = module.chat.keyvault_id
+  redirect_uris = [
+    "https://id.${local.base_domain}/ui/login/login/externalidp/callback",
+  ]
+}
+module "defender" {
+  source  = "./az-defender"
+  context = module.context
+}
