@@ -34,3 +34,8 @@ variable "log_analytics_workspace_id" {
   description = "ID of the Log Analytics workspace"
   default     = null
 }
+variable "flex_pg_backup_retention_days" {
+  type        = number
+  description = "The backup retention days for the PostgreSQL Flexible Server. Possible values are between 7 and 35 days."
+  default     = 14
+}

@@ -38,6 +38,14 @@ variable "user_assigned_identity_ids" {
   type    = list(string)
   default = []
 }
+variable "ingestion_encryption_key_version" {
+  description = "Increment to rotate the encryption key. If rotated, currently valid links might become invalid but can be requested again with the new key."
+  default     = "1"
+}
+variable "chat_lxm_encryption_key_version" {
+  description = "Increment to rotate the encryption key. If rotated, currently valid lxm api keys become invalid and need to be updated again."
+  default     = "1"
+}
 variable "gpt_35_turbo_tpm_thousands" {
   type    = number
   default = 240

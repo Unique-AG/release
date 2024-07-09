@@ -51,6 +51,7 @@ resource "azurerm_postgresql_flexible_server" "this" {
   administrator_password        = random_password.postgres_password.result
   private_dns_zone_id           = azurerm_private_dns_zone.this.id
   public_network_access_enabled = false
+  backup_retention_days         = var.flex_pg_backup_retention_days
   sku_name                      = var.flex_sku
   storage_mb                    = var.flex_storage_mb
   customer_managed_key {

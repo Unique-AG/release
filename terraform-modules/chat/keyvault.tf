@@ -26,6 +26,28 @@ resource "azurerm_key_vault" "document-chat" {
   sku_name                    = "premium"
   tags                        = local.tags
 }
+resource "random_id" "ingestion_encryption_key" {
+  byte_length = 32
+  keepers = {
+    version = var.ingestion_encryption_key_version
+  }
+}
+resource "azurerm_key_vault_secret" "ingestion_encryption_key" {
+  name         = "ingestion-encryption-key"
+  value        = random_id.ingestion_encryption_key.hex
+  key_vault_id = azurerm_key_vault.document-chat.id
+}
+resource "random_id" "chat_lxm_encryption_key" {
+  byte_length = 32
+  keepers = {
+    version = var.chat_lxm_encryption_key_version
+  }
+}
+resource "azurerm_key_vault_secret" "chat_lxm_encryption_key" {
+  name         = "chat-lxm-encryption-key"
+  value        = random_id.chat_lxm_encryption_key.hex
+  key_vault_id = azurerm_key_vault.document-chat.id
+}
 locals {
   all_model_endpoints    = concat(var.azure_openai_endpoints, [module.openai.endpoints])
   all_model_names        = distinct(flatten([for e in local.all_model_endpoints : keys(e)]))

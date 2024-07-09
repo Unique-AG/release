@@ -64,6 +64,10 @@ resource "azurerm_security_center_subscription_pricing" "cwp_resourcemanager" {
   tier          = "Standard"
   subplan       = "PerSubscription"
 }
+resource "azurerm_security_center_subscription_pricing" "cwp_opensourcerelationaldb" {
+  resource_type = "OpenSourceRelationalDatabases"
+  tier          = "Standard"
+}
 resource "azapi_resource" "security_contact" {
   type                      = "Microsoft.Security/securityContacts@2023-12-01-preview"
   name                      = "default"

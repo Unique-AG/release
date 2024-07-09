@@ -37,6 +37,7 @@ This Terraform code defines the configuration for a PostgreSQL Flexible Server i
      - The server depends on the private DNS zone virtual network link and the key vault key.
      - Tags are inherited from the module context.
      - The `zone` attribute is ignored in the lifecycle block to prevent unnecessary changes.
+     - The `backup_retention_days` is set to 14 days by default and specifies how long the backups are retained.
 
 8. **Key Vault Secrets:**
    - This section creates four secrets in Azure Key Vault:

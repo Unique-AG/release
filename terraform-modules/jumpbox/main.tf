@@ -18,6 +18,7 @@ module "virtual-machine" {
   disable_password_authentication = true
   admin_username                  = "azureuser"
   patch_assessment_mode           = "AutomaticByPlatform"
+  patch_mode                      = "AutomaticByPlatform"
   source_image_reference = {
     offer     = "0001-com-ubuntu-server-jammy"
     publisher = "canonical"
