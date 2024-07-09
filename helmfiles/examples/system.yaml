@@ -1,0 +1,262 @@
+# run: helmfile -e your-tenant-alias -f helmfiles/system.yaml apply --skip-diff-on-install
+environments:
+  your-tenant-alias:
+    values:
+      - ../defaults/01_system.defaults.yaml
+      - ./your-tenant-alias.yaml
+---
+repositories:
+  - name: jetstack
+    url: https://charts.jetstack.io
+  - name: bedag
+    url: https://bedag.github.io/helm-charts
+  - name: bitnami
+    url: https://charts.bitnami.com/bitnami
+releases:
+  - name: cert-manager
+    createNamespace: true
+    namespace: system
+    chart: jetstack/cert-manager
+    version: 1.12.2
+    wait: false
+    values:
+      - global:
+          priorityClassName: system-cluster-critical
+        installCRDs: true
+        resources:
+          limits:
+              cpu: 50m
+              memory: 128Mi
+          requests:
+              cpu: 50m
+              memory: 128Mi
+        webhook:
+          resources:
+            limits:
+              cpu: 50m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 128Mi
+        cainjector:
+          resources:
+            limits:
+              cpu: 100m
+              memory: 400Mi
+            requests:
+              cpu: 100m
+              memory: 400Mi
+  - name: clusterissuer
+    needs: 
+      - cert-manager
+    namespace: system
+    chart: bedag/raw
+    version: 2.0.0
+    wait: false
+    values:
+      - resources:
+        - apiVersion: cert-manager.io/v1
+          kind: ClusterIssuer
+          metadata:
+            name: letsencrypt
+          spec:
+            acme:
+              privateKeySecretRef:
+                name: letsencrypt-account-key
+              server: https://acme-v02.api.letsencrypt.org/directory
+              solvers:
+                - http01:
+                    ingress:
+                      ingressClassName: azure-application-gateway
+  - name: ama-metrics-prometheus-config
+    namespace: kube-system
+    chart: bedag/raw
+    version: 2.0.0
+    wait: false
+    values:
+      - resources:
+        - apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: ama-metrics-prometheus-config
+          data:
+            prometheus-config: |-
+              global:
+                scrape_interval: 15s
+              scrape_configs:
+              - job_name: 'kubernetes-pods'
+                honor_labels: true
+                kubernetes_sd_configs:
+                  - role: pod
+                relabel_configs:
+                  - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+                    action: keep
+                    regex: true
+                  - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape_slow]
+                    action: drop
+                    regex: true
+                  - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scheme]
+                    action: replace
+                    regex: (https?)
+                    target_label: __scheme__
+                  - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+                    action: replace
+                    target_label: __metrics_path__
+                    regex: (.+)
+                  - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_port, __meta_kubernetes_pod_ip]
+                    action: replace
+                    regex: (\d+);(([A-Fa-f0-9]{1,4}::?){1,7}[A-Fa-f0-9]{1,4})
+                    replacement: '[$2]:$1'
+                    target_label: __address__
+                  - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_port, __meta_kubernetes_pod_ip]
+                    action: replace
+                    regex: (\d+);((([0-9]+?)(\.|$)){4})
+                    replacement: $2:$1
+                    target_label: __address__
+                  - action: labelmap
+                    regex: __meta_kubernetes_pod_annotation_prometheus_io_param_(.+)
+                    replacement: __param_$1
+                  - action: labelmap
+                    regex: __meta_kubernetes_pod_label_(.+)
+                  - source_labels: [__meta_kubernetes_namespace]
+                    action: replace
+                    target_label: namespace
+                  - source_labels: [__meta_kubernetes_pod_name]
+                    action: replace
+                    target_label: pod
+                  - source_labels: [__meta_kubernetes_pod_phase]
+                    regex: Pending|Succeeded|Failed|Completed
+                    action: drop
+                  - source_labels: [__meta_kubernetes_pod_node_name]
+                    action: replace
+                    target_label: node
+  - name: container-azm-ms-agentconfig
+    namespace: kube-system
+    chart: bedag/raw
+    version: 2.0.0
+    wait: false
+    values:
+      - resources:
+        - apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: container-azm-ms-agentconfig
+          data:
+            schema-version:
+              v1
+            config-version:
+              ver1
+            log-data-collection-settings: |-
+              [log_collection_settings]
+                [log_collection_settings.stdout]
+                    enabled = true
+                    exclude_namespaces = ["gatekeeper-system"]
+                [log_collection_settings.stderr]
+                    enabled = true
+                    exclude_namespaces = ["gatekeeper-system"]
+                [log_collection_settings.env_var]
+                    enabled = true
+                [log_collection_settings.enrich_container_logs]
+                    enabled = false
+                [log_collection_settings.collect_all_kube_events]
+                    enabled = false
+                [log_collection_settings.schema]
+                    containerlog_schema_version = "v2"
+  - name: rabbitmq
+    chart: bitnami/rabbitmq
+    version: {{ .Values.rabbitMQ.versions.chart }}
+    namespace: system
+    createNamespace: true
+    wait: false
+    values:
+      -
+        ## Pinning version as to recommendation
+        # https://artifacthub.io/packages/helm/bitnami/rabbitmq#rolling-vs-immutable-tags
+        image:
+          tag: {{ .Values.rabbitMQ.versions.image }}
+        global:
+          storageClass: default-zrs
+        replicaCount: {{ .Values.rabbitMQ | get "replicaCount" 1 }} # use odd numbers
+        auth:
+          # 🔒 For now we use only one user as the service is protected by many layers before login (RBAC, VNet Peer, Subnet). If you come until here, RabbitMQ is the smallest attack surface.
+          # If ever demanded, we add more users for 1800$/h
+          username: {{ .Values.rabbitMQ.username | fetchSecretValue | quote }} # ! can't be changed without deleting the PVC+PV
+          password: {{ .Values.rabbitMQ.password | fetchSecretValue | quote }} # ! can't be changed without deleting the PVC+PV
+          erlangCookie: {{ .Values.rabbitMQ.erlangCookie | fetchSecretValue | quote }} # ! can't be changed without deleting the PVC+PV
+        resources:
+          limits:
+            cpu: 2
+            memory: 3Gi
+          requests:
+            cpu: 1200m
+            memory: 2Gi
+        tcpListenOptions:
+          keepalive: true
+        memoryHighWatermark:
+          enabled: true
+          type: relative
+          value: .81
+        extraSecrets:
+          load-definition:
+            load_definition.json: |
+              {
+                "vhosts": [
+                  {
+                    "name": "/"
+                  }
+                ],
+                "users": [
+                  {
+                    "name": "{{ .Values.rabbitMQ.username | fetchSecretValue }}",
+                    "password": "{{ .Values.rabbitMQ.password | fetchSecretValue }}",
+                    "tags": "administrator"
+                  }
+                ],
+                "permissions": [
+                  {
+                    "user": "{{ .Values.rabbitMQ.username | fetchSecretValue }}",
+                    "vhost": "/",
+                    "configure": ".*",
+                    "read": ".*",
+                    "write": ".*"
+                  }
+                ],
+                "policies": {{ .Values.rabbitMQ.load_definition_policies | indent 16 }}
+              }
+        loadDefinition:
+          enabled: true
+          existingSecret: load-definition
+        extraConfiguration: |
+          heartbeat = 10
+          queue_index_embed_msgs_below = 4096
+          max_message_size = 134217728
+          log.exchange.level = error
+          mqtt.exchange = amq.topic
+          load_definitions = /app/load_definition.json
+        extraPlugins: "rabbitmq_consistent_hash_exchange rabbitmq_management_agent rabbitmq_web_dispatch"
+        clustering:
+          enabled: false
+        podAnnotations:
+          cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+        pdb:
+          create: false
+  - name: storage-class-zrs
+    chart: bedag/raw
+    version: 2.0.0
+    namespace: system
+    createNamespace: true
+    wait: false
+    values:
+      - resources:
+        - apiVersion: storage.k8s.io/v1
+          kind: StorageClass
+          metadata:
+            name: default-zrs
+            labels:
+              addonmanager.kubernetes.io/mode: EnsureExists
+          provisioner: disk.csi.azure.com
+          parameters:
+            skuname: StandardSSD_ZRS
+          reclaimPolicy: Delete
+          allowVolumeExpansion: true
+          volumeBindingMode: WaitForFirstConsumer

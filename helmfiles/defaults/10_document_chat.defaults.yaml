@@ -1,0 +1,227 @@
+# This file sets chat module defaults for all customers. Customization per customer is done in the "environments" folder.
+chat:
+  _common:
+    acr: 
+      url: uniqueapp.azurecr.io
+    securityContext:
+      allowPrivilegeEscalation: false
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    ingressDefaults:
+      enabled: true
+      tls:
+        enabled: true
+      className: azure-application-gateway
+      annotations:
+        appgw.ingress.kubernetes.io/ssl-redirect: "true"
+        appgw.ingress.kubernetes.io/rewrite-rule-set: security-headers
+        appgw.ingress.kubernetes.io/request-timeout: "120" # 120 is our sane cap, anyone wanting more than this must provide evidence that their implementation is cleanly engineered
+        cert-manager.io/cluster-issuer: letsencrypt
+    defaultReleases:
+      nextChat:            image-tag-from-release-notes
+      nextKnowledgeUpload: image-tag-from-release-notes
+      nextTheme:           image-tag-from-release-notes
+      nextAdmin:           image-tag-from-release-notes
+      nodeChat:            image-tag-from-release-notes
+      nodeIngestion:       image-tag-from-release-notes
+      nodeIngestionWorker: image-tag-from-release-notes
+      nodeTheme:           image-tag-from-release-notes
+      nodeScopeManagement: image-tag-from-release-notes
+  _rootIngress:
+    enabled: true
+  nextChat:
+    env:
+      MAX_HEAP_MB: 400
+      FEATURE_FLAG_ENABLE_SAVED_PROMPTS_UN_6984: "true"
+      FEATURE_FLAG_SECURE_BLOB_STORAGE_ACCESS_UN_5723: "false"
+    resources:
+      requests:
+        cpu: 300m
+        memory: 500Mi
+      limits:
+        cpu: 300m
+        memory: 550Mi
+    replicaCount: 2
+    strategy:
+      type: Recreate
+  nextKnowledgeUpload:
+    env:
+      MAX_HEAP_MB: 350
+      FEATURE_FLAG_NEW_KNOWLEDGE_BASE_UN_5652: ""
+      FEATURE_FLAG_ENABLE_SPACE_FOLDER_UN_7028: ""
+      FEATURE_FLAG_SECURE_BLOB_STORAGE_ACCESS_UN_5723: "false"
+    resources:
+      requests:
+        cpu: 300m
+        memory: 450Mi
+      limits:
+        cpu: 300m
+        memory: 500Mi
+    replicaCount: 2
+    strategy:
+      type: Recreate
+  nextTheme:
+    env:
+      MAX_HEAP_MB: 200
+      UNIQUE_THEME: {"color-primary-cta": "#a04044", "color-primary-variant": "#90393c", "color-secondary": "#5b5b5b", "color-secondary-variant": "#3e3e3e", "color-background": "#f6f6f6", "color-background-variant": "#ececec", "color-surface": "#ffffff", "color-control": "#cfcfcf", "color-info": "#4167a6", "color-success-light": "#ebfaf2", "color-success-dark": "#0f9451", "color-error-light": "#cc5e71", "color-error-dark": "#d12a46", "color-attention": "#db7600", "color-attention-variant": "#8d4c82", "color-on-primary": "#ffffff", "color-on-secondary": "#ffffff", "color-on-background-main": "#3e3e3e", "color-on-background-dimmed": "#787878", "color-on-surface": "#3e3e3e", "color-on-control-main": "#3e3e3e", "color-on-control-dimmed": "#b3b3b3", "color-on-info": "#ffffff", "color-on-success-light": "#3e3e3e", "color-on-success-dark": "#ffffff", "color-on-error-light": "#ffffff", "color-on-error-dark": "#ffffff", "color-on-attention": "#ffffff", "color-on-attention-variant": "#ffffff"}
+      UNIQUE_BACKGROUND_COLOR: F6F6F6
+    resources:
+      requests:
+        cpu: 100m
+        memory: 300Mi
+      limits:
+        cpu: 100m
+        memory: 350Mi
+    replicaCount: 2
+    strategy:
+      type: Recreate
+  nextAdmin:
+    env:
+      MAX_HEAP_MB: 350
+    resources:
+      requests:
+        cpu: 300m
+        memory: 450Mi
+      limits:
+        cpu: 300m
+        memory: 500Mi
+    replicaCount: 2
+    strategy:
+      type: Recreate
+  nodeChat:
+    env:
+      PUBSUB_BACKEND: redis
+      MAX_HEAP_MB: 450
+      BENCHMARKS_PER_MINUTE_PER_PROCESS: 1
+      AMQP_BENCHMARK_PREFETCH: 1
+    serviceAccount: {}
+    resources:
+      requests:
+        cpu: 500m
+        memory: 550Mi
+      limits:
+        cpu: 500m
+        memory: 600Mi
+    tyk:
+      rateLimit:
+        rate: 4096
+        quotaMax: -1
+      hardTimeouts: []
+      exposePublicApi:
+        enabled: true
+        hardTimeouts:
+          - path: "/openai/chat/{:path}"
+            method: "POST"
+            timeoutSeconds: 600
+          - path: "/integrated/chat/{:path}"
+            method: "POST"
+            timeoutSeconds: 600
+  nodeIngestion:
+    env:
+      AZURE_OPENAI_API_DEPLOYMENT_NAME: text-embedding-ada-002
+      AZURE_OPENAI_API_VERSION: 2023-05-15
+      TRUSTED_DOMAINS: '["*.blob.core.windows.net"]'
+      USE_SCOPE_MANAGEMENT: "true"
+      ZITADEL_ROOT_ORG_ID: ""
+      MAX_HEAP_MB: 550
+      ENABLE_MALWARE_SCAN: "false"
+      REPLICATION_FACTOR: 2
+      FILE_RETENTION_IN_DAYS: 0
+      FEATURE_FLAG_SECURE_BLOB_STORAGE_ACCESS_UN_5723: "false"
+      FF_UN7111_UPLOAD_THROUGH_BACKEND: "false"
+    tyk:
+      rateLimit:
+        rate: 4096
+        quotaMax: -1
+      scopedApi:
+        enabled: false
+        hardTimeouts: []
+    serviceAccount: {}
+    resources:
+      requests:
+        cpu: 200m
+        memory: 650Mi
+      limits:
+        cpu: 200m
+        memory: 700Mi
+  nodeIngestionWorker:
+    env:
+      AZURE_OPENAI_API_DEPLOYMENT_NAME: text-embedding-ada-002
+      AZURE_OPENAI_API_VERSION: 2023-05-15
+      MAX_HEAP_MB: 850
+    serviceAccount: {}
+    resources:
+      requests:
+        cpu: 1
+        memory: 1Gi
+      limits:
+        cpu: 1
+        memory: 1050Mi
+  nodeTheme:
+    env:
+      MAX_HEAP_MB: 200
+    resources:
+      requests:
+        cpu: 100m
+        memory: 300Mi
+      limits:
+        cpu: 100m
+        memory: 350Mi
+    tyk:
+      rateLimit:
+        rate: 4096
+        quotaMax: -1
+  nodeScopeManagement:
+    env:
+      MAX_HEAP_MB: 750
+    tyk:
+      rateLimit:
+        rate: 4096
+        quotaMax: -1
+    resources:
+      requests:
+        cpu: 500m
+        memory: 850Mi
+      limits:
+        cpu: 1
+        memory: 900Mi
+qdrant:
+  chart:
+    version: 0.7.3
+  imageTag: v1.8.4
+  resources:
+    requests:
+      cpu: 100m
+      memory: 1.8Gi
+    limits:
+      memory: 2Gi
+  persistence:
+    size: 10Gi
+  probes:
+    startup:
+      periodSeconds: 30
+zitadel:
+  replicaCount: 2
+  versions:
+    chart: 7.10.0
+    image: v2.48.1 # when upgrading remove values in env puzzle-prod
+  resources:
+    requests:
+      cpu: 1
+      memory: 1500Mi
+    limits:
+      cpu: 1
+      memory: 1500Mi
+tyk:
+  agicRequestTimeout: 600 # 10 minutes to allow long-running LLM requests.
+  proxyDefaultTimeout: 600 # 10 minutes to allow long-running LLM requests.
+  gateway:
+    resources:
+      limits:
+          cpu: 80m
+          memory: 250Mi
+      requests:
+          cpu: 80m
+          memory: 250Mi

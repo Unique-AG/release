@@ -1,0 +1,121 @@
+environments:
+  your-tenant-alias:
+    values:
+      - ../defaults/01_system.defaults.yaml
+      - ../defaults/30_app_repo.defaults.yaml
+      - ./your-tenant-alias.yaml
+releases:
+  - name: image-pull-secret
+    chart: ../../../charts/image-pull-secret
+    namespace: apps
+    createNamespace: true
+    wait: false
+    values:
+      -
+        secret: 
+          url: {{ .Values.appRepo._common.acr.url | quote }}
+          username: {{ .Values.appRepo._common.acr.username | fetchSecretValue | quote }}
+          password: {{ .Values.appRepo._common.acr.password | fetchSecretValue | quote }}
+  - name: node-app-repository
+    chart: ../../../node/charts/common
+    namespace: apps
+    createNamespace: true
+    wait: false
+    values:
+      -
+        image:
+          repository: uniqueapp.azurecr.io/app-repository
+          tag: {{ .Values.appRepo._common.tenantReleaseOverrides.nodeAppRepository | default .Values.appRepo._common.defaultReleases.nodeAppRepository }}
+        replicaCount: {{ .Values.appRepo.nodeAppRepository | get "replicaCount" 1 }}
+        imagePullSecrets:
+          - name: image-pull-secret
+        service:
+          port: 8088  # if changed also adjust all tyk.exposePublicApi.appRepositoryPortOverride !!
+        env:
+          LOG_LEVEL: info
+          MAX_HEAP_MB: {{ .Values.appRepo.nodeAppRepository.env.MAX_HEAP_MB }}
+          ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote }}
+          CORS_ALLOWED_ORIGINS: https://{{ .Values.host }}
+        envSecrets:
+          DATABASE_URL: "postgresql://{{ .Values.appRepo._common.database.username | fetchSecretValue }}:{{ .Values.appRepo._common.database.password | fetchSecretValue }}@{{ .Values.appRepo._common.database.host | fetchSecretValue }}/app-repository"
+          ENCRYPTION_KEY: {{ .Values.appRepo.nodeAppRepository.secrets.ENCRYPTION_KEY | fetchSecretValue | quote }}
+          AMQP_URL: amqp://{{ .Values.rabbitMQ.username | fetchSecretValue }}:{{ .Values.rabbitMQ.password | fetchSecretValue }}@rabbitmq-headless.system.svc.cluster.local:5672/%2f
+          AZURE_SUBSCRIPTION_ID: {{ default "" .Values.appRepo.nodeAppRepository.secrets.AZURE_SUBSCRIPTION_ID | fetchSecretValue | quote }}
+          AZURE_RESOURCE_GROUP: {{ default "" .Values.appRepo.nodeAppRepository.secrets.AZURE_RESOURCE_GROUP | fetchSecretValue | quote }}
+          APP_LOGS_STORAGE_ACCOUNT: {{ default "" .Values.appRepo.nodeAppRepository.secrets.APP_LOGS_STORAGE_ACCOUNT | fetchSecretValue | quote }}
+        securityContext:
+          {{ .Values.appRepo._common.securityContext | toYaml | nindent 10 }}
+        tyk:
+          jwtSource: https://{{ .Values.zitadel.hostName }}/oauth/v2/keys
+          listenPath: /apps
+          rateLimit:
+            rate: {{ .Values.appRepo.nodeAppRepository.tyk.rateLimit.rate }}
+            quotaMax: {{ .Values.appRepo.nodeAppRepository.tyk.rateLimit.quotaMax }}
+        resources:
+          {{ .Values.appRepo.nodeAppRepository.resources | toYaml | nindent 10 }}
+        hooks:
+          migration:
+            enabled: true
+            command: |
+              cd /node/dist/apps/node-app-repository; npx prisma migrate deploy
+        serviceAccount:
+          enabled: true
+          workloadIdentity:
+            enabled: true
+            clientId: {{ default "" .Values.appRepo.nodeAppRepository.serviceAccount.workloadIdentity.clientId | fetchSecretValue | quote }}
+        probes:
+          enabled: false
+  - name: node-webhook-scheduler
+    chart: ../../../node/charts/common
+    namespace: apps
+    createNamespace: true
+    wait: false
+    values:
+      -
+        image:
+          repository: uniqueapp.azurecr.io/webhook-scheduler
+          tag: {{ .Values.appRepo._common.tenantReleaseOverrides.nodeWebhookScheduler | default .Values.appRepo._common.defaultReleases.nodeWebhookScheduler }}
+        replicaCount: {{ .Values.appRepo.nodeWebhookScheduler | get "replicaCount" 1 }}
+        imagePullSecrets:
+          - name: image-pull-secret
+        env:
+          LOG_LEVEL: info
+          MAX_HEAP_MB: {{ .Values.appRepo.nodeWebhookScheduler.env.MAX_HEAP_MB }}
+          APP_REPOSITORY_URL: http://node-app-repository.apps.svc.cluster.local:8088
+        envSecrets:
+          AMQP_URL: amqp://{{ .Values.rabbitMQ.username | fetchSecretValue }}:{{ .Values.rabbitMQ.password | fetchSecretValue }}@rabbitmq-headless.system.svc.cluster.local:5672/%2f
+        securityContext:
+          {{ .Values.appRepo._common.securityContext | toYaml | nindent 10 }}
+        tyk:
+          enabled: false
+        resources:
+          {{ .Values.appRepo.nodeWebhookScheduler.resources | toYaml | nindent 10 }}
+        probes:
+          enabled: false
+  - name: node-webhook-worker
+    chart: ../../../node/charts/common
+    namespace: apps
+    createNamespace: true
+    wait: false
+    values:
+      -
+        image:
+          repository: uniqueapp.azurecr.io/webhook-worker
+          tag: {{ .Values.appRepo._common.tenantReleaseOverrides.nodeWebhookWorker | default .Values.appRepo._common.defaultReleases.nodeWebhookWorker }}
+        replicaCount: {{ .Values.appRepo.nodeWebhookWorker | get "replicaCount" 1 }}
+        imagePullSecrets:
+          - name: image-pull-secret
+        env:
+          LOG_LEVEL: info
+          MAX_HEAP_MB: {{ .Values.appRepo.nodeWebhookWorker.env.MAX_HEAP_MB }}
+          APP_REPOSITORY_URL: http://node-app-repository.apps.svc.cluster.local:8088
+        envSecrets:
+          AMQP_URL: amqp://{{ .Values.rabbitMQ.username | fetchSecretValue }}:{{ .Values.rabbitMQ.password | fetchSecretValue }}@rabbitmq-headless.system.svc.cluster.local:5672/%2f
+        securityContext:
+          {{ .Values.appRepo._common.securityContext | toYaml | nindent 10 }}
+        tyk:
+          enabled: false
+        resources:
+          {{ .Values.appRepo.nodeWebhookWorker.resources | toYaml | nindent 10 }}
+        probes:
+          enabled: false
