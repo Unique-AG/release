@@ -1,28 +1,39 @@
 replicaCount: 1
+
 rollingUpdate:
   maxSurge: 1
   maxUnavailable: 0
+
 image:
   repository: ""
   pullPolicy: IfNotPresent
   tag: ""
+
 imagePullSecrets: []
+
 nameOverride: ""
 fullnameOverride: ""
+
 serviceAccount:
   enabled: false
   annotations: {}
   # name: ""
   workloadIdentity: {}
+
 podAnnotations: {}
+
 podSecurityContext: {}
+
 securityContext: {}
+
 deployment:
   enabled: true
+
 service:
   enabled: true
   type: ClusterIP
   port: 80
+
 tyk:
   enabled: true
   listenPath: ""
@@ -62,16 +73,22 @@ tyk:
     #     method: "GET"
     #     timeoutSeconds: 1000
   # defaultTimeout: 30 # This setting is only to be modified after consulting the platform team. Disagreed changes will be reverted unquestioned.
+
 ingress:
   enabled: false
   tls:
     enabled: false
+
 env: {}
+
 # Names of existing config maps to be used as env vars (configMapRef in envFrom)
 extraEnvCM: []
+
 envSecrets: {}
+
 # Names of existing secrets to be used as env vars (secretRef in envFrom)
 extraEnvSecrets: []
+
 probes:
   enabled: true
   liveness:
@@ -95,20 +112,29 @@ probes:
     initialDelaySeconds: 10
     failureThreshold: 30
     periodSeconds: 10
+
 pdb:
   maxUnavailable: 30%
+
 resources: {}
+
 autoscaling:
   enabled: false
   minReplicas: 1
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
+
 nodeSelector: {}
+
 tolerations: []
+
 affinity: {}
+
 volumeMounts: []
+
 volumes: []
+
 auditVolume:
   enabled: false
   mountPath: /audit # defaults to /audit
@@ -117,6 +143,7 @@ auditVolume:
     resourceGroup: my-azure-resource-group
     storageAccount: my-azure-storage-account
     # containerName: my-azure-container-in-my-azure-storage-account # defaults to release name
+
 cronJob:
   enabled: false
   name: ""
@@ -132,6 +159,7 @@ cronJob:
     containers:
       name: ""
   env: {}
+
 # .Values.secretProvider lets you mount secrets from Azure Key Vault into the pod
 # Note that 'vault-1' is the literal vault name from azure
 # The line format is 'make <ENV>: from <KEY_VAULT_SECRET_NAME>'
@@ -146,6 +174,7 @@ secretProvider: {}
 #       MY_ENV_VARIABLE_1: keyvault-secret-name-a
 #     vault-name-2:
 #       MY_ENV_VARIABLE_2: keyvault-secret-name-b
+
 prometheus:
   enabled: false
   # enabled: true
@@ -179,11 +208,13 @@ prometheus:
   #       path: path
   #       method: method
   #       status: status
+
 hooks:
   migration:
     enabled: false
     # name: "" defaults to db-migration
     command: ""
+
 eventBasedAutoscaling:
   enabled: false
   minReplicaCount: 0

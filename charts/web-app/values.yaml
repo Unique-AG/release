@@ -1,42 +1,58 @@
 replicaCount: 1
+
 # Experimental `Recreate` update to short-term solve the caching issue, UN-6692
 strategy:
   type: RollingUpdate # or `Recreate`
+
 rollingUpdate:
   maxSurge: 1
   maxUnavailable: 0
+
 image:
   repository: ""
   pullPolicy: IfNotPresent
   tag: ""
+
 imagePullSecrets: []
+
 nameOverride: ""
 fullnameOverride: ""
+
 serviceAccount:
   enabled: false
   annotations: {}
   name: ""
+
 podAnnotations: {}
+
 podSecurityContext: {}
+
 securityContext:
   allowPrivilegeEscalation: false
   runAsNonRoot: true
   runAsUser: 1000
   seccompProfile:
     type: RuntimeDefault
+
 service:
   type: ClusterIP
   port: 3000
+
 ingress:
   enabled: false
   tls:
     enabled: false
+
 env: {}
+
 # Names of existing config maps to be used as env vars (configMapRef in envFrom)
 extraEnvCM: []
+
 envSecrets: {}
+
 # Names of existing secrets to be used as env vars (secretRef in envFrom)
 extraEnvSecrets: []
+
 probes:
   enabled: true
   liveness:
@@ -49,18 +65,25 @@ probes:
       path: /api/health
       port: http
     initialDelaySeconds: 5
+
 pdb:
   maxUnavailable: 30%
+
 resources: {}
+
 autoscaling:
   enabled: false
   minReplicas: 1
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
   targetMemoryUtilizationPercentage: 80
+
 nodeSelector: {}
+
 tolerations: []
+
 affinity: {}
+
 # .Values.secretProvider lets you mount secrets from Azure Key Vault into the pod
 # Note that 'vault-1' is the literal vault name from azure
 # The line format is 'make <ENV>: from <KEY_VAULT_SECRET_NAME>'
@@ -75,5 +98,6 @@ secretProvider: {}
 #       MY_ENV_VARIABLE_1: keyvault-secret-name-a
 #     vault-name-2:
 #       MY_ENV_VARIABLE_2: keyvault-secret-name-b
+
 rootIngress:
   enabled: false

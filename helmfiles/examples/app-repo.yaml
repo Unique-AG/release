@@ -17,7 +17,7 @@ releases:
           username: {{ .Values.appRepo._common.acr.username | fetchSecretValue | quote }}
           password: {{ .Values.appRepo._common.acr.password | fetchSecretValue | quote }}
   - name: node-app-repository
-    chart: ../../../node/charts/common
+    chart: ../../charts/backend-service
     namespace: apps
     createNamespace: true
     wait: false
@@ -66,7 +66,7 @@ releases:
         probes:
           enabled: false
   - name: node-webhook-scheduler
-    chart: ../../../node/charts/common
+    chart: ../../charts/backend-service
     namespace: apps
     createNamespace: true
     wait: false
@@ -93,7 +93,7 @@ releases:
         probes:
           enabled: false
   - name: node-webhook-worker
-    chart: ../../../node/charts/common
+    chart: ../../charts/backend-service
     namespace: apps
     createNamespace: true
     wait: false

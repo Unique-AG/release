@@ -55,7 +55,9 @@ spec:
       - name: "websocketMiddleware"
         path: "middleware/websocketMiddleware.js"
 {{- end }}
+
 ---
+
 {{- if .Values.tyk.enabled }}
 apiVersion: tyk.tyk.io/v1alpha1
 kind: SecurityPolicy
@@ -80,7 +82,9 @@ spec:
       versions:
         - Default
 {{- end }}
+
 ---
+
 # This file is very specifc to the Unique Product and it is nested into tyk on purpose to guarantee the apis overlap
 {{- if .Values.tyk.exposePublicApi.enabled }}
 {{- if and ((.Values.tyk.exposePublicApi).appRepositoryUrlOverride) (not (contains "svc.cluster.local" (.Values.tyk.exposePublicApi).appRepositoryUrlOverride)) }}
@@ -142,7 +146,9 @@ spec:
               timeout: {{ $defaultTimeout }}
             {{- end }}
 {{- end }}
+
 ---
+
 {{- if .Values.tyk.exposePublicApi.enabled }}
 apiVersion: tyk.tyk.io/v1alpha1
 kind: SecurityPolicy
@@ -167,6 +173,8 @@ spec:
       versions:
         - Default
 {{- end }}
+
+
 # This file is very specifc to the Unique Product and it is nested into tyk on purpose to guarantee the apis overlap
 {{- if .Values.tyk.scopedApi.enabled }}
 {{- if and ((.Values.tyk.scopedApi).scopedPathOverride) (not (hasPrefix "/" (.Values.tyk.scopedApi).scopedPathOverride)) }}
@@ -213,7 +221,9 @@ spec:
               timeout: {{ $defaultTimeout }}
             {{- end }}
 {{- end }}
+
 ---
+
 {{- if .Values.tyk.scopedApi.enabled }}
 apiVersion: tyk.tyk.io/v1alpha1
 kind: SecurityPolicy

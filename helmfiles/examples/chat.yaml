@@ -16,7 +16,7 @@ repositories:
     url: https://charts.zitadel.com
 releases:
   - name: image-pull-secret
-    chart: ../../../charts/image-pull-secret
+    chart: ../../charts/image-pull-secret
     namespace: chat
     createNamespace: true
     wait: false
@@ -27,7 +27,7 @@ releases:
           username: {{ .Values.chat._common.acr.username | fetchSecretValue | quote }}
           password: {{ .Values.chat._common.acr.password | fetchSecretValue | quote }}
   - name: image-pull-secret-system
-    chart: ../../../charts/image-pull-secret
+    chart: ../../charts/image-pull-secret
     namespace: system
     createNamespace: true
     wait: false
@@ -59,7 +59,7 @@ releases:
           failureThreshold: 30 # we allow such a long startup time in case qdrant needs to rebuild its WAL table
           periodSeconds: {{ .Values.qdrant | get "probes.startup.periodSeconds" 15 }}
   - name: node-ingestion
-    chart: ../../../node/charts/common
+    chart: ../../charts/backend-service
     namespace: chat
     createNamespace: true
     wait: false
@@ -155,7 +155,7 @@ releases:
             containers:
               name: node-ingestion-expired-content-deletion
   - name: node-ingestion-worker
-    chart: ../../../node/charts/common
+    chart: ../../charts/backend-service
     namespace: chat
     createNamespace: true
     wait: false
@@ -212,7 +212,7 @@ releases:
             queueName: unique.node.ingestion.queue
         terminationGracePeriodSeconds: 900 # 15min
   - name: node-chat
-    chart: ../../../node/charts/common
+    chart: ../../charts/backend-service
     namespace: chat
     createNamespace: true
     wait: false
@@ -289,7 +289,7 @@ releases:
             command: |
               cd /node/dist/apps/node-chat; npx prisma migrate deploy
   - name: next-knowledge-upload
-    chart: ../../../next/charts/web-app
+    chart: ../../charts/web-app
     namespace: chat
     createNamespace: true
     wait: false
@@ -348,7 +348,7 @@ releases:
               port: http
             initialDelaySeconds: 5
   - name: next-chat
-    chart: ../../../next/charts/web-app
+    chart: ../../charts/web-app
     namespace: chat
     createNamespace: true
     wait: false
@@ -409,7 +409,7 @@ releases:
               port: http
             initialDelaySeconds: 5
   - name: next-theme
-    chart: ../../../next/charts/web-app
+    chart: ../../charts/web-app
     namespace: chat
     createNamespace: true
     wait: false
@@ -455,7 +455,7 @@ releases:
               port: http
             initialDelaySeconds: 5
   - name: next-admin
-    chart: ../../../next/charts/web-app
+    chart: ../../charts/web-app
     namespace: chat
     createNamespace: true
     wait: false
@@ -510,7 +510,7 @@ releases:
               port: http
             initialDelaySeconds: 5
   - name: node-theme
-    chart: ../../../node/charts/common
+    chart: ../../charts/backend-service
     namespace: chat
     createNamespace: true
     wait: false
@@ -548,7 +548,7 @@ releases:
             command: |
               cd /node/dist/apps/node-theme; npx prisma migrate deploy
   - name: node-scope-management
-    chart: ../../../node/charts/common
+    chart: ../../charts/backend-service
     namespace: chat
     createNamespace: true
     wait: false

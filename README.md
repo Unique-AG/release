@@ -1,7 +1,10 @@
 ## `Unique-AG/release`
 This repository is fed fully automated from Uniques release automation.
+
 - [Release Process](https://unique-ch.atlassian.net/wiki/x/aACZGg)
 - [Rollout Guideline](https://unique-ch.atlassian.net/wiki/x/dQAoJQ)
+
 This repository also contains [helm charts](./charts). It is though discouraged to use them without a registry. They are added for convenience but only always as the latest version. It is recommended to use the `uniquecr.azurecr.io` registry as explained in the [Rollout Guidelines](https://unique-ch.atlassian.net/wiki/x/dQAoJQ). Unique won't keep versioned charts within this repository. If you need versioned charts, use a/the registry.
+
 > [!IMPORTANT]
 > Unique will never cache Open Source Artifacts that are required to run Unique FinanceGPT. These you must get from the official sources and either pull them from the official registry or cache them in your own registry.
