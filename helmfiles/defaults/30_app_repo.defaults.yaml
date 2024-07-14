@@ -9,9 +9,10 @@ appRepo:
       seccompProfile:
         type: RuntimeDefault
     defaultReleases:
-      nodeAppRepository:    image-tag-from-release-notes
-      nodeWebhookWorker:    image-tag-from-release-notes
-      nodeWebhookScheduler: image-tag-from-release-notes
+      nodeAppRepository:            image-tag-from-release-notes
+      nodeWebhookWorker:            image-tag-from-release-notes
+      nodeWebhookScheduler:         image-tag-from-release-notes
+      typescriptServiceEventSocket: image-tag-from-release-notes
   nodeAppRepository:
     env:
       MAX_HEAP_MB: 200
@@ -56,3 +57,20 @@ appRepo:
       limits:
         cpu: 200m
         memory: 350Mi
+  typescriptServiceEventSocket:
+    env:
+      MAX_HEAP_MB: 200
+    resources:
+      requests:
+        cpu: 100m
+        memory: 300Mi
+      limits:
+        cpu: 200m
+        memory: 350Mi
+    tyk:
+      exposePublicApi:
+        enabled: true
+        hardTimeouts:
+          - path: "/events/stream" # Increase timeout for EventSource connections
+            method: "GET"
+            timeoutSeconds: 600 # 10 minutes
