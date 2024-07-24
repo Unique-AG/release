@@ -66,3 +66,5 @@ This Terraform code defines the infrastructure for deploying Chat service. It us
 ## Conclusion
 
 This Terraform code demonstrates how to use Azure OpenAI and App Repository Logs to enhance the capabilities of an application. By leveraging these services, the code enables access to powerful language models and provides a secure and reliable way to store and manage logs.
+
+<br/><br/><hr/><br/><a href="https://eu1.hubs.ly/H09t3Sg0" target="_blank"><img src="https://www.unique.ch/hubfs/Badge%20Unique%20(1).svg" height="54"></a>

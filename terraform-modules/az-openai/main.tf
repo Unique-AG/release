@@ -24,15 +24,18 @@ resource "azurerm_cognitive_account" "this" {
     }
   }
 }
+locals {
+  azurerm_key_vault_secret_prefix = var.key_vault_prefix != "" ? var.key_vault_prefix : module.context.name
+}
 resource "azurerm_key_vault_secret" "key" {
   count        = var.key_vault_id != "" ? 1 : 0
-  name         = "${module.context.name}-key"
+  name         = "${local.azurerm_key_vault_secret_prefix}-key"
   value        = azurerm_cognitive_account.this.primary_access_key
   key_vault_id = var.key_vault_id
 }
 resource "azurerm_key_vault_secret" "endpoint" {
   count        = var.key_vault_id != "" ? 1 : 0
-  name         = "${module.context.name}-endpoint"
+  name         = "${local.azurerm_key_vault_secret_prefix}-endpoint"
   value        = azurerm_cognitive_account.this.endpoint
   key_vault_id = var.key_vault_id
 }

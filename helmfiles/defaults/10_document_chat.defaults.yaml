@@ -20,22 +20,22 @@ chat:
         appgw.ingress.kubernetes.io/request-timeout: "120" # 120 is our sane cap, anyone wanting more than this must provide evidence that their implementation is cleanly engineered
         cert-manager.io/cluster-issuer: letsencrypt
     defaultReleases:
-      nextChat:            image-tag-from-release-notes
-      nextKnowledgeUpload: image-tag-from-release-notes
-      nextTheme:           image-tag-from-release-notes
-      nextAdmin:           image-tag-from-release-notes
-      nodeChat:            image-tag-from-release-notes
-      nodeIngestion:       image-tag-from-release-notes
-      nodeIngestionWorker: image-tag-from-release-notes
-      nodeTheme:           image-tag-from-release-notes
-      nodeScopeManagement: image-tag-from-release-notes
+      nextChat:            2024.30-b67e
+      nextKnowledgeUpload: 2024.30-d37a
+      nextTheme:           2024.30-08c2
+      nextAdmin:           2024.30-08c2
+      nodeChat:            2024.30-6664
+      nodeIngestion:       2024.30-cd95
+      nodeIngestionWorker: 2024.30-e4f9
+      nodeTheme:           2024.30-6966
+      nodeScopeManagement: 2024.30-6966
   _rootIngress:
     enabled: true
   nextChat:
     env:
       MAX_HEAP_MB: 400
       FEATURE_FLAG_ENABLE_SAVED_PROMPTS_UN_6984: "true"
-      FEATURE_FLAG_SECURE_BLOB_STORAGE_ACCESS_UN_5723: "false"
+      FEATURE_FLAG_SECURE_BLOB_STORAGE_ACCESS_UN_5723: "true"
     resources:
       requests:
         cpu: 300m
@@ -49,9 +49,9 @@ chat:
   nextKnowledgeUpload:
     env:
       MAX_HEAP_MB: 350
-      FEATURE_FLAG_NEW_KNOWLEDGE_BASE_UN_5652: ""
+      FEATURE_FLAG_NEW_KNOWLEDGE_BASE_UN_5652: "true"
       FEATURE_FLAG_ENABLE_SPACE_FOLDER_UN_7028: ""
-      FEATURE_FLAG_SECURE_BLOB_STORAGE_ACCESS_UN_5723: "false"
+      FEATURE_FLAG_SECURE_BLOB_STORAGE_ACCESS_UN_5723: "true"
     resources:
       requests:
         cpu: 300m
@@ -129,15 +129,18 @@ chat:
       ENABLE_MALWARE_SCAN: "false"
       REPLICATION_FACTOR: 2
       FILE_RETENTION_IN_DAYS: 0
-      FEATURE_FLAG_SECURE_BLOB_STORAGE_ACCESS_UN_5723: "false"
-      FF_UN7111_UPLOAD_THROUGH_BACKEND: "false"
+      FEATURE_FLAG_SECURE_BLOB_STORAGE_ACCESS_UN_5723: "true"
+      FF_UN7111_UPLOAD_THROUGH_BACKEND: "true"
     tyk:
       rateLimit:
         rate: 4096
         quotaMax: -1
       scopedApi:
-        enabled: false
-        hardTimeouts: []
+        enabled: true
+        hardTimeouts: 
+          - path: "/upload"
+            method: "PUT"
+            timeoutSeconds: 600 # for large files and bad connections during upload
     serviceAccount: {}
     resources:
       requests:

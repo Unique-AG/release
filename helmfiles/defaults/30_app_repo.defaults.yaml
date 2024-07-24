@@ -9,10 +9,10 @@ appRepo:
       seccompProfile:
         type: RuntimeDefault
     defaultReleases:
-      nodeAppRepository:            image-tag-from-release-notes
-      nodeWebhookWorker:            image-tag-from-release-notes
-      nodeWebhookScheduler:         image-tag-from-release-notes
-      typescriptServiceEventSocket: image-tag-from-release-notes
+      nodeAppRepository:            2024.30-6966
+      nodeWebhookWorker:            2024.30-6966
+      nodeWebhookScheduler:         2024.30-6966
+      typescriptServiceEventSocket: 2024.30-d6ae
   nodeAppRepository:
     env:
       MAX_HEAP_MB: 200

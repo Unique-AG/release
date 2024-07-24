@@ -2,6 +2,22 @@
 
 This Terraform code defines the infrastructure for deploying an Azure Cognitive Service for Form Recognizer. It uses Azure resources to create a secure and reliable environment for processing forms and extracting data.
 
+## Example
+
+This example assumes that you already leverage other modules from Unique, namely `context` and `az-workload-identity`.
+
+```hcl
+module "document-ingelligence" {
+  source           = "./az-document-intelligence"
+  context          = module.context
+  account_location = "westeurope"
+
+  user_assigned_identity_ids = [
+    module.workload_identities.user_assigned_identity_ids["node-ingestion-worker"],
+  ]
+}
+```
+
 ## Breakdown of the Code
 
 1. **Context Variables:**
@@ -31,3 +47,5 @@ This Terraform code defines the infrastructure for deploying an Azure Cognitive 
 ## Conclusion
 
 This Terraform code demonstrates how to use Azure Cognitive Services to process forms and extract data. By leveraging the Form Recognizer service, the code enables automated document processing and data extraction, improving efficiency and accuracy.
+
+<br/><br/><hr/><br/><a href="https://eu1.hubs.ly/H09t3Sg0" target="_blank"><img src="https://www.unique.ch/hubfs/Badge%20Unique%20(1).svg" height="54"></a>

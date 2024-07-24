@@ -82,3 +82,5 @@ This Terraform code defines the configuration for an Azure Kubernetes Service (A
 ## Conclusion
 
 This Terraform code provides a comprehensive configuration for an AKS cluster with various features and settings. It demonstrates how Terraform can be used to manage and automate the deployment and configuration of AKS clusters in a declarative way.
+
+<br/><br/><hr/><br/><a href="https://eu1.hubs.ly/H09t3Sg0" target="_blank"><img src="https://www.unique.ch/hubfs/Badge%20Unique%20(1).svg" height="54"></a>

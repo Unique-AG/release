@@ -45,3 +45,5 @@ This Terraform code defines the infrastructure for a Storage Account in Azure. I
 ## Conclusion
 
 This Terraform code demonstrates how to use Azure Storage Accounts to store and manage data in a highly performant and scalable manner. By leveraging Key Vaults, Storage Management Policies, and Customer-Managed Keys, the code ensures secure access, data lifecycle management, and encryption.
+
+<br/><br/><hr/><br/><a href="https://eu1.hubs.ly/H09t3Sg0" target="_blank"><img src="https://www.unique.ch/hubfs/Badge%20Unique%20(1).svg" height="54"></a>

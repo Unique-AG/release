@@ -39,3 +39,5 @@ This Terraform code defines the infrastructure for creating and managing workloa
 ## Conclusion
 
 This Terraform code demonstrates how to use Azure Workload Identities to provide secure access to Azure services without managing credentials directly. By leveraging User-Assigned Identities, Role Assignments, Federated Identity Credentials, and Key Vault Secrets, the code ensures secure access and management of identities for various services.
+
+<br/><br/><hr/><br/><a href="https://eu1.hubs.ly/H09t3Sg0" target="_blank"><img src="https://www.unique.ch/hubfs/Badge%20Unique%20(1).svg" height="54"></a>

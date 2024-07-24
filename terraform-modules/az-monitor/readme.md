@@ -22,3 +22,5 @@ This Terraform code defines an Azure Monitor Action Group named "p0". Action Gro
 ## Conclusion
 
 This Terraform code demonstrates how to use Azure Monitor Action Groups to define recipients and actions for alerts. By leveraging dynamic blocks and variables, the code enables the creation of customized action groups that meet specific requirements.
+
+<br/><br/><hr/><br/><a href="https://eu1.hubs.ly/H09t3Sg0" target="_blank"><img src="https://www.unique.ch/hubfs/Badge%20Unique%20(1).svg" height="54"></a>

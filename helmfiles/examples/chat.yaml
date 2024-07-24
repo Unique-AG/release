@@ -81,7 +81,6 @@ releases:
           AZURE_OPENAI_API_DEPLOYMENT_NAME: {{ .Values.chat.nodeIngestion.env.AZURE_OPENAI_API_DEPLOYMENT_NAME | quote }}
           AZURE_OPENAI_API_VERSION: {{ .Values.chat.nodeIngestion.env.AZURE_OPENAI_API_VERSION | quote }}
           TRUSTED_DOMAINS: {{ .Values.chat.nodeIngestion.env.TRUSTED_DOMAINS | quote }}
-          OPENAI_PROVIDER: azure
           ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote }}
           ZITADEL_ROOT_ORG_ID: {{ .Values.chat.nodeIngestion.env.ZITADEL_ROOT_ORG_ID | quote }}
           SCORE_THRESHOLD: "0"
@@ -647,7 +646,7 @@ releases:
           hostName: {{ .Values.tyk.hostName }}
           replicaCount: 2
           image:
-            repository: uniqueapp.azurecr.io/custom-images/tyk-gateway
+            repository: uniquecr.azurecr.io/custom-images/tyk-gateway
             tag: v5.2.5
             pullPolicy: IfNotPresent
           service:

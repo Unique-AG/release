@@ -31,6 +31,11 @@ variable "key_vault_id" {
   type        = string
   default     = ""
 }
+variable "key_vault_prefix" {
+  description = "If a value is passed, the module will use this prefix to store vault values as (*-key, *-endpoint). This value overrides the module.context.name which would be used as default prefix."
+  type        = string
+  default     = ""
+}
 variable "user_assigned_identity_ids" {
   type    = list(string)
   default = []

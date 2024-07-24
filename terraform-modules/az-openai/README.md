@@ -32,3 +32,5 @@ This Terraform code defines the infrastructure for deploying an Azure OpenAI ser
 ## Conclusion
 
 This Terraform code demonstrates how to use Azure OpenAI to access and use OpenAI models. By leveraging the OpenAI service, the code enables developers to integrate powerful language models into their applications.
+
+<br/><br/><hr/><br/><a href="https://eu1.hubs.ly/H09t3Sg0" target="_blank"><img src="https://www.unique.ch/hubfs/Badge%20Unique%20(1).svg" height="54"></a>

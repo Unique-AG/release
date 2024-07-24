@@ -29,3 +29,5 @@ This Terraform code defines the infrastructure for deploying a Redis Cache in Az
 ## Conclusion
 
 This Terraform code demonstrates how to use Azure Redis Cache to store and manage data in a highly performant and scalable manner. By leveraging NSGs and Key Vault, the code ensures secure access and protection of sensitive information.
+
+<br/><br/><hr/><br/><a href="https://eu1.hubs.ly/H09t3Sg0" target="_blank"><img src="https://www.unique.ch/hubfs/Badge%20Unique%20(1).svg" height="54"></a>

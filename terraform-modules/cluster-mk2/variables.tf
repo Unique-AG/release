@@ -112,6 +112,16 @@ variable "storage_retention_period_days" {
   type    = number
   default = 1865
 }
+variable "storage_delete_retention_days" {
+  type        = number
+  description = "Retention period for deleted blobs in days."
+  default     = 14
+}
+variable "storage_container_delete_retention_days" {
+  type        = number
+  description = "Retention period for deleted containers in days."
+  default     = 14
+}
 variable "audit_containers" {
   type    = list(string)
   default = []

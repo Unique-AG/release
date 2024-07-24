@@ -19,6 +19,21 @@ resource "azurerm_storage_account" "this" {
   identity {
     type = "SystemAssigned"
   }
+  blob_properties {
+    dynamic "container_delete_retention_policy" {
+      for_each = var.storage_container_delete_retention_days > 0 ? [1] : []
+      content {
+        days = var.storage_container_delete_retention_days
+      }
+    }
+    dynamic "delete_retention_policy" {
+      for_each = var.storage_delete_retention_days > 0 ? [1] : []
+      content {
+        days                     = var.storage_delete_retention_days
+        permanent_delete_enabled = false
+      }
+    }
+  }
   network_rules {
     default_action             = "Deny"
     virtual_network_subnet_ids = [var.subnet_nodes.id, var.subnet_pods.id]

@@ -16,6 +16,70 @@ variable "storage_account_cors_rules" {
   }))
   default = []
 }
+variable "storage_account_change_feed_enabled" {
+  type        = bool
+  description = "Enable change feed for storage account. Must be enabled for point-in-time restore."
+  default     = true
+}
+variable "storage_account_change_feed_retention_days" {
+  type        = number
+  description = "Number of days to retain change feed events. Must be bigger than restore_days."
+  default     = 8
+}
+variable "storage_account_versioning_enabled" {
+  type        = bool
+  description = "Enable versioning for storage account. Must be enabled for point-in-time restore."
+  default     = true
+}
+variable "storage_account_versioning_retention_days" {
+  type        = number
+  description = "Number of days to retain versions."
+  default     = 8
+}
+variable "storage_account_container_delete_retention_days" {
+  type        = number
+  description = "Number of days to retain deleted containers."
+  default     = 7
+}
+variable "storage_account_delete_retention_days" {
+  type        = number
+  description = "Number of days to retain deleted storage account."
+  default     = 14
+}
+variable "storage_account_restore_days" {
+  type        = number
+  description = "Number of days blob can be restored. Must be used together with delete_retention_days, versioning_enabled and change_feed_enabled."
+  default     = 7
+}
+variable "storage_account_backup_enabled" {
+  type        = bool
+  description = "Enable backup for storage account."
+  default     = true
+}
+variable "storage_account_backup_redundancy" {
+  type        = string
+  description = "Redundancy for backup storage account."
+  default     = "LocallyRedundant"
+  validation {
+    condition     = contains(["LocallyRedundant", "GeoRedundant", "ZoneRedundant"], var.storage_account_backup_redundancy)
+    error_message = "must be one of LocallyRedundant, GeoRedundant, ZoneRedundant."
+  }
+}
+variable "storage_account_backup_retention_days" {
+  type        = number
+  description = "Number of days to retain backups."
+  default     = 14
+}
+variable "storage_account_backup_soft_delete" {
+  type        = bool
+  description = "Enable soft delete for backup storage account."
+  default     = true
+}
+variable "storage_account_backup_retention_duration" {
+  type        = string
+  description = "Number of days to retain backups as duration string."
+  default     = "P2W"
+}
 variable "min_tls_version" {
   default = "1.2"
 }

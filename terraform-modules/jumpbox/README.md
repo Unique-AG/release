@@ -61,3 +61,5 @@ This Terraform code defines the configuration for a jumpbox in Azure. Let's brea
 ## Conclusion
 
 This Terraform code provides a comprehensive configuration for a jumpbox in Azure, including SSH access, security, monitoring, and automated shutdown. It demonstrates how Terraform can be used to manage and automate the deployment and configuration of jumpboxes in a declarative way.
+
+<br/><br/><hr/><br/><a href="https://eu1.hubs.ly/H09t3Sg0" target="_blank"><img src="https://www.unique.ch/hubfs/Badge%20Unique%20(1).svg" height="54"></a>
