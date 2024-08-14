@@ -12,5 +12,25 @@ variable "keyvault_secret_placeholders" {
     "manual-acr-image-pull-password",
     "manual-app-repository-encryption-key",
     "manual-slack-webhook-url",
+    "manual-github-app-private-key",
+    "manual-github-configrepo-url",
+    "manual-github-gitops-resources-url",
+    "manual-github-app-id",
+    "manual-github-installation-id",
+    "manual-uniqueapp-docker-config-json",
+    "manual-chart-pull-username",
+    "manual-chart-pull-password"
   ]
+}
+variable "argocd-secrets-list" {
+  description = "Map of secret names and their values for ArgoCD"
+  type        = map(string)
+  default = {
+    uniqueapp-acr-url                = "uniqueapp.azurecr.io"
+    uniquecr-acr-url                 = "uniquecr.azurecr.io"
+    helm-registry-name               = "uniquecr"
+    argocd-registry-type             = "helm"
+    helm-registry-enableoci          = "true"
+    helm-registry-forcehttpbasicauth = "true"
+  }
 }

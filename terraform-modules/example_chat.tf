@@ -105,6 +105,8 @@ module "cluster" {
   subnet_appgw                  = module.vnet.subnets["AppGW"]
   storage_retention_period_days = 1865
   keyvault_access_principals    = [module.jumpbox.vm_identity]
+  kubernetes_default_node_size  = "Standard_D8s_v5"
+  kubernetes_version            = "1.27.7"
   domain_config = {
     name        = local.base_domain
     sub_domains = ["gateway", "id"]

@@ -85,11 +85,22 @@ chat:
   nodeScopeManagement:
     secrets:
       ZITADEL_PAT: ref+azurekeyvault://your-vault-name/manual-zitadel-scope-mgmt-pat
+  assistantsCore:
+    env:
+      GUNICORN_WORKERS: 1
+      GUNICORN_THREADS: 2
+    resources:
+      requests:
+        cpu: 500m
+        memory: 550Mi
+      limits:
+        cpu: 500m
+        memory: 600Mi
 rabbitMQ:
   username: ref+azurekeyvault://your-vault-name/rabbitmq-username # ! can't be changed without deleting the PVC+PV
   password: ref+azurekeyvault://your-vault-name/rabbitmq-password # ! can't be changed without deleting the PVC+PV
   erlangCookie: ref+azurekeyvault://your-vault-name/rabbitmq-erlang-cookie # ! can't be changed without deleting the PVC+PV
-  load_definition_policies: |- 
+  load_definition_policies: |-
     [
       {
         "vhost": "/",
@@ -118,6 +129,16 @@ rabbitMQ:
         "apply-to": "all",
         "definition": {
           "consumer-timeout": 18000000
+        },
+        "priority": 1
+      },
+      {
+        "vhost": "/",
+        "name": "node-consumer-timeout",
+        "pattern": "unique.node.ingestion.queue",
+        "apply-to": "queues",
+        "definition": {
+          "consumer-timeout": 7200000
         },
         "priority": 1
       }

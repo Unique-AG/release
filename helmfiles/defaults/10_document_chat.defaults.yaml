@@ -20,22 +20,24 @@ chat:
         appgw.ingress.kubernetes.io/request-timeout: "120" # 120 is our sane cap, anyone wanting more than this must provide evidence that their implementation is cleanly engineered
         cert-manager.io/cluster-issuer: letsencrypt
     defaultReleases:
-      nextChat:            2024.30-b67e
-      nextKnowledgeUpload: 2024.30-d37a
-      nextTheme:           2024.30-08c2
-      nextAdmin:           2024.30-08c2
-      nodeChat:            2024.30-6664
-      nodeIngestion:       2024.30-cd95
-      nodeIngestionWorker: 2024.30-e4f9
-      nodeTheme:           2024.30-6966
-      nodeScopeManagement: 2024.30-6966
+      nextChat:            2024.32-6c64f
+      nextKnowledgeUpload: 2024.32-01afb
+      nextTheme:           2024.32-01afb
+      nextAdmin:           2024.32-01afb
+      nodeChat:            2024.32-af3a4
+      nodeIngestion:       2024.32-630c9
+      nodeIngestionWorker: 2024.32-630c9
+      nodeTheme:           2024.32-c26f
+      nodeScopeManagement: 2024.32-630c9
+      assistantsCore:      image-tag-from-release-notes
   _rootIngress:
     enabled: true
   nextChat:
     env:
       MAX_HEAP_MB: 400
-      FEATURE_FLAG_ENABLE_SAVED_PROMPTS_UN_6984: "true"
       FEATURE_FLAG_SECURE_BLOB_STORAGE_ACCESS_UN_5723: "true"
+      FEATURE_FLAG_NEW_TRANSLATION_UI_UN_7233: ""
+      FEATURE_FLAG_STOP_STREAMING_UN_4824: ""
     resources:
       requests:
         cpu: 300m
@@ -80,6 +82,7 @@ chat:
   nextAdmin:
     env:
       MAX_HEAP_MB: 350
+      FEATURE_FLAG_NEW_TRANSLATION_UI_UN_7233: ""
     resources:
       requests:
         cpu: 300m
@@ -96,6 +99,7 @@ chat:
       MAX_HEAP_MB: 450
       BENCHMARKS_PER_MINUTE_PER_PROCESS: 1
       AMQP_BENCHMARK_PREFETCH: 1
+      INTERNAL_MODULES_CONFIG: '[]'
     serviceAccount: {}
     resources:
       requests:
@@ -190,6 +194,17 @@ chat:
       limits:
         cpu: 1
         memory: 900Mi
+  assistantsCore:
+    env:
+      GUNICORN_WORKERS: 1
+      GUNICORN_THREADS: 2
+    resources:
+      requests:
+        cpu: 500m
+        memory: 550Mi
+      limits:
+        cpu: 500m
+        memory: 600Mi
 qdrant:
   chart:
     version: 0.7.3

@@ -2,6 +2,7 @@ locals {
   default_parameters = {
     max_connections    = 200
     "azure.extensions" = "PG_TRGM"
+    enable_seqscan     = "off"
   }
 }
 resource "azurerm_user_assigned_identity" "this" {

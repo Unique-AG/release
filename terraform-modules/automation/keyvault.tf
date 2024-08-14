@@ -52,6 +52,12 @@ resource "random_password" "zitadel-main-key" {
   length  = 32
   special = false
 }
+resource "azurerm_key_vault_secret" "argocd-secrets-list" {
+  for_each     = var.argocd-secrets-list
+  name         = each.key
+  value        = each.value
+  key_vault_id = azurerm_key_vault.this.id
+}
 resource "azurerm_key_vault_secret" "zitadel-main-key" {
   name         = "zitadel-main-key"
   value        = random_password.zitadel-main-key.result

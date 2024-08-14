@@ -193,6 +193,13 @@ releases:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
         resources:
           {{ .Values.chat.nodeIngestionWorker.resources | toYaml | nindent 10 }}
+        volumes:
+          - name: tmp-volume
+            emptyDir:
+              sizeLimit: 20Gi
+        volumeMounts:
+          - mountPath: /tmp
+            name: tmp-volume
         probes:
           liveness:
             failureThreshold: 36 # 10*36 = 6min max not live - OK for ingestion-worker
@@ -381,7 +388,6 @@ releases:
           MAX_HEAP_MB: {{ .Values.chat.nextChat.env | get "MAX_HEAP_MB" 400 }}
           STATIC_BACKGROUND_COLOR:  >-
             {{ "#" }}{{ .Values.chat.nextTheme.env.STATIC_BACKGROUND_COLOR }}
-          FEATURE_FLAG_ENABLE_SAVED_PROMPTS_UN_6984: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_SAVED_PROMPTS_UN_6984 | quote }}
           FEATURE_FLAG_SECURE_BLOB_STORAGE_ACCESS_UN_5723: {{ .Values.chat.nextChat.env.FEATURE_FLAG_SECURE_BLOB_STORAGE_ACCESS_UN_5723 | quote }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
@@ -930,10 +936,11 @@ releases:
               Multifactors:
                 OTP:
                   Issuer: UNIQUE
-              # 90 days
-              PrivateKeyLifetime: 2160h
-              # 1year. Public key lifetime must be min 2x private key lifetime
-              PublicKeyLifetime: 8760h
+              keyConfig:
+                # 90 days
+                PrivateKeyLifetime: 2160h
+                # 1year. Public key lifetime must be min 2x private key lifetime
+                PublicKeyLifetime: 8760h
             DefaultInstance:
               InstanceName: UNIQUE
               DefaultLanguage: en
@@ -1078,3 +1085,28 @@ releases:
                 Human:
                   Username: root@cluster-iam.localhost
                   Password: "RootPassword1!" # must be changed on first login so not a problem
+  - name: assistants-core
+    chart: ../../charts/ai-service
+    namespace: chat
+    createNamespace: true
+    wait: false
+    values:
+      -
+        replicaCount: {{ .Values.chat.assistantsCore | get "replicaCount" 1 }}
+        strategy:
+          type: {{ .Values.chat.assistantsCore | get "strategy.type" "RollingUpdate" }}
+        image:
+          repository: uniquecr.azurecr.io/ai-service-assistants-core
+          tag: {{ .Values.chat._common.tenantReleaseOverrides.assistantsCore | default .Values.chat._common.defaultReleases.assistantsCore }}
+        imagePullSecrets:
+          - name: image-pull-secret
+        env:
+          API_BASE: http://node-chat.chat.svc.cluster.local:8093/public
+          GUNICORN_WORKERS: {{ .Values.chat.assistantsCore.env.GUNICORN_WORKERS }}
+          GUNICORN_THREADS: {{ .Values.chat.assistantsCore.env.GUNICORN_THREADS }}
+        resources:
+          {{ .Values.chat.assistantsCore.resources | toYaml | nindent 10 }}
+        eventBasedAutoscaling:
+          enabled: false
+        securityContext:
+          {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}

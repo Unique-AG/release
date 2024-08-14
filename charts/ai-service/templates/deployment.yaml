@@ -1,24 +1,23 @@
-{{- $fullName := include "backendService.fullname" . -}}
-{{- if .Values.deployment.enabled -}}
+{{- $fullName := include "common.fullname" . -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ $fullName }}
   labels:
-    {{- include "backendService.labels" . | nindent 4 }}
+    {{- include "common.labels" . | nindent 4 }}
 spec:
-  {{- if not (or .Values.autoscaling.enabled .Values.eventBasedAutoscaling.enabled) }}
+  {{- if and (not .Values.autoscaling.enabled) (not .Values.eventBasedAutoscaling.enabled) }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "backendService.selectorLabels" . | nindent 6 }}
+      {{- include "common.selectorLabels" . | nindent 6 }}
   strategy:
     {{- with .Values.rollingUpdate }}
     rollingUpdate:
       {{- toYaml . | nindent 6 }}
     {{- end }}
-  minReadySeconds: {{ .Values.minReadySeconds | default 5 }}
+  minReadySeconds: {{ .Values.minReadySeconds | default 0 }}
   template:
     metadata:
       annotations:
@@ -30,9 +29,8 @@ spec:
         checksum/secrets: {{ include (print $.Chart.Name "/templates/secrets.yaml") . | sha256sum | trunc 8 | quote }}
         {{- end }}
       labels:
-        app.kubernetes.io/component: server
-        {{- include "backendService.labels" . | nindent 8 }}
-        {{- if and (.Values.secretProvider) (not .Values.secretProvider.useVMManagedIdentity) }}
+        {{- include "common.selectorLabels" . | nindent 8 }}
+        {{- if .Values.secretProvider }}
         aadpodidbinding: {{ default "keyvault" (.Values.secretProvider).aadPodIdBinding }}
         {{- end }}
         {{- if .Values.serviceAccount.workloadIdentity.enabled }}
@@ -43,11 +41,13 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "backendService.serviceAccountName" . }}
+      serviceAccountName: {{ include "common.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ $fullName }}
+        - name: {{ include "common.fullname" . }}
+          lifecycle:
+            {{- toYaml .Values.lifecycle | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
@@ -107,15 +107,11 @@ spec:
           {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- if .Values.auditVolume.enabled }}
-            - name: audit
-              mountPath: {{ default "/audit" .Values.auditVolume.mountPath }}
-          {{- end }}
           {{- if .Values.secretProvider }}
           {{- range $k, $v := .Values.secretProvider.vaults }}
-            - name: {{ $fullName }}-{{ $k }}
-              mountPath: "/mnt/{{ $fullName }}-{{ $k }}"
-              readOnly: true
+             - name: {{ $fullName }}-{{ $k }}
+               mountPath: "/mnt/{{ $fullName }}-{{ $k }}"
+               readOnly: true
            {{- end }}
            {{- end }}
       {{- with .Values.nodeSelector }}
@@ -130,17 +126,9 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.terminationGracePeriodSeconds }}
-      terminationGracePeriodSeconds: {{ . }}
-      {{- end }}
       volumes:
       {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- if .Values.auditVolume.enabled }}
-        - name: audit
-          persistentVolumeClaim:
-            claimName: {{ $fullName }}-audit
       {{- end }}
       {{- if .Values.secretProvider }}
       {{- range $k, $v := .Values.secretProvider.vaults }}
@@ -152,4 +140,4 @@ spec:
               secretProviderClass: {{ $fullName }}-{{ $k }}
       {{- end }}
       {{- end }}
-{{- end }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}

@@ -1,3 +1,7 @@
+# clusterInternalServiceSuffix allows to override the default ".svc.cluster.local" service address suffix which is used to reach internal services in the cluster.
+# Note: It must start with a dot.
+# clusterInternalServiceSuffix: .domain.local
+
 replicaCount: 1
 
 rollingUpdate:
@@ -160,6 +164,7 @@ cronJob:
       name: ""
   env: {}
 
+# !!! usePodIdentity will be deprecated in the future please use useVMManagedIdentity with the clientID
 # .Values.secretProvider lets you mount secrets from Azure Key Vault into the pod
 # Note that 'vault-1' is the literal vault name from azure
 # The line format is 'make <ENV>: from <KEY_VAULT_SECRET_NAME>'
@@ -169,6 +174,8 @@ secretProvider: {}
 # secretProvider:
 #   tenantId: 99330c76-81d2-460e-861e-35af8e2a4266
 #   aadPodIdBinding: binding-21 # optional, defaults to 'keyvault'
+#   useVMManagedIdentity: "true" # optional, if not present usePodIdentity is set to "true" useVMManagedIdentity to "false"
+#   userAssignedIdentityID: "xx-pls-provide-client-id-xx"   # Should not be empty if useVMManagedIdentity is present and has the value "true"
 #   vaults:
 #     vault-name-1:
 #       MY_ENV_VARIABLE_1: keyvault-secret-name-a

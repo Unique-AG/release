@@ -10,3 +10,6 @@ output "aks_oidc_issuer_url" {
 output "log_analytics_workspace_id" {
   value = azurerm_log_analytics_workspace.this.id
 }
+output "key_vault_secrets_provider" {
+  value = try(azurerm_kubernetes_cluster.this.key_vault_secrets_provider[0], null)
+}

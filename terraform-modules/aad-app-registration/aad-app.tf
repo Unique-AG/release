@@ -62,6 +62,23 @@ resource "azuread_application" "this" {
       type = "Scope"
     }
   }
+  optional_claims {
+    access_token {
+      additional_properties = []
+      essential             = false
+      name                  = "groups"
+    }
+    id_token {
+      additional_properties = []
+      essential             = false
+      name                  = "groups"
+    }
+    saml2_token {
+      additional_properties = []
+      essential             = false
+      name                  = "groups"
+    }
+  }
   dynamic "required_resource_access" {
     for_each = var.use_intune ? [1] : []
     content {

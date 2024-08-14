@@ -27,6 +27,14 @@
 {{- end }}
 {{- end }}
 
+{{- define "backendService.clusterInternalServiceSuffix" -}}
+{{- $clusterInternalServiceSuffix := default ".svc.cluster.local" .Values.clusterInternalServiceSuffix }}
+{{- if not (hasPrefix "." $clusterInternalServiceSuffix) }}
+{{- fail "clusterInternalServiceSuffix must start with a dot!" }}
+{{- end }}
+{{- printf "%s" $clusterInternalServiceSuffix }}
+{{- end }}
+
 {{/* 🚨 ‼️ Changing the immutableLabels will lead to downtime when deploying as selector labels can only be updated manually or with downtime ‼️ 🚨 */}}
 {{/* These labels never change and are also used as matchLabels for selectors */}}
 {{- define "backendService.immutableLabels" -}}

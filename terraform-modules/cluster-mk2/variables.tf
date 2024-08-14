@@ -1,7 +1,7 @@
 variable "kubernetes_version" {
   type        = string
   description = "AKS Kubernetes version to use."
-  default     = "1.27.7"
+  default     = "1.29"
 }
 variable "azure_prometheus_grafana_monitor" {
   description = "Specifies a Prometheus-Grafana add-on profile for the Kubernetes Cluster."
@@ -27,7 +27,7 @@ variable "kubernetes_default_node_count_max" {
 variable "kubernetes_default_node_size" {
   type        = string
   description = "Node size for the default node pool."
-  default     = "Standard_D8s_v5"
+  default     = "Standard_D8s_v6"
 }
 variable "kubernetes_default_node_os_disk_size" {
   type        = number
