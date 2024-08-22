@@ -238,3 +238,25 @@ eventBasedAutoscaling:
     value: '1'
     hostFromEnv: AMQP_URL
   customTriggers: []
+
+
+externalSecrets: []
+  # - keyvaultName: my-keyvault
+  #   keyvaultURL: "https://my-keyvault:8989" # private keyvault
+  #   identityId: "xxx-xxxxxx-xxx-xxxx"
+  #   tenantId: "yyyy-yyy-yyyy-yyyy-yy"
+  #   secrets:
+  #     - name: golden-secret
+  #       type: Opaque
+  #       metadata:
+  #         labels:
+  #           app: my-app
+  #           environment: production
+  #         annotations:
+  #           description: "This secret created by external-secrets.io from kv my-keyvault "
+  #       data:
+  #         - objectName: my-secret-in-kv-1
+  #           key: my-secret-in-kv-1
+
+  #         - objectName: my-secret-in-kv-2
+  #           key: my-secret-in-kv-2

@@ -1,0 +1,16 @@
+{{- if .Values.podDisruptionBudget }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "common.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+    {{- range $key, $value := .Values.podDisruptionBudget.matchLabels }}
+      {{ $key }}: {{ $value }}
+    {{- end }}
+{{- end }}

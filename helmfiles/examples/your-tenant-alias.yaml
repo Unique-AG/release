@@ -16,30 +16,30 @@ chat:
       username: ref+azurekeyvault://your-vault-name/manual-acr-image-pull-username
       password: ref+azurekeyvault://your-vault-name/manual-acr-image-pull-password
     tenantReleaseOverrides:
-      nextChat:            image-tag-from-release-notes
-      nextKnowledgeUpload: image-tag-from-release-notes
-      nextTheme:           image-tag-from-release-notes
-      nextAdmin:           image-tag-from-release-notes
-      nodeChat:            image-tag-from-release-notes
-      nodeIngestion:       image-tag-from-release-notes
-      nodeIngestionWorker: image-tag-from-release-notes
-      nodeTheme:           image-tag-from-release-notes
-      nodeScopeManagement: image-tag-from-release-notes
-  _rootIngress:
-    enabled: false
+      nextChat:
+      nextKnowledgeUpload:
+      nextTheme:
+      nextAdmin:
+      nodeChat:
+      nodeIngestion:
+      nodeIngestionWorker:
+      nodeTheme:
+      nodeScopeManagement:
+      assistantsCore:
+  nextKnowledgeUpload:
+      CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
   nextChat:
     env:
-      FEATURE_FLAG_SECURE_BLOB_STORAGE_ACCESS_UN_5723: true
-  nextKnowledgeUpload:
-    env:
-      FEATURE_FLAG_NEW_KNOWLEDGE_BASE_UN_5652: a-zitadel-id # Oleole
-      FEATURE_FLAG_ENABLE_SPACE_FOLDER_UN_7028: a-zitadel-id # Oleole
-      FEATURE_FLAG_SECURE_BLOB_STORAGE_ACCESS_UN_5723: true
+      CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
   nextTheme:
     env:
       STATIC_THEME_COLORS: {"color-primary-cta": "#D63384", "color-primary-variant": "#B2447A", "color-secondary": "#042834", "color-secondary-variant": "#03212B", "color-background": "#F7F7F7", "color-background-variant": "#EBEBED", "color-surface": "#FFFFFF", "color-control": "#D8D8D8", "color-info": "#0A96E6", "color-success-light": "#A0C855", "color-success-dark": "#3D9E3F", "color-error-light": "#F65D67", "color-error-dark": "#DC3545", "color-attention": "#FFC65C", "color-attention-variant": "#19AADA", "color-on-primary": "#FFFFFF", "color-on-secondary": "#FFFFFF", "color-on-background-main": "#02161D", "color-on-background-dimmed": "#1F505F", "color-on-surface": "#02161D", "color-on-control-main": "#02161D", "color-on-control-dimmed": "#9C9C9C", "color-on-info": "#FFFFFF", "color-on-success-light": "#FFFFFF", "color-on-success-dark": "#FFFFFF", "color-on-error-light": "#FFFFFF", "color-on-error-dark": "#FFFFFF", "color-on-attention": "#02161D", "color-on-attention-variant": "#FFFFFF"}
       STATIC_BACKGROUND_COLOR: F7F7F7
       STATIC_TAB_NAME: "Olé Olé!"
+      CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
+  nextAdmin:
+    env:
+      CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
   nodeChat:
     secrets:
       WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-node-chat
@@ -67,8 +67,6 @@ chat:
       ZITADEL_ROOT_ORG_ID: a-zitadel-id
       ENABLE_MALWARE_SCAN: "true"
       FILE_RETENTION_IN_DAYS: 7
-      FEATURE_FLAG_SECURE_BLOB_STORAGE_ACCESS_UN_5723: true
-      FF_UN7111_UPLOAD_THROUGH_BACKEND: "false"
   nodeIngestionWorker:
     secrets:
       AZURE_OPENAI_API_ENDPOINT: ref+azurekeyvault://your-vault-name/openai-endpoint
@@ -87,15 +85,9 @@ chat:
       ZITADEL_PAT: ref+azurekeyvault://your-vault-name/manual-zitadel-scope-mgmt-pat
   assistantsCore:
     env:
-      GUNICORN_WORKERS: 1
-      GUNICORN_THREADS: 2
-    resources:
-      requests:
-        cpu: 500m
-        memory: 550Mi
-      limits:
-        cpu: 500m
-        memory: 600Mi
+      BING_API_ENDPOINT: ref+azurekeyvault://your-vault-name/websearch-api-url
+    envSecrets:
+      BING_SEARCH_V7_SUBSCRIPTION_KEY: ref+azurekeyvault://your-vault-name/websearch-subscription-key
 rabbitMQ:
   username: ref+azurekeyvault://your-vault-name/rabbitmq-username # ! can't be changed without deleting the PVC+PV
   password: ref+azurekeyvault://your-vault-name/rabbitmq-password # ! can't be changed without deleting the PVC+PV
@@ -136,7 +128,7 @@ rabbitMQ:
         "vhost": "/",
         "name": "node-consumer-timeout",
         "pattern": "unique.node.ingestion.queue",
-        "apply-to": "queues",
+        "apply-to": "all",
         "definition": {
           "consumer-timeout": 7200000
         },
@@ -184,9 +176,10 @@ appRepo:
       username: ref+azurekeyvault://your-vault-name/manual-acr-image-pull-username
       password: ref+azurekeyvault://your-vault-name/manual-acr-image-pull-password
     tenantReleaseOverrides:
-      nodeAppRepository:    image-tag-from-release-notes
-      nodeWebhookWorker:    image-tag-from-release-notes
-      nodeWebhookScheduler: image-tag-from-release-notes
+      nodeAppRepository:
+      nodeWebhookWorker:
+      nodeWebhookScheduler:
+      typescriptServiceEventSocket:
   nodeAppRepository:
     secrets:
       ENCRYPTION_KEY: ref+azurekeyvault://your-vault-name/manual-app-repository-encryption-key
@@ -196,3 +189,7 @@ appRepo:
     serviceAccount:
       workloadIdentity:
         clientId: ref+azurekeyvault://your-vault-name/wid-client-id-logs-reader
+reranker:
+  _common:
+    tenantReleaseOverrides:
+      assistantsReranker:

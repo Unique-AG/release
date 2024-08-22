@@ -1,0 +1,69 @@
+{{- if .Values.spc }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicas | default 1 }}
+  selector:
+    matchLabels:
+    {{- include "common.immutableLabels" . | nindent 6 }}
+    {{- if .Values.podDisruptionBudget }}
+      {{- range $key, $value := .Values.podDisruptionBudget.matchLabels }}
+      {{ $key }}: {{ $value }}
+      {{- end }}
+    {{- end }}
+  template:
+    metadata:
+      labels:
+      {{- include "common.labels" . | nindent 8 -}}
+      {{- if .Values.podDisruptionBudget -}}
+        {{- range $key, $value := .Values.podDisruptionBudget.matchLabels -}}
+        {{ $key | nindent 8 }}: {{ $value  }}
+        {{- end }}
+      {{- end }}
+    spec:
+      containers:
+      - name: busybox
+        image: k8s.gcr.io/e2e-test-images/busybox:1.29
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "100m"
+          limits:
+            memory: "100Mi"
+            cpu: "200m"
+        command:
+        - "/bin/sleep"
+        - "10000"
+        volumeMounts:
+          {{- range $val := .Values.spc }}
+            {{- if $val.install }}
+            - name: {{ $val.name }}
+              mountPath: "/mnt/{{ $val.name }}"
+              readOnly: true
+            {{- end }}
+          {{- end }}
+        {{- with .Values.envFrom }}
+        envFrom:
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.env }}
+        env:
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      volumes:
+        {{- range $val := .Values.spc }}
+          {{- if $val.install }}
+          - name: {{ $val.name }}
+            csi:
+              driver: secrets-store.csi.k8s.io
+              readOnly: true
+              volumeAttributes:
+                secretProviderClass: {{ $val.name }}
+          {{- end }}
+        {{- end }}
+{{- end }}

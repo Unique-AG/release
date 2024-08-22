@@ -19,17 +19,19 @@ chat:
         appgw.ingress.kubernetes.io/rewrite-rule-set: security-headers
         appgw.ingress.kubernetes.io/request-timeout: "120" # 120 is our sane cap, anyone wanting more than this must provide evidence that their implementation is cleanly engineered
         cert-manager.io/cluster-issuer: letsencrypt
+    env:
+      CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:            2024.32-6c64f
-      nextKnowledgeUpload: 2024.32-01afb
-      nextTheme:           2024.32-01afb
-      nextAdmin:           2024.32-01afb
-      nodeChat:            2024.32-af3a4
-      nodeIngestion:       2024.32-630c9
-      nodeIngestionWorker: 2024.32-630c9
-      nodeTheme:           2024.32-c26f
-      nodeScopeManagement: 2024.32-630c9
-      assistantsCore:      image-tag-from-release-notes
+      nextChat:            2024.34-22b87
+      nextKnowledgeUpload: 2024.34-8a557
+      nextTheme:           2024.34-22b87
+      nextAdmin:           2024.34-22b87
+      nodeChat:            2024.34-692f9
+      nodeIngestion:       2024.34-b4172
+      nodeIngestionWorker: 2024.34-fdf50
+      nodeTheme:           2024.34-fdf50
+      nodeScopeManagement: 2024.34-2a9d4
+      assistantsCore:      2024.34-b4172
   _rootIngress:
     enabled: true
   nextChat:
@@ -37,7 +39,7 @@ chat:
       MAX_HEAP_MB: 400
       FEATURE_FLAG_SECURE_BLOB_STORAGE_ACCESS_UN_5723: "true"
       FEATURE_FLAG_NEW_TRANSLATION_UI_UN_7233: ""
-      FEATURE_FLAG_STOP_STREAMING_UN_4824: ""
+      FEATURE_FLAG_STOP_STREAMING_UN_4824: "true"
     resources:
       requests:
         cpu: 300m
@@ -99,7 +101,7 @@ chat:
       MAX_HEAP_MB: 450
       BENCHMARKS_PER_MINUTE_PER_PROCESS: 1
       AMQP_BENCHMARK_PREFETCH: 1
-      INTERNAL_MODULES_CONFIG: '[]'
+      INTERNAL_MODULES_CONFIG: '[{"name": "SearchInVectorDBV2", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/search"}, {"name": "WebSearch", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/web_search"}, {"name": "ImageSummarizer", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/image_summarizer"}, {"name": "DEMO", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/demo"}, {"name": "TranslationOneToOne", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/translation_one_to_one"}, {"name": "ComplianceCheck", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/compliance_check"}]'
     serviceAccount: {}
     resources:
       requests:
@@ -135,6 +137,7 @@ chat:
       FILE_RETENTION_IN_DAYS: 0
       FEATURE_FLAG_SECURE_BLOB_STORAGE_ACCESS_UN_5723: "true"
       FF_UN7111_UPLOAD_THROUGH_BACKEND: "true"
+      RERANKER_CONFIGURATION: '[{"deploymentName": "crossencoder_reranker", "apiUrl": "http://assistants-reranker.chat.svc.cluster.local:8081/reranker/rerank"}]'
     tyk:
       rateLimit:
         rate: 4096
@@ -196,8 +199,8 @@ chat:
         memory: 900Mi
   assistantsCore:
     env:
-      GUNICORN_WORKERS: 1
-      GUNICORN_THREADS: 2
+      GUNICORN_WORKERS: 2
+      GUNICORN_THREADS: 4
     resources:
       requests:
         cpu: 500m

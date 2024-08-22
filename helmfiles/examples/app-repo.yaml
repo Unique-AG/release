@@ -119,3 +119,35 @@ releases:
           {{ .Values.appRepo.nodeWebhookWorker.resources | toYaml | nindent 10 }}
         probes:
           enabled: false
+  - name: typescript-service-event-socket
+    chart: ../../../node/charts/common
+    namespace: apps
+    createNamespace: true
+    wait: false
+    values:
+      -
+        image:
+          repository: uniqueapp.azurecr.io/typescript-service-event-socket
+          tag: {{ .Values.appRepo._common.tenantReleaseOverrides.typescriptServiceEventSocket | default .Values.appRepo._common.defaultReleases.typescriptServiceEventSocket }}
+        replicaCount: {{ .Values.appRepo.typescriptServiceEventSocket | get "replicaCount" 1 }}
+        imagePullSecrets:
+          - name: image-pull-secret
+        service:
+          port: 5201
+        env:
+          LOG_LEVEL: info
+          MAX_HEAP_MB: {{ .Values.appRepo.typescriptServiceEventSocket.env.MAX_HEAP_MB }}
+          ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote }}
+        envSecrets:
+          AMQP_URL: amqp://{{ .Values.rabbitMQ.username | fetchSecretValue }}:{{ .Values.rabbitMQ.password | fetchSecretValue }}@rabbitmq-headless.system.svc.cluster.local:5672/%2f
+        securityContext:
+          {{ .Values.appRepo._common.securityContext | toYaml | nindent 10 }}
+        tyk:
+          enabled: false
+          listenPath: /event-socket
+          exposePublicApi:
+            enabled: {{ default false .Values.appRepo.typescriptServiceEventSocket.tyk.exposePublicApi.enabled }}
+            hardTimeouts:
+              {{ .Values.appRepo.typescriptServiceEventSocket.tyk.exposePublicApi.hardTimeouts | toYaml | nindent 14 }}
+        resources:
+          {{ .Values.appRepo.typescriptServiceEventSocket.resources | toYaml | nindent 10 }}

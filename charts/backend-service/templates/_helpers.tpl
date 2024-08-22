@@ -60,7 +60,6 @@ app.kubernetes.io/version: {{ .Values.image.tag | quote }}
 {{/* These labels identify all resources that belong to our main deployment, called "server" */}}
 {{- define "backendService.labels" -}}
 {{- include "backendService.mutableLabels" . }}
-app.kubernetes.io/component: server
 {{- end }}
 
 {{/* These labels identify cronjob specific resources */}}

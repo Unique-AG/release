@@ -118,6 +118,10 @@ variable "gpt_35_turbo_16k_tpm_thousands" {
   type    = number
   default = 240
 }
+variable "gpt_4_0613_tpm_thousands" {
+  type    = number
+  default = 40
+}
 variable "aks_oidc_issuer_url" {
   description = "The AKS OIDC issuer URL where the chat gets deployed to."
   type        = string
@@ -141,4 +145,9 @@ variable "sdk_deployment_logs_destination_azure_resource_group_name" {
   description = "The name of the resource group where the logs will be stored. It is used by the App Repository to look for the logs in the right place."
   type        = string
   default     = ""
+}
+variable "bing_search_v7_sku_name" {
+  description = "The SKU to use for the Bing Web Search resources."
+  default     = "S2"
+  type        = string
 }

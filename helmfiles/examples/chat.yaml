@@ -98,6 +98,7 @@ releases:
           FEATURE_FLAG_SECURE_BLOB_STORAGE_ACCESS_UN_5723: {{ .Values.chat.nodeIngestion.env.FEATURE_FLAG_SECURE_BLOB_STORAGE_ACCESS_UN_5723 | quote }}
           INGESTION_UPLOAD_API_URL: https://gateway.{{ .Values.host }}/scoped/ingestion/upload
           FF_UN7111_UPLOAD_THROUGH_BACKEND: {{ .Values.chat.nodeIngestion.env.FF_UN7111_UPLOAD_THROUGH_BACKEND | quote }}
+          RERANKER_CONFIGURATION: {{ .Values.chat.nodeIngestion.env.RERANKER_CONFIGURATION | quote }}
         envSecrets:
           AZURE_OPENAI_API_ENDPOINT: {{ .Values.chat.nodeIngestion.secrets.AZURE_OPENAI_API_ENDPOINT | fetchSecretValue | quote }}
           AZURE_OPENAI_API_KEY: {{ .Values.chat.nodeIngestion.secrets.AZURE_OPENAI_API_KEY | fetchSecretValue | quote }}
@@ -193,6 +194,9 @@ releases:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
         resources:
           {{ .Values.chat.nodeIngestionWorker.resources | toYaml | nindent 10 }}
+        probes:
+          liveness:
+            failureThreshold: 36 # 10*36 = 6min max not live - OK for ingestion-worker
         volumes:
           - name: tmp-volume
             emptyDir:
@@ -200,9 +204,6 @@ releases:
         volumeMounts:
           - mountPath: /tmp
             name: tmp-volume
-        probes:
-          liveness:
-            failureThreshold: 36 # 10*36 = 6min max not live - OK for ingestion-worker
         auditVolume:
           enabled: {{ .Values.chat._common.auditVolume.enabled }}
           mountPath: /audit
@@ -252,6 +253,7 @@ releases:
           ANONYMIZED_CHAT_INTERACTIONS_EXPORT: {{ .Values.chat.nodeChat.env | get "ANONYMIZED_CHAT_INTERACTIONS_EXPORT" true }}
           BENCHMARKS_PER_MINUTE_PER_PROCESS: {{ .Values.chat.nodeChat.env | get "BENCHMARKS_PER_MINUTE_PER_PROCESS" 1 }}
           AMQP_BENCHMARK_PREFETCH: {{ .Values.chat.nodeChat.env | get "AMQP_BENCHMARK_PREFETCH" 1 }}
+          INTERNAL_MODULES_CONFIG: {{ .Values.chat.nodeChat.env.INTERNAL_MODULES_CONFIG | quote }}
         envSecrets:
           LAUNCH_DARKLY_SDK_KEY: {{ .Values.chat._common.secrets.LAUNCH_DARKLY_SDK_KEY | fetchSecretValue | quote }}
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/chat"
@@ -389,6 +391,8 @@ releases:
           STATIC_BACKGROUND_COLOR:  >-
             {{ "#" }}{{ .Values.chat.nextTheme.env.STATIC_BACKGROUND_COLOR }}
           FEATURE_FLAG_SECURE_BLOB_STORAGE_ACCESS_UN_5723: {{ .Values.chat.nextChat.env.FEATURE_FLAG_SECURE_BLOB_STORAGE_ACCESS_UN_5723 | quote }}
+          FEATURE_FLAG_NEW_TRANSLATION_UI_UN_7233: {{ .Values.chat.nextChat.env.FEATURE_FLAG_NEW_TRANSLATION_UI_UN_7233 | quote }}
+          FEATURE_FLAG_STOP_STREAMING_UN_4824: {{ .Values.chat.nextChat.env.FEATURE_FLAG_STOP_STREAMING_UN_4824 | quote }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
         ingress:
@@ -494,6 +498,7 @@ releases:
           STATIC_BACKGROUND_COLOR:  >-
             {{ "#" }}{{ .Values.chat.nextTheme.env.STATIC_BACKGROUND_COLOR }}
           STATIC_TAB_NAME: {{ .Values.chat.nextTheme.env.STATIC_TAB_NAME | quote }}
+          FEATURE_FLAG_NEW_TRANSLATION_UI_UN_7233: {{ .Values.chat.nextAdmin.env.FEATURE_FLAG_NEW_TRANSLATION_UI_UN_7233 | quote }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
         ingress:
@@ -576,6 +581,7 @@ releases:
           ZITADEL_INTERNAL_HOST: http://zitadel.system.svc.cluster.local:8080
           MAX_HEAP_MB: {{ .Values.chat.nodeScopeManagement.env.MAX_HEAP_MB }}
           INGESTION_API_URL: http://node-ingestion.chat.svc.cluster.local:8091
+          CHAT_API_URL: http://node-chat.chat.svc.cluster.local:8093
         envSecrets:
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/scope-management"
           ZITADEL_PAT: {{ .Values.chat.nodeScopeManagement.secrets.ZITADEL_PAT | fetchSecretValue | quote }}
@@ -610,6 +616,34 @@ releases:
             restartPolicy: Never
             containers:
               name: node-scope-management-user-sync
+  - name: assistants-core
+    chart: ../../../python/charts/common
+    namespace: chat
+    createNamespace: true
+    wait: false
+    values:
+      -
+        replicaCount: {{ .Values.chat.assistantsCore | get "replicaCount" 1 }}
+        strategy:
+          type: {{ .Values.chat.assistantsCore | get "strategy.type" "RollingUpdate" }}
+        image:
+          repository: uniqueapp.azurecr.io/assistants-core
+          tag: {{ .Values.chat._common.tenantReleaseOverrides.assistantsCore | default .Values.chat._common.defaultReleases.assistantsCore }}
+        imagePullSecrets:
+          - name: image-pull-secret
+        env:
+          API_BASE: http://node-chat.chat.svc.cluster.local:8093/public
+          GUNICORN_WORKERS: {{ .Values.chat.assistantsCore.env.GUNICORN_WORKERS }}
+          GUNICORN_THREADS: {{ .Values.chat.assistantsCore.env.GUNICORN_THREADS }}
+          BING_API_ENDPOINT: {{ .Values.chat.assistantsCore.env.BING_API_ENDPOINT | fetchSecretValue | quote }}
+        envSecrets:
+          BING_SEARCH_V7_SUBSCRIPTION_KEY: {{ .Values.chat.assistantsCore.envSecrets.BING_SEARCH_V7_SUBSCRIPTION_KEY | fetchSecretValue | quote }}
+        resources:
+          {{ .Values.chat.assistantsCore.resources | toYaml | nindent 10 }}
+        eventBasedAutoscaling:
+          enabled: false
+        securityContext:
+          {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
   - name: tyk-api-gateway
     chart: tyk/tyk-headless
     namespace: system
@@ -936,7 +970,7 @@ releases:
               Multifactors:
                 OTP:
                   Issuer: UNIQUE
-              keyConfig:
+              KeyConfig:
                 # 90 days
                 PrivateKeyLifetime: 2160h
                 # 1year. Public key lifetime must be min 2x private key lifetime
@@ -1085,28 +1119,3 @@ releases:
                 Human:
                   Username: root@cluster-iam.localhost
                   Password: "RootPassword1!" # must be changed on first login so not a problem
-  - name: assistants-core
-    chart: ../../charts/ai-service
-    namespace: chat
-    createNamespace: true
-    wait: false
-    values:
-      -
-        replicaCount: {{ .Values.chat.assistantsCore | get "replicaCount" 1 }}
-        strategy:
-          type: {{ .Values.chat.assistantsCore | get "strategy.type" "RollingUpdate" }}
-        image:
-          repository: uniquecr.azurecr.io/ai-service-assistants-core
-          tag: {{ .Values.chat._common.tenantReleaseOverrides.assistantsCore | default .Values.chat._common.defaultReleases.assistantsCore }}
-        imagePullSecrets:
-          - name: image-pull-secret
-        env:
-          API_BASE: http://node-chat.chat.svc.cluster.local:8093/public
-          GUNICORN_WORKERS: {{ .Values.chat.assistantsCore.env.GUNICORN_WORKERS }}
-          GUNICORN_THREADS: {{ .Values.chat.assistantsCore.env.GUNICORN_THREADS }}
-        resources:
-          {{ .Values.chat.assistantsCore.resources | toYaml | nindent 10 }}
-        eventBasedAutoscaling:
-          enabled: false
-        securityContext:
-          {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}

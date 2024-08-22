@@ -194,7 +194,7 @@ module "chat" {
       max_age_in_seconds = 3600
     },
   ]
-  azure_openai_endpoints                = []
+  azure_openai_endpoints                = [module.swedencentral.endpoints]
   azure_document_intelligence_endpoints = []
   postgres_server_id                    = module.postgres.server_id
   user_assigned_identity_ids = [
@@ -232,4 +232,21 @@ module "ad-app-registration" {
 module "defender" {
   source  = "./az-defender"
   context = module.context
+}
+module "swedencentral" {
+  source           = "./az-openai"
+  context          = module.context
+  account_location = "swedencentral"
+  deployments = {
+    "gpt-4o-2024-05-13" = {
+      name          = "gpt-4o-2024-05-13"
+      model_name    = "gpt-4o"
+      model_version = "2024-05-13"
+      sku_name      = "Standard"
+      sku_capacity  = 1000
+    }
+  }
+  user_assigned_identity_ids = [
+    module.workload_identities.user_assigned_identity_ids["node-chat"],
+  ]
 }

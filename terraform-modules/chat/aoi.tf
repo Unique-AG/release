@@ -31,7 +31,7 @@ module "openai" {
       model_name    = "gpt-4"
       model_version = "0613"
       sku_name      = "Standard"
-      sku_capacity  = var.openai_account_location == "francecentral" ? 20 : 40
+      sku_capacity  = var.openai_account_location == "francecentral" ? 20 : var.gpt_4_0613_tpm_thousands
     }
     "gpt-4-32k" = {
       name          = "gpt-4-32k"

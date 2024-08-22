@@ -103,6 +103,19 @@ spec:
             {{- end }}
             {{- end }}
             {{- end }}
+            {{- if .Values.externalSecrets }}
+            {{- range $k, $v := .Values.externalSecrets }}
+            {{- range $key := $v.secrets }}
+            {{- range $d := $key.data }}
+            - name: {{ $key.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $v.keyvaultName }}
+                  key: {{ $d.key }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
           volumeMounts:
           {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
