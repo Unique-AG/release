@@ -33,6 +33,11 @@ resource "azurerm_key_vault_secret" "rabbitmq-password" {
   value        = random_password.rabbitmq-password.result
   key_vault_id = azurerm_key_vault.this.id
 }
+resource "azurerm_key_vault_secret" "rabbitmq-url" {
+  name         = "rabbitmq-url"
+  value        = "amqp://${module.context.project}:${random_password.rabbitmq-password.result}@rabbitmq-headless.system.svc.cluster.local:${var.rabbitmq-port}/%2f"
+  key_vault_id = azurerm_key_vault.this.id
+}
 resource "random_password" "rabbitmq-erlang-cookie" {
   keepers = {
     version = "1"

@@ -1,6 +1,10 @@
 variable "postgres_server_id" {
   type = string
 }
+variable "database_keyvault_id" {
+  type    = string
+  default = null
+}
 variable "openai_account_location" {
   type    = string
   default = "switzerlandnorth"

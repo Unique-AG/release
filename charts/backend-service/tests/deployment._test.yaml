@@ -20,3 +20,22 @@ tests:
           path: spec.template.spec.volumes[?(@.name == "ut-qa-app-common")]
       - isNotNullOrEmpty:
           path: spec.template.spec.containers[?(@.name == "ut")].volumeMounts[?(@.name == "ut-qa-app-common")]
+
+  - it: When given initContainers in deployment
+    set:
+      tyk.listenPath: /unit-test
+      image.tag: pinned-version
+      deployment.enabled: true
+      deployment.initContainers[0].command:
+        - "sh"
+        - "-e"
+        - "echo"
+        - "helloWorld"
+    template: deployment.yaml
+    asserts:
+      - isKind:
+          of: Deployment
+      - isNotNullOrEmpty:
+          path: spec.template.spec.initContainers[0]
+      - isNotNullOrEmpty:
+          path: spec.template.spec.initContainers[?(@.name == "init-ut")]

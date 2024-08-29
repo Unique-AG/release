@@ -245,6 +245,13 @@ module "swedencentral" {
       sku_name      = "Standard"
       sku_capacity  = 1000
     }
+    "gpt-4o-mini-2024-07-18" = {
+      name          = "gpt-4o-mini-2024-07-18"
+      model_name    = "gpt-4o-mini"
+      model_version = "2024-07-18"
+      sku_name      = "Standard"
+      sku_capacity  = 1000
+    }
   }
   user_assigned_identity_ids = [
     module.workload_identities.user_assigned_identity_ids["node-chat"],

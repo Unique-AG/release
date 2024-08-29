@@ -13,7 +13,7 @@ variable "keyvault_secret_placeholders" {
     "manual-app-repository-encryption-key",
     "manual-slack-webhook-url",
     "manual-github-app-private-key",
-    "manual-github-configrepo-url",
+    "manual-github-monorepo-url",
     "manual-github-gitops-resources-url",
     "manual-github-app-id",
     "manual-github-installation-id",
@@ -33,4 +33,8 @@ variable "argocd-secrets-list" {
     helm-registry-enableoci          = "true"
     helm-registry-forcehttpbasicauth = "true"
   }
+}
+variable "rabbitmq-port" {
+  type    = number
+  default = 5672
 }

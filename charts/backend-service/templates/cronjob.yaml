@@ -38,6 +38,22 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           restartPolicy: {{ .Values.cronJob.jobTemplate.restartPolicy | quote }}
+          {{- if .Values.cronJob.initContainers }}
+          initContainers:
+          {{- range .Values.cronJob.initContainers }}
+            - name: {{ .name | default (printf "init-%s" $fullName) }}
+              image: "{{ .image | default "busybox:1.28" }}"
+              restartPolicy: "{{ .restartPolicy | default "Always" }}"
+              command: {{ .command | toYaml | nindent 16 }}
+              {{- if .volumeMounts }}
+              volumeMounts:
+              {{- range .volumeMounts }}
+                - name: {{ .name}}
+                  mountPath: {{ .mountPath}}   
+              {{- end }}
+              {{- end }}
+          {{- end }}
+          {{- end }}
           containers:
             - name: {{ .Values.cronJob.jobTemplate.containers.name | quote }}
               image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

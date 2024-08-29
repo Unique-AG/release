@@ -1,5 +1,8 @@
 # Changelog `backend-service`
 
+## [1.0.12]
+- Enable initContainers/sideContainers
+
 ## [1.0.11]
 - Enable useVMManagedIdentity in the SecretProviderClasses hooks and add external secrets in migration
 

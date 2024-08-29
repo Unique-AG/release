@@ -41,3 +41,22 @@ tests:
       - equal:
           path: spec.template.spec.containers[?(@.name == "db-migration")].volumeMounts[?(@.name == "ut-qa-app-common")].mountPath
           value: "/mnt/ut-qa-app-common"
+
+  - it: When given initContainers in migration
+    set:
+      tyk.listenPath: /unit-test
+      image.tag: pinned-version
+      hooks.migration.enabled: true
+      hooks.migration.initContainers[0].command:
+        - "sh"
+        - "-e"
+        - "echo"
+        - "helloWorld"
+    template: hooks/migration.yaml
+    asserts:
+      - isKind:
+          of: Job
+      - isNotNullOrEmpty:
+          path: spec.template.spec.initContainers[0]
+      - isNotNullOrEmpty:
+          path: spec.template.spec.initContainers[?(@.name == "init-ut")]

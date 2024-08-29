@@ -59,10 +59,11 @@ resource "azurerm_resource_provider_registration" "azure_dashboard_provider" {
   name = "Microsoft.Dashboard"
 }
 resource "azurerm_dashboard_grafana" "this" {
-  count               = var.azure_prometheus_grafana_monitor.enabled ? 1 : 0
-  name                = module.context.full_name
-  resource_group_name = module.context.resource_group.name
-  location            = var.azure_prometheus_grafana_monitor.azure_monitor_location
+  count                 = var.azure_prometheus_grafana_monitor.enabled ? 1 : 0
+  name                  = module.context.full_name
+  resource_group_name   = module.context.resource_group.name
+  grafana_major_version = var.azure_prometheus_grafana_monitor.grafana_major_version
+  location              = var.azure_prometheus_grafana_monitor.azure_monitor_location
   identity {
     type = "SystemAssigned"
   }

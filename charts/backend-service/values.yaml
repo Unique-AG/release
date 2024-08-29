@@ -32,6 +32,14 @@ securityContext: {}
 
 deployment:
   enabled: true
+  # initContainers: 
+  #   - command:
+  #       - sh
+  #       - -c
+  #       - export MY_VARIABLE="some_value" && sleep 1
+  #     volumeMounts:
+  #       - name: data
+  #         mountPath: /opt
 
 service:
   enabled: true
@@ -163,6 +171,14 @@ cronJob:
     containers:
       name: ""
   env: {}
+  # initContainers: 
+  #   - command:
+  #       - sh
+  #       - -c
+  #       - export MY_VARIABLE="some_value" && sleep 1
+  #     volumeMounts:
+  #       - name: data
+  #         mountPath: /opt
 
 # !!! usePodIdentity will be deprecated in the future please use useVMManagedIdentity with the clientID
 # .Values.secretProvider lets you mount secrets from Azure Key Vault into the pod
@@ -221,6 +237,14 @@ hooks:
     enabled: false
     # name: "" defaults to db-migration
     command: ""
+    # initContainers:
+    #   - command:
+    #       - sh
+    #       - -c
+    #       - export MY_VARIABLE="some_value" && sleep 1
+    #     volumeMounts:
+    #       - name: data
+    #         mountPath: /opt
 
 eventBasedAutoscaling:
   enabled: false
@@ -238,7 +262,6 @@ eventBasedAutoscaling:
     value: '1'
     hostFromEnv: AMQP_URL
   customTriggers: []
-
 
 externalSecrets: []
   # - keyvaultName: my-keyvault

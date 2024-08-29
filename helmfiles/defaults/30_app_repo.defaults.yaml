@@ -15,15 +15,15 @@ appRepo:
       typescriptServiceEventSocket: 2024.34-399b3
   nodeAppRepository:
     env:
-      MAX_HEAP_MB: 200
+      MAX_HEAP_MB: 750
     resources:
       requests:
-        cpu: 100m
-        memory: 300Mi
+        cpu: 500m
+        memory: 850Mi
       limits:
-        cpu: 200m
+        cpu: 1
         # If you change this, also change --max-old-space-size= in the Dockerfile!
-        memory: 350Mi
+        memory: 900Mi
     tyk:
       rateLimit:
         rate: 4096

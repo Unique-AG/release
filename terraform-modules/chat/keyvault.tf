@@ -73,3 +73,27 @@ resource "azurerm_key_vault_secret" "azure_websearch_subscription_key" {
   value        = jsondecode(azurerm_resource_group_template_deployment.argtd_bing_search_v7.output_content).accessKeys.value.key1
   key_vault_id = azurerm_key_vault.document-chat.id
 }
+locals {
+  database_keyvault_id_enabled = var.database_keyvault_id != null ? true : false
+}
+data "azurerm_key_vault_secret" "host" {
+  count        = local.database_keyvault_id_enabled ? 1 : 0
+  name         = "host"
+  key_vault_id = var.database_keyvault_id
+}
+data "azurerm_key_vault_secret" "username" {
+  count        = local.database_keyvault_id_enabled ? 1 : 0
+  name         = "username"
+  key_vault_id = var.database_keyvault_id
+}
+data "azurerm_key_vault_secret" "password" {
+  count        = local.database_keyvault_id_enabled ? 1 : 0
+  name         = "password"
+  key_vault_id = var.database_keyvault_id
+}
+resource "azurerm_key_vault_secret" "database_url" {
+  for_each     = { for k in toset(local.dbs) : k => k if local.database_keyvault_id_enabled }
+  name         = "database-url-${each.key}"
+  value        = "postgresql://${data.azurerm_key_vault_secret.username[0].value}:${data.azurerm_key_vault_secret.password[0].value}@${data.azurerm_key_vault_secret.host[0].value}/${each.key}"
+  key_vault_id = var.database_keyvault_id
+}
