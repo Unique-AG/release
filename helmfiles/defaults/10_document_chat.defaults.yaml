@@ -22,16 +22,16 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:            2024.34-22b87
-      nextKnowledgeUpload: 2024.34-8a557
-      nextTheme:           2024.34-22b87
-      nextAdmin:           2024.34-22b87
-      nodeChat:            2024.34-692f9
-      nodeIngestion:       2024.34-b4172
-      nodeIngestionWorker: 2024.34-fdf50
-      nodeTheme:           2024.34-fdf50
-      nodeScopeManagement: 2024.34-2a9d4
-      assistantsCore:      2024.34-b4172
+      nextChat:            2024.36-80101
+      nextKnowledgeUpload: 2024.36-80101
+      nextTheme:           2024.36-49c4b
+      nextAdmin:           2024.36-49c4b
+      nodeChat:            2024.36-04371
+      nodeIngestion:       2024.36-49c4b
+      nodeIngestionWorker: 2024.36-49c4b
+      nodeTheme:           2024.36-ef905
+      nodeScopeManagement: 2024.36-ef905
+      assistantsCore:      2024.36-7face
   _rootIngress:
     enabled: true
   nextChat:
@@ -40,6 +40,7 @@ chat:
       FEATURE_FLAG_SECURE_BLOB_STORAGE_ACCESS_UN_5723: "true"
       FEATURE_FLAG_NEW_TRANSLATION_UI_UN_7233: ""
       FEATURE_FLAG_STOP_STREAMING_UN_4824: "true"
+      FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: ""
     resources:
       requests:
         cpu: 300m

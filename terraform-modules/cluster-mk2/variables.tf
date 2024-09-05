@@ -26,6 +26,11 @@ variable "kubernetes_default_node_count_max" {
   description = "Maximum number of nodes in the default node pool."
   default     = 10
 }
+variable "kubernetes_cost_analysis_enabled" {
+  description = "Enables cost analysis for the AKS cluster. Refer to https://learn.microsoft.com/en-gb/azure/aks/cost-analysis to learn more."
+  type        = bool
+  default     = true
+}
 variable "kubernetes_default_node_size" {
   type        = string
   description = "Node size for the default node pool."

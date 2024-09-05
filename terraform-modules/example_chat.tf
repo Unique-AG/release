@@ -119,6 +119,7 @@ module "cluster" {
     "node-chat",
     "node-ingestion",
     "node-ingestion-worker",
+    "node-ingestion-worker-chat",
   ]
   monitor_action_group_ids = {
     p0 = module.monitor.monitor_action_group_ids.p0

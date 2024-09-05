@@ -15,68 +15,52 @@ resource "azuread_application" "this" {
   public_client {
     redirect_uris = var.redirect_uris_public_native
   }
-  required_resource_access {
-    resource_app_id = "00000003-0000-0000-c000-000000000000"
-    resource_access {
-      id   = "14dad69e-099b-42c9-810b-d002981feec1"
-      type = "Scope"
-    }
-    resource_access {
-      id   = "e1fe6dd8-ba31-4d61-89e7-88639da4683d"
-      type = "Scope"
-    }
-    resource_access {
-      id   = "37f7f235-527c-4136-accd-4a02d197296e"
-      type = "Scope"
-    }
-    resource_access {
-      id   = "64a6cdd6-aab1-4aaf-94b8-3cc8405e90d0"
-      type = "Scope"
-    }
-    resource_access {
-      id   = "aa85bf13-d771-4d5d-a9e6-bca04ce44edf"
-      type = "Scope"
-    }
-    resource_access {
-      id   = "ee928332-e9c2-4747-b4a0-f8c164b68de6"
-      type = "Scope"
-    }
-    resource_access {
-      id   = "465a38f9-76ea-45b9-9f34-9e8b0d4b0b42"
-      type = "Scope"
-    }
-    resource_access {
-      id   = "f501c180-9344-439a-bca0-6cbf209fd270"
-      type = "Scope"
-    }
-    resource_access {
-      id   = "ff74d97f-43af-4b68-9f2a-b77ee6968c5d"
-      type = "Scope"
-    }
-    resource_access {
-      id   = "7427e0e9-2fba-42fe-b0c0-848c9e6a8182"
-      type = "Scope"
-    }
-    resource_access {
-      id   = "a65f2972-a4f8-4f5e-afd7-69ccb046d5dc"
-      type = "Scope"
+  dynamic "required_resource_access" {
+    for_each = [for resource_app_id, accesses in var.required_resource_access_list : {
+      resource_app_id = resource_app_id
+      accesses        = accesses
+    }]
+    content {
+      resource_app_id = required_resource_access.value.resource_app_id
+      dynamic "resource_access" {
+        for_each = required_resource_access.value.accesses
+        content {
+          id   = resource_access.value.id
+          type = resource_access.value.type
+        }
+      }
     }
   }
-  optional_claims {
-    access_token {
-      additional_properties = []
-      essential             = false
-      name                  = "groups"
-    }
-    id_token {
-      additional_properties = []
-      essential             = false
-      name                  = "groups"
-    }
-    saml2_token {
-      additional_properties = []
-      essential             = false
-      name                  = "groups"
+  dynamic "optional_claims" {
+    for_each = var.optional_claims != null ? ["true"] : []
+    content {
+      dynamic "access_token" {
+        for_each = var.optional_claims.access_token != null ? [var.optional_claims.access_token] : []
+        content {
+          additional_properties = lookup(var.optional_claims.access_token, "additional_properties", [])
+          essential             = lookup(var.optional_claims.access_token, "essential", null)
+          name                  = lookup(var.optional_claims.access_token, "name", [])
+          source                = lookup(var.optional_claims.access_token, "source", null)
+        }
+      }
+      dynamic "id_token" {
+        for_each = var.optional_claims.id_token != null ? [var.optional_claims.id_token] : []
+        content {
+          additional_properties = lookup(var.optional_claims.id_token, "additional_properties", null)
+          essential             = lookup(var.optional_claims.id_token, "essential", null)
+          name                  = lookup(var.optional_claims.id_token, "name", null)
+          source                = lookup(var.optional_claims.id_token, "source", null)
+        }
+      }
+      dynamic "saml2_token" {
+        for_each = var.optional_claims.saml2_token != null ? [var.optional_claims.saml2_token] : []
+        content {
+          additional_properties = lookup(var.optional_claims.saml2_token, "additional_properties", null)
+          essential             = lookup(var.optional_claims.saml2_token, "essential", null)
+          name                  = lookup(var.optional_claims.saml2_token, "name", null)
+          source                = lookup(var.optional_claims.saml2_token, "source", null)
+        }
+      }
     }
   }
   dynamic "required_resource_access" {

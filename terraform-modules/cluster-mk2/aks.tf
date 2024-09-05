@@ -12,6 +12,7 @@ resource "azurerm_kubernetes_cluster" "this" {
   resource_group_name                 = module.context.resource_group.name
   dns_prefix                          = module.context.full_name
   sku_tier                            = "Standard"
+  cost_analysis_enabled               = var.kubernetes_cost_analysis_enabled
   automatic_channel_upgrade           = "stable"
   azure_policy_enabled                = true
   kubernetes_version                  = var.kubernetes_version

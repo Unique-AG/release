@@ -1,0 +1,34 @@
+releases:
+  - name: confluence-connector
+    chart: ../../charts/backend-service
+    namespace: apps
+    createNamespace: true
+    wait: false
+    values:
+      - 
+        replicaCount: 1
+        tyk:
+          enabled: false
+        service:
+          enabled: false
+        image:
+          repository: ghcr.io/unique-ag/confluence-connector
+          tag: image-tag-from-release-notes
+        env:
+          APP_PORT: 8083
+          CLIENT_ID: your-zitadel-client-id
+          CLIENT_SECRET: your-zitadel-client-secret
+          CONFLUENCE_TOKENS_PER_MINUTE: 250
+          CONFLUENCE_URL: https://your-confluence-url
+          CONFLUENCE_USERNAME: confluence-username
+          CONFLUENCE_PASSWORD: confluence-password
+          CONFLUENCE_PAT: confluence-pat
+          CRON_SCHEDULE: "0 0 * * *"
+          INGEST_SINGLE_LABEL: ai-ingest
+          INGEST_ALL_LABEL: ai-ingest-all
+          INGESTION_URL: https://content-ingestion-url
+          INGESTION_URL_GRAPHQL: https://file-ingestion--graphql-url
+          OAUTH_TOKEN_URL: https://zitadel-endpoint-url
+          PROJECT_ID: zitadel-project-id
+          SCOPE_ID: knowledge-base-scope-id
+          TEST_MODE: true
