@@ -36,9 +36,41 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
           dynamic "rule" {
             for_each = rule_group_override.value.disabled_rule_ids
             content {
+              id      = rule.value
               action  = "AnomalyScoring"
               enabled = false
+            }
+          }
+        }
+      }
+      dynamic "rule_group_override" {
+        for_each = var.gateway.waf.owasp_rules
+        content {
+          rule_group_name = rule_group_override.value.rule_group_name
+          dynamic "rule" {
+            for_each = rule_group_override.value.disabled_rule_ids
+            content {
               id      = rule.value
+              action  = "AnomalyScoring"
+              enabled = false
+            }
+          }
+        }
+      }
+    }
+    managed_rule_set {
+      type    = "Microsoft_BotManagerRuleSet"
+      version = "1.0"
+      dynamic "rule_group_override" {
+        for_each = var.gateway.waf.bot_rules
+        content {
+          rule_group_name = rule_group_override.value.rule_group_name
+          dynamic "rule" {
+            for_each = rule_group_override.value.rules
+            content {
+              id      = rule.value.id
+              action  = rule.value.action
+              enabled = rule.value.enabled
             }
           }
         }
@@ -92,6 +124,57 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
         match_values       = concat(custom_rules.value.list, ["${azurerm_public_ip.this.ip_address}"])
       }
       action = "Block"
+    }
+  }
+  dynamic "custom_rules" {
+    for_each = var.gateway.sku == "WAF_v2" && length(var.gateway.waf.custom_rules) > 0 ? var.gateway.waf.custom_rules : []
+    content {
+      name      = custom_rules.value.name
+      priority  = lookup(custom_rules.value, "priority", 100)
+      rule_type = lookup(custom_rules.value, "rule_type", "MatchRule")
+      action    = lookup(custom_rules.value, "action", "Block")
+      enabled   = lookup(custom_rules.value, "enabled", true)
+      dynamic "match_conditions" {
+        for_each = custom_rules.value.match_conditions
+        content {
+          dynamic "match_variables" {
+            for_each = match_conditions.value.match_variables
+            content {
+              variable_name = match_variables.value.variable_name
+              selector      = match_variables.value.selector
+            }
+          }
+          operator           = match_conditions.value.operator
+          negation_condition = lookup(match_conditions.value, "negation_condition", null)
+          match_values       = lookup(match_conditions.value, "match_values", [])
+          transforms         = lookup(match_conditions.value, "transforms", null)
+        }
+      }
+    }
+  }
+  dynamic "custom_rules" {
+    for_each = length(var.gateway.waf.chat_export_ip_allowlist) > 0 ? [1] : []
+    content {
+      name      = "ChatExportAdminRouteIpRestriction"
+      priority  = 3
+      rule_type = "MatchRule"
+      action    = "Block"
+      match_conditions {
+        match_variables {
+          variable_name = "RemoteAddr"
+        }
+        operator           = "IPMatch"
+        negation_condition = true
+        match_values       = var.gateway.waf.chat_export_ip_allowlist
+      }
+      match_conditions {
+        transforms = ["Lowercase"]
+        match_variables {
+          variable_name = "RequestUri"
+        }
+        operator     = "BeginsWith"
+        match_values = ["/chat/analytics/user-chat-export"]
+      }
     }
   }
 }

@@ -24,7 +24,7 @@ module "openai" {
       model_name    = "text-embedding-ada-002"
       model_version = "2"
       sku_name      = "Standard"
-      sku_capacity  = 240
+      sku_capacity  = (var.openai_account_location == "francecentral" || var.openai_account_location == "westeurope") ? 240 : var.text_embedding_ada_002_tpm_thousands
     }
     "gpt-4" = {
       name          = "gpt-4"
@@ -38,7 +38,7 @@ module "openai" {
       model_name    = "gpt-4-32k"
       model_version = "0613"
       sku_name      = "Standard"
-      sku_capacity  = var.openai_account_location == "francecentral" ? 60 : 80
+      sku_capacity  = var.openai_account_location == "francecentral" ? 60 : var.gpt_4_32k_0613_tpm_thousands
     }
   }
   user_assigned_identity_ids = var.user_assigned_identity_ids

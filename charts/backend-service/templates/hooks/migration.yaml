@@ -94,6 +94,9 @@ spec:
             {{- end }}
             {{- end }}
           env:
+            {{- with .Values.envVars }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
             {{- if .Values.secretProvider }}
             {{- range $k, $v := .Values.secretProvider.vaults }}
             {{- range $key, $value := $v }}

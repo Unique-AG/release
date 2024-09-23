@@ -24,7 +24,7 @@ releases:
     values:
       -
         image:
-          repository: uniqueapp.azurecr.io/app-repository
+          repository: {{ .Values.appRepo._common.acr.url | quote }}/backend-service-app-repository
           tag: {{ .Values.appRepo._common.tenantReleaseOverrides.nodeAppRepository | default .Values.appRepo._common.defaultReleases.nodeAppRepository }}
         replicaCount: {{ .Values.appRepo.nodeAppRepository | get "replicaCount" 1 }}
         imagePullSecrets:
@@ -73,7 +73,7 @@ releases:
     values:
       -
         image:
-          repository: uniqueapp.azurecr.io/webhook-scheduler
+          repository: {{ .Values.appRepo._common.acr.url | quote }}/backend-service-webhook-scheduler
           tag: {{ .Values.appRepo._common.tenantReleaseOverrides.nodeWebhookScheduler | default .Values.appRepo._common.defaultReleases.nodeWebhookScheduler }}
         replicaCount: {{ .Values.appRepo.nodeWebhookScheduler | get "replicaCount" 1 }}
         imagePullSecrets:
@@ -100,7 +100,7 @@ releases:
     values:
       -
         image:
-          repository: uniqueapp.azurecr.io/webhook-worker
+          repository: {{ .Values.appRepo._common.acr.url | quote }}/backend-service-webhook-worker
           tag: {{ .Values.appRepo._common.tenantReleaseOverrides.nodeWebhookWorker | default .Values.appRepo._common.defaultReleases.nodeWebhookWorker }}
         replicaCount: {{ .Values.appRepo.nodeWebhookWorker | get "replicaCount" 1 }}
         imagePullSecrets:
@@ -120,14 +120,14 @@ releases:
         probes:
           enabled: false
   - name: typescript-service-event-socket
-    chart: ../../../node/charts/common
+    chart: ../../charts/backend-service
     namespace: apps
     createNamespace: true
     wait: false
     values:
       -
         image:
-          repository: uniqueapp.azurecr.io/typescript-service-event-socket
+          repository: {{ .Values.appRepo._common.acr.url | quote }}/backend-service-event-socket
           tag: {{ .Values.appRepo._common.tenantReleaseOverrides.typescriptServiceEventSocket | default .Values.appRepo._common.defaultReleases.typescriptServiceEventSocket }}
         replicaCount: {{ .Values.appRepo.typescriptServiceEventSocket | get "replicaCount" 1 }}
         imagePullSecrets:

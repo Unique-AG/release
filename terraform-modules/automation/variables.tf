@@ -13,12 +13,7 @@ variable "keyvault_secret_placeholders" {
     "manual-app-repository-encryption-key",
     "manual-slack-webhook-url",
     "manual-github-app-private-key",
-    "manual-github-monorepo-url",
-    "manual-github-gitops-resources-url",
-    "manual-github-app-id",
-    "manual-github-installation-id",
     "manual-uniqueapp-docker-config-json",
-    "manual-chart-pull-username",
     "manual-chart-pull-password"
   ]
 }
@@ -32,6 +27,11 @@ variable "argocd-secrets-list" {
     argocd-registry-type             = "helm"
     helm-registry-enableoci          = "true"
     helm-registry-forcehttpbasicauth = "true"
+    github-monorepo-url              = "https://github.com/Unique-AG/monorepo"
+    github-gitops-resources-url      = "https://github.com/Unique-AG/gitops-resources"
+    github-app-id                    = "961557"
+    github-installation-id           = "53486715"
+    chart-pull-username              = "ext-unique-gitops-resources"
   }
 }
 variable "rabbitmq-port" {

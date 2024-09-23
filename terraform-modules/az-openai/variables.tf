@@ -22,6 +22,7 @@ variable "deployments" {
     sku_name        = string
     sku_capacity    = number
     rai_policy_name = optional(string, "Default")
+    chat            = optional(bool, true)
   }))
   default  = {}
   nullable = false

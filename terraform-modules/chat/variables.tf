@@ -126,6 +126,14 @@ variable "gpt_4_0613_tpm_thousands" {
   type    = number
   default = 40
 }
+variable "gpt_4_32k_0613_tpm_thousands" {
+  type    = number
+  default = 80
+}
+variable "text_embedding_ada_002_tpm_thousands" {
+  type    = number
+  default = 350
+}
 variable "aks_oidc_issuer_url" {
   description = "The AKS OIDC issuer URL where the chat gets deployed to."
   type        = string

@@ -105,3 +105,8 @@ variable "optional_claims" {
     }
   }
 }
+variable "group_membership_claims" {
+  description = "A set of strings containing membership claims issued in a user or OAuth 2.0 access token that the app expects. Possible values are None, SecurityGroup, DirectoryRole, ApplicationGroup or All"
+  type        = list(string)
+  default     = null
+}

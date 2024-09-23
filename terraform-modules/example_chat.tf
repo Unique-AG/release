@@ -104,12 +104,12 @@ module "cluster" {
   subnet_pods                   = module.vnet.subnets["AksPods"]
   subnet_appgw                  = module.vnet.subnets["AppGW"]
   storage_retention_period_days = 1865
-  keyvault_access_principals    = [module.jumpbox.vm_identity]
+  keyvault_access_principals    = [module.jumpbox.vm_identity, module.cluster.key_vault_secrets_provider.secret_identity[0].object_id]
   kubernetes_default_node_size  = "Standard_D8s_v5"
   kubernetes_version            = "1.27.7"
   domain_config = {
     name        = local.base_domain
-    sub_domains = ["gateway", "id"]
+    sub_domains = ["gateway", "id", "argo"]
   }
   azure_prometheus_grafana_monitor = {
     enabled                = true
@@ -145,7 +145,7 @@ module "postgres" {
   flex_storage_mb            = 131072
   virtual_network_id         = module.vnet.virtual_network_id
   delegated_subnet_id        = module.vnet.subnets["Postgres"].id
-  keyvault_access_principals = [module.jumpbox.vm_identity]
+  keyvault_access_principals = [module.jumpbox.vm_identity, module.cluster.key_vault_secrets_provider.secret_identity[0].object_id]
 }
 module "workload_identities" {
   source              = "./az-workload-identity"
@@ -175,7 +175,7 @@ module "chat" {
   name                           = "chat"
   context                        = module.context
   openai_account_location        = local.locations.openai
-  keyvault_access_principals     = [module.jumpbox.vm_identity]
+  keyvault_access_principals     = [module.jumpbox.vm_identity, module.cluster.key_vault_secrets_provider.secret_identity[0].object_id]
   aks_oidc_issuer_url            = module.cluster.aks_oidc_issuer_url
   gpt_35_turbo_tpm_thousands     = 120
   gpt_35_turbo_16k_tpm_thousands = 120
@@ -208,7 +208,7 @@ module "automation" {
   source                     = "./automation"
   name                       = "automation"
   context                    = module.context
-  keyvault_access_principals = [module.jumpbox.vm_identity]
+  keyvault_access_principals = [module.jumpbox.vm_identity, module.cluster.key_vault_secrets_provider.secret_identity[0].object_id]
 }
 module "tyk" {
   source                     = "./az-redis"
@@ -216,7 +216,7 @@ module "tyk" {
   context                    = module.context
   subnet_pods                = module.vnet.subnets["AksPods"]
   subnet_redis               = module.vnet.subnets["TykRedis"]
-  keyvault_access_principals = [module.jumpbox.vm_identity]
+  keyvault_access_principals = [module.jumpbox.vm_identity, module.cluster.key_vault_secrets_provider.secret_identity[0].object_id]
   virtual_network_id         = module.vnet.virtual_network_id
   monitor_action_group_ids = {
     p0 = module.monitor.monitor_action_group_ids.p0
@@ -257,4 +257,34 @@ module "swedencentral" {
   user_assigned_identity_ids = [
     module.workload_identities.user_assigned_identity_ids["node-chat"],
   ]
+}
+module "aad-app-registration-gitops" {
+  source                           = "./aad-app-registration-mk2"
+  display_name                     = "[${module.context.project}-${module.context.environment}] GITOPS"
+  keyvault_id                      = module.automation.keyvault_id
+  aad-app-secret-display-name      = "${module.context.project}-${module.context.environment}-gitops"
+  maintainers_principal_object_ids = ["99999999-9999-9999-9999-999999999999"]
+  redirect_uris = [
+    "https://argo.client.unique.app/auth/callback",
+  ]
+  required_resource_access_list = {
+    "99999999-9999-9999-9999-999999999999" = [
+      {
+        id   = "99999999-9999-9999-9999-999999999999"
+        type = "Scope"
+      },
+      {
+        id   = "99999999-9999-9999-9999-999999999999"
+        type = "Scope"
+      },
+      {
+        id   = "99999999-9999-9999-9999-999999999999"
+        type = "Scope"
+      },
+      {
+        id   = "99999999-9999-9999-9999-999999999999"
+        type = "Scope"
+      },
+    ],
+  }
 }

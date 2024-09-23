@@ -91,14 +91,22 @@ ingress:
   tls:
     enabled: false
 
+
+# env is a flat map of ENV_NAME: $VALUE which will get encapsulated into a ConfigMap and loaded using the envFrom syntax
+# It only supports the flat object syntax with key value pairs
 env: {}
 
-# Names of existing config maps to be used as env vars (configMapRef in envFrom)
+# envVars is a list of ENV_NAME: $VALUE which will be added to the pods where the $VALUE supports the same syntax as the native pod spec
+# https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+envVars: []
+
+# extraEnvCM is a list of existing ConfigMaps to be loaded using the envFrom syntax
 extraEnvCM: []
 
+# envSecrets is a map of ENV_NAME: $SECRET_VALUE which will get encapsulated into a Secret and loaded using the envFrom syntax
 envSecrets: {}
 
-# Names of existing secrets to be used as env vars (secretRef in envFrom)
+# extraEnvSecrets is a list of existing Secrets to be loaded using the envFrom syntax
 extraEnvSecrets: []
 
 probes:

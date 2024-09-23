@@ -60,11 +60,55 @@ variable "monitor_action_group_ids" {
   default     = {}
 }
 variable "gateway" {
-  description = "Application gateway WAF parameters."
+  description = "Application gateway parameters."
   type = object({
     sku     = optional(string, "Standard_v2")
     mode    = optional(string, "Detection")
     ip_list = optional(list(string), [])
+    waf = optional(object({
+      owasp_rules = optional(list(
+        object({
+          rule_group_name   = string
+          disabled_rule_ids = list(string)
+        })
+      ), [])
+      bot_rules = optional(list(
+        object({
+          rule_group_name = string
+          rules = list(
+            object({
+              id      = string
+              action  = string
+              enabled = bool
+            })
+          )
+        })
+      ), [])
+      custom_rules = optional(list(
+        object({
+          name      = string
+          priority  = optional(number, 100)
+          action    = optional(string, "Block")
+          rule_type = optional(string, "MatchRule")
+          enabled   = optional(bool, true)
+          match_conditions = list(
+            object({
+              match_variables = list(
+                object({
+                  variable_name = string
+                  selector      = string
+                })
+              )
+              operator           = string
+              match_values       = optional(list(string))
+              negation_condition = optional(bool, false)
+              transforms         = optional(list(string))
+            })
+          )
+        })
+      ), [])
+      chat_export_ip_allowlist = optional(list(string), [])
+    }), {})
   })
   default = {}
   validation {
@@ -74,6 +118,22 @@ variable "gateway" {
   validation {
     condition     = var.gateway.mode == "Detection" || var.gateway.mode == "Prevention"
     error_message = "gateway.mode must be either Detection or Prevention"
+  }
+  validation {
+    condition     = alltrue([for rule in var.gateway.waf.custom_rules : contains(["MatchRule", "RateLimitRule", "Invalid"], rule.rule_type)])
+    error_message = "custom_rules.rule_type must be one of: MatchRule, RateLimitRule, Invalid"
+  }
+  validation {
+    condition     = alltrue([for rule in var.gateway.waf.custom_rules : contains(["Allow", "Block", "Log"], rule.action)])
+    error_message = "custom_rules.action must be one of: Allow, Block, Log"
+  }
+  validation {
+    condition     = alltrue([for rule in var.gateway.waf.custom_rules : alltrue([for match_cond in rule.match_conditions : alltrue([for match_var in match_cond.match_variables : contains(["RemoteAddr", "RequestMethod", "QueryString", "PostArgs", "RequestUri", "RequestHeaders", "RequestBody", "RequestCookies"], match_var.variable_name)])])])
+    error_message = "custom_rules.match_conditions.match_variables.variable_name must be one of: RemoteAddr, RequestMethod, QueryString, PostArgs, RequestUri, RequestHeaders, RequestBody, RequestCookies"
+  }
+  validation {
+    condition     = alltrue([for rule in var.gateway.waf.custom_rules : alltrue([for match_cond in rule.match_conditions : contains(["Any", "IPMatch", "GeoMatch", "Equal", "Contains", "LessThan", "GreaterThan", "LessThanOrEqual", "GreaterThanOrEqual", "BeginsWith", "EndsWith", "Regex"], match_cond.operator)])])
+    error_message = "custom_rules.match_conditions.operator must be one of: Any, IPMatch, GeoMatch, Equal, Contains, LessThan, GreaterThan, LessThanOrEqual, GreaterThanOrEqual, BeginsWith, EndsWith, Regex"
   }
 }
 variable "subnet_nodes" {
@@ -401,7 +461,9 @@ variable "waf_policy_managed_rule_settings" {
         "800111",
         "800112",
         "800113"
-  ] }]
+      ]
+    }
+  ]
 }
 variable "maintenance_window_day" {
   description = "Day of the week for the maintenance window."
@@ -434,4 +496,9 @@ variable "azure_aks_diagnostic_logs_categories" {
   description = "Enable diagnostic logs of AKS. Possible categories are: cloud-controller-manager, cluster-autoscaler, csi-azuredisk-controller, csi-azurefile-controller, csi-snapshot-controller, guard, kube-apiserver, kube-audit, kube-audit-admin, kube-controller-manager, kube-scheduler and AllMetrics"
   type        = list(string)
   default     = ["kube-scheduler", "kube-apiserver", "kube-audit", "kube-audit-admin", "kube-controller-manager", "cluster-autoscaler", "cloud-controller-manager"]
+}
+variable "azure_prometheus_grafana_rabbitmq_alert_enabled" {
+  type        = bool
+  default     = false
+  description = "Enable RabbitMQ prometheus alert"
 }

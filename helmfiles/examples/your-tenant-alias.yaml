@@ -26,20 +26,11 @@ chat:
       nodeTheme:
       nodeScopeManagement:
       assistantsCore:
-  nextKnowledgeUpload:
-      CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
-  nextChat:
-    env:
-      CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
   nextTheme:
     env:
       STATIC_THEME_COLORS: {"color-primary-cta": "#D63384", "color-primary-variant": "#B2447A", "color-secondary": "#042834", "color-secondary-variant": "#03212B", "color-background": "#F7F7F7", "color-background-variant": "#EBEBED", "color-surface": "#FFFFFF", "color-control": "#D8D8D8", "color-info": "#0A96E6", "color-success-light": "#A0C855", "color-success-dark": "#3D9E3F", "color-error-light": "#F65D67", "color-error-dark": "#DC3545", "color-attention": "#FFC65C", "color-attention-variant": "#19AADA", "color-on-primary": "#FFFFFF", "color-on-secondary": "#FFFFFF", "color-on-background-main": "#02161D", "color-on-background-dimmed": "#1F505F", "color-on-surface": "#02161D", "color-on-control-main": "#02161D", "color-on-control-dimmed": "#9C9C9C", "color-on-info": "#FFFFFF", "color-on-success-light": "#FFFFFF", "color-on-success-dark": "#FFFFFF", "color-on-error-light": "#FFFFFF", "color-on-error-dark": "#FFFFFF", "color-on-attention": "#02161D", "color-on-attention-variant": "#FFFFFF"}
       STATIC_BACKGROUND_COLOR: F7F7F7
-      STATIC_TAB_NAME: "Olé Olé!"
-      CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
-  nextAdmin:
-    env:
-      CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
+      STATIC_TAB_NAME: "YOUR_TAB_NAME"
   nodeChat:
     secrets:
       WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-node-chat
@@ -65,8 +56,6 @@ chat:
       INGESTION_ENCRYPTION_KEY: ref+azurekeyvault://your-vault-name/ingestion-encryption-key
     env:
       ZITADEL_ROOT_ORG_ID: a-zitadel-id
-      ENABLE_MALWARE_SCAN: "true"
-      FILE_RETENTION_IN_DAYS: 7
   nodeIngestionWorker:
     secrets:
       AZURE_OPENAI_API_ENDPOINT: ref+azurekeyvault://your-vault-name/openai-endpoint
@@ -75,6 +64,11 @@ chat:
       AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS: ref+azurekeyvault://your-vault-name/azure-document-intelligence-endpoints
     env:
       CONVERT_OFFICE_FILES_TO_PDF: "true"
+    serviceAccount:
+      enabled: true
+      workloadIdentity:
+        enabled: true
+        clientId: ref+azurekeyvault://your-vault-name/wid-client-id-node-ingestion-worker
   nodeTheme:
     tyk:
       rateLimit:
@@ -96,39 +90,9 @@ rabbitMQ:
     [
       {
         "vhost": "/",
-        "name": "whisper-consumer-timeout",
-        "pattern": "unique.python.whisper",
-        "apply-to": "queues",
-        "definition": {
-          "consumer-timeout": 28800000
-        },
-        "priority": 2
-      },
-      {
-        "vhost": "/",
-        "name": "python-consumer-timeout",
-        "pattern": "unique.python.*",
-        "apply-to": "queues",
-        "definition": {
-          "consumer-timeout": 7200000
-        },
-        "priority": 1
-      },
-      {
-        "vhost": "/",
-        "name": "bot-consumer-timeout",
-        "pattern": "unique.bot.*",
-        "apply-to": "all",
-        "definition": {
-          "consumer-timeout": 18000000
-        },
-        "priority": 1
-      },
-      {
-        "vhost": "/",
         "name": "node-consumer-timeout",
         "pattern": "unique.node.ingestion.queue",
-        "apply-to": "all",
+        "apply-to": "queues",
         "definition": {
           "consumer-timeout": 7200000
         },
@@ -189,7 +153,3 @@ appRepo:
     serviceAccount:
       workloadIdentity:
         clientId: ref+azurekeyvault://your-vault-name/wid-client-id-logs-reader
-reranker:
-  _common:
-    tenantReleaseOverrides:
-      assistantsReranker:

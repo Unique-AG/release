@@ -1,5 +1,19 @@
 # Changelog `backend-service`
 
+## [1.1.0]
+- All workloads now support a new `envVars` list as part of the `values.yaml`
+    + Compared to `env`, which is a flat map, this list allows for more complex environment variable definitions as the native Kubernetes Specs support them.
+    + Example
+      ```
+      envVars:
+      - name: NAME_OF_ENV
+        valueFrom:
+          secretKeyRef:
+            key: ENV_VALUE
+            name: my-secret
+      ```
+- Improved documentation of all environment variable related settings in `values.yaml`
+
 ## [1.0.12]
 - Enable initContainers/sideContainers
 

@@ -327,3 +327,29 @@ sum(rate(node_cpu_seconds_total{job="node",mode!="idle",mode!="iowait",mode!="st
 EOF
   }
 }
+resource "azurerm_monitor_alert_prometheus_rule_group" "rabbitmq_alert_rules" {
+  count               = var.azure_prometheus_grafana_rabbitmq_alert_enabled ? 1 : 0
+  name                = "${azurerm_kubernetes_cluster.this.name}-RabbitMQ"
+  resource_group_name = module.context.resource_group.name
+  location            = var.azure_prometheus_grafana_monitor.azure_monitor_location
+  cluster_name        = azurerm_kubernetes_cluster.this.name
+  description         = "RabbitMQ alert rules"
+  rule_group_enabled  = true
+  interval            = "PT1M"
+  scopes              = [azurerm_monitor_workspace.this[count.index].id, azurerm_kubernetes_cluster.this.id]
+  rule {
+    alert      = "Rabbitmq_Queue_Messages_Ready"
+    enabled    = true
+    for        = "PT5M"
+    severity   = 0
+    expression = <<EOF
+sum(rabbitmq_queue_messages_ready{job="rabbitmq"}) > 5
+EOF
+    labels = {
+      workload_type = "job"
+    }
+    action {
+      action_group_id = var.monitor_action_group_ids.p0
+    }
+  }
+}

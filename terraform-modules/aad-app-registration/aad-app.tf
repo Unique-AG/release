@@ -1,9 +1,10 @@
 resource "azuread_application" "this" {
-  display_name          = "[${module.context.project}-${module.context.environment}] Unique AG"
-  sign_in_audience      = "AzureADMultipleOrgs"
-  privacy_statement_url = "https://www.unique.ch/privacy"
-  terms_of_service_url  = "https://www.unique.ch/terms"
-  owners                = var.owner_user_object_ids
+  display_name            = "[${module.context.project}-${module.context.environment}] Unique AG"
+  sign_in_audience        = "AzureADMultipleOrgs"
+  privacy_statement_url   = "https://www.unique.ch/privacy"
+  terms_of_service_url    = "https://www.unique.ch/terms"
+  group_membership_claims = var.group_membership_claims
+  owners                  = var.owner_user_object_ids
   web {
     homepage_url = "https://www.unique.ch"
     implicit_grant {

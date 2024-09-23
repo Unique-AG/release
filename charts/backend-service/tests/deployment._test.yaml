@@ -39,3 +39,30 @@ tests:
           path: spec.template.spec.initContainers[0]
       - isNotNullOrEmpty:
           path: spec.template.spec.initContainers[?(@.name == "init-ut")]
+
+  - it: When given envVars, renders them to the PodSpec
+    set:
+      tyk.listenPath: /unit-test
+      image.tag: pinned-version
+      envVars:
+        - name: NAME_OF_ENV
+          valueFrom:
+            secretKeyRef:
+              name: my-secret
+              key: ENV_VALUE
+    template: deployment.yaml
+    asserts:
+      - isKind:
+          of: Deployment
+      - isNotNullOrEmpty:
+          path: spec.template.spec.containers[?(@.name == "ut")].env[?(@.name == "NAME_OF_ENV")]
+      - contains:
+          path: spec.template.spec.containers[?(@.name == "ut")].env
+          content:
+            name: NAME_OF_ENV
+            valueFrom:
+              secretKeyRef:
+                key: ENV_VALUE
+                name: my-secret
+          count: 1
+          any: true
