@@ -22,16 +22,16 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:            
-      nextKnowledgeUpload: 
-      nextTheme:           
-      nextAdmin:           
-      nodeChat:            
-      nodeIngestion:       
-      nodeIngestionWorker: 
-      nodeTheme:           
-      nodeScopeManagement: 
-      assistantsCore:      
+      nextChat:            2024.38
+      nextKnowledgeUpload: 2024.38
+      nextTheme:           2024.38
+      nextAdmin:           2024.38
+      nodeChat:            2024.38
+      nodeIngestion:       2024.38
+      nodeIngestionWorker: 2024.38
+      nodeTheme:           2024.38
+      nodeScopeManagement: 2024.38
+      assistantsCore:      2024.38
   _rootIngress:
     enabled: true
   nextChat:
@@ -143,6 +143,7 @@ chat:
       ENABLE_MALWARE_SCAN: "false"
       REPLICATION_FACTOR: 2
       FILE_RETENTION_IN_DAYS: 0
+      FF_UN7111_UPLOAD_THROUGH_BACKEND: "true"
       RERANKER_CONFIGURATION: '[{"deploymentName": "crossencoder_reranker", "apiUrl": "http://assistants-reranker.chat.svc.cluster.local:8081/reranker/rerank"}]'
     tyk:
       rateLimit:
@@ -230,8 +231,8 @@ qdrant:
 zitadel:
   replicaCount: 2
   versions:
-    chart: 7.10.0
-    image: v2.48.1 # when upgrading remove values in env puzzle-prod
+    chart: 8.1.0
+    image: v2.62.1
   resources:
     requests:
       cpu: 1

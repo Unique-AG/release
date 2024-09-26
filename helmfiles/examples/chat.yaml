@@ -70,7 +70,6 @@ releases:
           tag: {{ .Values.chat._common.tenantReleaseOverrides.nodeIngestion | default .Values.chat._common.defaultReleases.nodeIngestion }}
         replicaCount: {{ .Values.chat.nodeIngestion | get "replicaCount" 2 }}
         imagePullSecrets:
-          - name: uq-public-acr
           - name: image-pull-secret
         service:
           port: 8091
@@ -96,6 +95,7 @@ releases:
           EMBEDDING_DIMENSION: {{ .Values.chat.nodeIngestion.env | get "EMBEDDING_DIMENSION" 1536 }}
           REPLICATION_FACTOR: {{ .Values.chat.nodeIngestion.env | get "REPLICATION_FACTOR" 1 }}
           INGESTION_UPLOAD_API_URL: https://gateway.{{ .Values.host }}/scoped/ingestion/upload
+          FF_UN7111_UPLOAD_THROUGH_BACKEND: {{ .Values.chat.nodeIngestion.env.FF_UN7111_UPLOAD_THROUGH_BACKEND | quote }}
           RERANKER_CONFIGURATION: {{ .Values.chat.nodeIngestion.env.RERANKER_CONFIGURATION | quote }}
           ADDITIONAL_INGESTION_QUEUES: '["chat_queue"]'
         envSecrets:
@@ -165,7 +165,6 @@ releases:
           tag: {{ .Values.chat._common.tenantReleaseOverrides.nodeIngestionWorker | default .Values.chat._common.defaultReleases.nodeIngestionWorker }}
         replicaCount: 0
         imagePullSecrets:
-          - name: uq-public-acr
           - name: image-pull-secret
         service:
           port: 8093
@@ -290,7 +289,6 @@ releases:
           tag: {{ .Values.chat._common.tenantReleaseOverrides.nodeChat | default .Values.chat._common.defaultReleases.nodeChat }}
         replicaCount: {{ .Values.chat.nodeChat | get "replicaCount" 2 }}
         imagePullSecrets:
-          - name: uq-public-acr
           - name: image-pull-secret
         service:
           port: 8093
@@ -370,7 +368,6 @@ releases:
           repository: {{ .Values.chat._common.acr.url }}/web-app-knowledge-upload
           tag: {{ .Values.chat._common.tenantReleaseOverrides.nextKnowledgeUpload | default .Values.chat._common.defaultReleases.nextKnowledgeUpload }}
         imagePullSecrets:
-          - name: uq-public-acr
           - name: image-pull-secret
         env:
           CHAT_APP_URL: https://{{ .Values.host }}/chat
@@ -429,7 +426,6 @@ releases:
           repository: {{ .Values.chat._common.acr.url }}/web-app-chat
           tag: {{ .Values.chat._common.tenantReleaseOverrides.nextChat | default .Values.chat._common.defaultReleases.nextChat }}
         imagePullSecrets:
-          - name: uq-public-acr
           - name: image-pull-secret
         resources:
           {{ .Values.chat.nextChat.resources | toYaml | nindent 10 }}
@@ -492,7 +488,6 @@ releases:
           repository: {{ .Values.chat._common.acr.url }}/web-app-theme
           tag: {{ .Values.chat._common.tenantReleaseOverrides.nextTheme | default .Values.chat._common.defaultReleases.nextTheme }}
         imagePullSecrets:
-          - name: uq-public-acr
           - name: image-pull-secret
         resources:
           {{ .Values.chat.nextTheme.resources | toYaml | nindent 10 }}
@@ -539,7 +534,6 @@ releases:
           repository: {{ .Values.chat._common.acr.url }}/web-app-admin
           tag: {{ .Values.chat._common.tenantReleaseOverrides.nextAdmin | default .Values.chat._common.defaultReleases.nextAdmin }}
         imagePullSecrets:
-          - name: uq-public-acr
           - name: image-pull-secret
         resources:
           {{ .Values.chat.nextAdmin.resources | toYaml | nindent 10 }}
@@ -595,7 +589,6 @@ releases:
           tag: {{ .Values.chat._common.tenantReleaseOverrides.nodeTheme | default .Values.chat._common.defaultReleases.nodeTheme }}
         replicaCount: {{ .Values.chat.nodeTheme | get "replicaCount" 1 }}
         imagePullSecrets:
-          - name: uq-public-acr
           - name: image-pull-secret
         service:
           port: 8095
@@ -633,7 +626,6 @@ releases:
           tag: {{ .Values.chat._common.tenantReleaseOverrides.nodeScopeManagement | default .Values.chat._common.defaultReleases.nodeScopeManagement }}
         replicaCount: {{ .Values.chat.nodeScopeManagement | get "replicaCount" 1 }}
         imagePullSecrets:
-          - name: uq-public-acr
           - name: image-pull-secret
         service:
           port: 8094
