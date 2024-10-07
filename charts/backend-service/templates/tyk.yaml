@@ -37,6 +37,19 @@ spec:
         name: Default
         use_extended_paths: true
         extended_paths:
+          {{- if and ((.Values.tyk).ignorePaths) (gt (len (.Values.tyk).ignorePaths) 0) }}
+          ignored:
+            {{- range .Values.tyk.ignorePaths }}
+            - ignore_case: true
+              method_actions:
+                {{- if .methods }}
+                {{- range .methods }}
+                {{ . }}:
+                {{- end }}
+                {{- end }}
+              path: {{ .path }}
+            {{- end }}
+          {{- end }}
           hard_timeouts:
             {{- if and ((.Values.tyk).hardTimeouts) (gt (len (.Values.tyk).hardTimeouts) 0) }}
             {{- range .Values.tyk.hardTimeouts }}
@@ -73,10 +86,10 @@ spec:
   active: true
   rate: {{ default 2048 (.Values.tyk.rateLimit).rate }}
   per: {{ default 60 (.Values.tyk.rateLimit).per }}
-  quota_max: {{ default -1 (.Values.tyk.rateLimit).quotaMax }} 
-  quota_renewal_rate: {{ default -1 (.Values.tyk.rateLimit).quotaRenewalRate }} 
-  throttle_interval: {{ default -1 (.Values.tyk.rateLimit).throttleInterval }} 
-  throttle_retry_limit: {{ default -1 (.Values.tyk.rateLimit).throttleRetryLimit }} 
+  quota_max: {{ default -1 (.Values.tyk.rateLimit).quotaMax }}
+  quota_renewal_rate: {{ default -1 (.Values.tyk.rateLimit).quotaRenewalRate }}
+  throttle_interval: {{ default -1 (.Values.tyk.rateLimit).throttleInterval }}
+  throttle_retry_limit: {{ default -1 (.Values.tyk.rateLimit).throttleRetryLimit }}
   access_rights_array:
     - name: {{ include "backendService.fullname" . }}
       namespace: {{ .Release.Namespace  }}
@@ -163,10 +176,10 @@ spec:
   active: true
   rate: {{ default 1000 (.Values.tyk.rateLimit).rate }}
   per: {{ default 1 (.Values.tyk.rateLimit).per }}
-  quota_max: {{ default 1000 (.Values.tyk.rateLimit).quotaMax }} 
-  quota_renewal_rate: {{ default 60 (.Values.tyk.rateLimit).quotaRenewalRate }} 
-  throttle_interval: {{ default -1 (.Values.tyk.rateLimit).throttleInterval }} 
-  throttle_retry_limit: {{ default -1 (.Values.tyk.rateLimit).throttleRetryLimit }} 
+  quota_max: {{ default 1000 (.Values.tyk.rateLimit).quotaMax }}
+  quota_renewal_rate: {{ default 60 (.Values.tyk.rateLimit).quotaRenewalRate }}
+  throttle_interval: {{ default -1 (.Values.tyk.rateLimit).throttleInterval }}
+  throttle_retry_limit: {{ default -1 (.Values.tyk.rateLimit).throttleRetryLimit }}
   access_rights_array:
     - name: {{ include "backendService.fullname" . }}-app-repo-api
       namespace: {{ .Release.Namespace  }}
@@ -239,10 +252,10 @@ spec:
   active: true
   rate: {{ default 1000 (.Values.tyk.rateLimit).rate }}
   per: {{ default 1 (.Values.tyk.rateLimit).per }}
-  quota_max: {{ default 1000 (.Values.tyk.rateLimit).quotaMax }} 
-  quota_renewal_rate: {{ default 60 (.Values.tyk.rateLimit).quotaRenewalRate }} 
-  throttle_interval: {{ default -1 (.Values.tyk.rateLimit).throttleInterval }} 
-  throttle_retry_limit: {{ default -1 (.Values.tyk.rateLimit).throttleRetryLimit }} 
+  quota_max: {{ default 1000 (.Values.tyk.rateLimit).quotaMax }}
+  quota_renewal_rate: {{ default 60 (.Values.tyk.rateLimit).quotaRenewalRate }}
+  throttle_interval: {{ default -1 (.Values.tyk.rateLimit).throttleInterval }}
+  throttle_retry_limit: {{ default -1 (.Values.tyk.rateLimit).throttleRetryLimit }}
   access_rights_array:
     - name: {{ include "backendService.fullname" . }}-scoped-api
       namespace: {{ .Release.Namespace  }}

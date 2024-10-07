@@ -1,8 +1,7 @@
-# This file sets chat module defaults for all customers. Customization per customer is done in the "environments" folder.
 chat:
   _common:
     acr:
-      url: uniqueapp.azurecr.io
+      url: uniquecr.azurecr.io
     securityContext:
       allowPrivilegeEscalation: false
       runAsNonRoot: true
@@ -22,22 +21,22 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:            2024.38
-      nextKnowledgeUpload: 2024.38
-      nextTheme:           2024.38
-      nextAdmin:           2024.38
-      nodeChat:            2024.38
-      nodeIngestion:       2024.38
-      nodeIngestionWorker: 2024.38
-      nodeTheme:           2024.38
-      nodeScopeManagement: 2024.38
-      assistantsCore:      2024.38
+      nextChat:            2024.40
+      nextKnowledgeUpload: 2024.40
+      nextTheme:           2024.40
+      nextAdmin:           2024.40
+      nodeChat:            2024.40
+      nodeIngestion:       2024.40
+      nodeIngestionWorker: 2024.40
+      nodeTheme:           2024.40
+      nodeScopeManagement: 2024.40
+      assistantsCore:      2024.40
   _rootIngress:
     enabled: true
   nextChat:
     env:
       MAX_HEAP_MB: 400
-      FEATURE_FLAG_NEW_TRANSLATION_UI_UN_7233: true
+      FEATURE_FLAG_NEW_TRANSLATION_UI_UN_7233: "true"
       FEATURE_FLAG_STOP_STREAMING_UN_4824: "true"
       FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: ""
     resources:
@@ -108,8 +107,14 @@ chat:
         {"name": "ImageSummarizer", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/image_summarizer"}, 
         {"name": "TranslationOneToOne", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/translation_one_to_one"}, 
         {"name": "WebSearch", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/web_search"}, 
+        {"name": "ComplianceCheck", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/compliance_check"}, 
+        {"name": "QuestionExtractor", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/question_extractor"}, 
+        {"name": "QuestionAnswerer", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/question_answerer"}, 
+        {"name": "QuestionPredictor", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/question_predictor"}, 
+        {"name": "DocumentSummarizerV2", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/document_summarizer"},
         {"name": "ImageUpload", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/image_upload"}
         ]
+      ENABLE_CLIENT_INSIGHT_SHIPPER: "false"
     serviceAccount: {}
     resources:
       requests:
@@ -120,6 +125,7 @@ chat:
         memory: 600Mi
     tyk:
       rateLimit:
+        per: 60
         rate: 4096
         quotaMax: -1
       hardTimeouts: []
@@ -191,6 +197,7 @@ chat:
   nodeScopeManagement:
     env:
       MAX_HEAP_MB: 750
+      ENABLE_CLIENT_INSIGHT_SHIPPER: "false"
     tyk:
       rateLimit:
         rate: 4096
@@ -243,6 +250,7 @@ zitadel:
 tyk:
   agicRequestTimeout: 600 # 10 minutes to allow long-running LLM requests.
   proxyDefaultTimeout: 600 # 10 minutes to allow long-running LLM requests.
+  replicaCount: 2
   gateway:
     resources:
       limits:
@@ -254,7 +262,7 @@ tyk:
 eventBasedAutoscaling:
   nodeIngestionWorker:
     minReplicaCount: 0
-    maxReplicaCount: 4
+    maxReplicaCount: 6
   nodeIngestionWorkerChat:
     minReplicaCount: 0
-    maxReplicaCount: 4
+    maxReplicaCount: 6

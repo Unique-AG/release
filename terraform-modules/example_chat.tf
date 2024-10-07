@@ -91,10 +91,11 @@ module "vnet" {
 module "monitor" {
   source  = "./az-monitor"
   context = module.context
-  p0_email_addresses = {
-    "slack" = {
-      email_address = "recipient@example.com"
-    }
+  action_group_list = {
+    "slack-platform" = {
+      severity        = "p0"
+      email_addresses = ["recipient@example.com"]
+    },
   }
 }
 module "cluster" {
@@ -122,11 +123,11 @@ module "cluster" {
     "node-ingestion-worker-chat",
   ]
   monitor_action_group_ids = {
-    p0 = module.monitor.monitor_action_group_ids.p0
-    p1 = module.monitor.monitor_action_group_ids.p0
-    p2 = module.monitor.monitor_action_group_ids.p0
-    p3 = module.monitor.monitor_action_group_ids.p0
-    p4 = module.monitor.monitor_action_group_ids.p0
+    p0 = module.monitor.monitor_action_group_ids.slack-platform
+    p1 = module.monitor.monitor_action_group_ids.slack-platform
+    p2 = module.monitor.monitor_action_group_ids.slack-platform
+    p3 = module.monitor.monitor_action_group_ids.slack-platform
+    p4 = module.monitor.monitor_action_group_ids.slack-platform
   }
 }
 module "jumpbox" {
@@ -176,6 +177,7 @@ module "chat" {
   context                        = module.context
   openai_account_location        = local.locations.openai
   keyvault_access_principals     = [module.jumpbox.vm_identity, module.cluster.key_vault_secrets_provider.secret_identity[0].object_id]
+  database_keyvault_id           = module.postgres.database_keyvault_id
   aks_oidc_issuer_url            = module.cluster.aks_oidc_issuer_url
   gpt_35_turbo_tpm_thousands     = 120
   gpt_35_turbo_16k_tpm_thousands = 120
@@ -219,7 +221,7 @@ module "tyk" {
   keyvault_access_principals = [module.jumpbox.vm_identity, module.cluster.key_vault_secrets_provider.secret_identity[0].object_id]
   virtual_network_id         = module.vnet.virtual_network_id
   monitor_action_group_ids = {
-    p0 = module.monitor.monitor_action_group_ids.p0
+    p0 = module.monitor.monitor_action_group_ids.slack-platform
   }
 }
 module "ad-app-registration" {

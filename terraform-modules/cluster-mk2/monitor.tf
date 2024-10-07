@@ -1,5 +1,5 @@
 resource "azurerm_monitor_metric_alert" "appgw_5xx" {
-  for_each            = { for idx, group_id in(try(var.monitor_action_group_ids.p0, null) != null ? [var.monitor_action_group_ids.p0] : []) : idx => group_id }
+  count               = var.monitor_action_group_ids != {} ? 1 : 0
   name                = "${module.context.full_name}-appgw-5xx"
   resource_group_name = module.context.resource_group.name
   scopes              = [azurerm_application_gateway.appgw.id]
@@ -20,8 +20,11 @@ resource "azurerm_monitor_metric_alert" "appgw_5xx" {
       ]
     }
   }
-  action {
-    action_group_id = each.value
+  dynamic "action" {
+    for_each = var.monitor_action_group_ids.p0 != null ? [1] : []
+    content {
+      action_group_id = var.monitor_action_group_ids.p0
+    }
   }
   tags = module.context.tags
 }

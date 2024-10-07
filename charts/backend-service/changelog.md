@@ -1,5 +1,18 @@
 # Changelog `backend-service`
 
+## [1.2.1]
+Add a metadata map under deployment to add labels and annotations
+
+## [1.2.0]
+- Allow to configure tyk to ignore paths
+    + Example
+      ```
+        ignorePaths:
+          - methods:
+            - GET
+            path: /health
+      ```
+
 ## [1.1.0]
 - All workloads now support a new `envVars` list as part of the `values.yaml`
     + Compared to `env`, which is a flat map, this list allows for more complex environment variable definitions as the native Kubernetes Specs support them.

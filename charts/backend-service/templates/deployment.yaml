@@ -6,6 +6,15 @@ metadata:
   name: {{ $fullName }}
   labels:
     {{- include "backendService.labels" . | nindent 4 }}
+    {{- if .Values.deployment.metadata}}
+    {{- toYaml .Values.deployment.metadata.labels | nindent 4 }}
+    {{- end }}
+
+  {{- if .Values.deployment.metadata }}
+  annotations:
+    {{- toYaml .Values.deployment.metadata.annotations | nindent 4 }}
+  {{- end }}
+
 spec:
   {{- if not (or .Values.autoscaling.enabled .Values.eventBasedAutoscaling.enabled) }}
   replicas: {{ .Values.replicaCount }}

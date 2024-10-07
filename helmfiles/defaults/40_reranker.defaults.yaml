@@ -1,0 +1,22 @@
+reranker:
+  _common:
+    securityContext:
+      allowPrivilegeEscalation: false
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    defaultReleases:
+      assistantsReranker: 2024.40
+  assistantsReranker:
+    env:
+      GUNICORN_WORKERS: 1
+      GUNICORN_THREADS: 4
+      RERANKER_MODEL: cross-encoder/msmarco-MiniLM-L12-en-de-v1
+    resources:
+      requests:
+        cpu: 4
+        memory: 6Gi
+      limits:
+        cpu: 4
+        memory: 8Gi

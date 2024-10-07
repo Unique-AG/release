@@ -1,0 +1,10 @@
+confluenceConnector:
+  defaultReleases:
+    confluenceConnector: sha-8844fe0
+  replicaCount: 1
+  env:
+    CONFLUENCE_TOKENS_PER_MINUTE: 250
+    CONFLUENCE_URL: https://your-confluence-url
+    INGEST_SINGLE_LABEL: ai-ingest
+    INGEST_ALL_LABEL: ai-ingest-all
+    TEST_MODE: true

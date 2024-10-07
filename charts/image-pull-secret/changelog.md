@@ -1,5 +1,8 @@
 # Changelog `image-pull-secret`
 
+## [1.0.4]
+Add a condition to stop deploying the empty secret if spc exists
+
 ## [1.0.3]
 Fix spec.selector.matchLabels inconsistency
 

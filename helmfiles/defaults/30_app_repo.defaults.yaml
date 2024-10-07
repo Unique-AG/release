@@ -1,7 +1,7 @@
 appRepo:
   _common:
     acr: 
-      url: uniqueapp.azurecr.io
+      url: uniquecr.azurecr.io
     securityContext:
       allowPrivilegeEscalation: false
       runAsNonRoot: true
@@ -9,10 +9,10 @@ appRepo:
       seccompProfile:
         type: RuntimeDefault
     defaultReleases:
-      nodeAppRepository:               2024.38
-      nodeWebhookWorker:               2024.38
-      nodeWebhookScheduler:            2024.38
-      typescriptServiceEventSocket:    2024.38
+      nodeAppRepository:               2024.40
+      nodeWebhookWorker:               2024.40
+      nodeWebhookScheduler:            2024.40
+      typescriptServiceEventSocket:    2024.40
   nodeAppRepository:
     env:
       MAX_HEAP_MB: 750
@@ -21,8 +21,6 @@ appRepo:
         cpu: 500m
         memory: 850Mi
       limits:
-        cpu: 1
-        # If you change this, also change --max-old-space-size= in the Dockerfile!
         memory: 900Mi
     tyk:
       rateLimit:

@@ -32,6 +32,11 @@ securityContext: {}
 
 deployment:
   enabled: true
+  # metadata: 
+  #   labels:
+  #     app: backend-service
+  #   annotations:
+  #     prometheus: "true"
   # initContainers: 
   #   - command:
   #       - sh

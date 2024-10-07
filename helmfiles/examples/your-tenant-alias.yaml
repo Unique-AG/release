@@ -153,3 +153,14 @@ appRepo:
     serviceAccount:
       workloadIdentity:
         clientId: ref+azurekeyvault://your-vault-name/wid-client-id-logs-reader
+confluenceConnector:
+  tenantReleaseOverrides:
+    confluenceConnector:
+  env:
+    SCOPE_ID: <knowledge-base-scope-id> # optional, if not set a scope is automatically created for every Confluence Space
+  secrets:
+    CLIENT_ID: ref+azurekeyvault://your-vault-name/manual-confluence-connector-service-user-client-id
+    CLIENT_SECRET: ref+azurekeyvault://your-vault-name/manual-confluence-connector-service-user-client-secret
+    CONFLUENCE_USERNAME: ref+azurekeyvault://your-vault-name/manual-confluence-connector-username
+    CONFLUENCE_PASSWORD: ref+azurekeyvault://your-vault-name/manual-confluence-connector-password
+    CONFLUENCE_PAT: ref+azurekeyvault://your-vault-name/manual-confluence-connector-pat

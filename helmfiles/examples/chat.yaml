@@ -95,7 +95,6 @@ releases:
           EMBEDDING_DIMENSION: {{ .Values.chat.nodeIngestion.env | get "EMBEDDING_DIMENSION" 1536 }}
           REPLICATION_FACTOR: {{ .Values.chat.nodeIngestion.env | get "REPLICATION_FACTOR" 1 }}
           INGESTION_UPLOAD_API_URL: https://gateway.{{ .Values.host }}/scoped/ingestion/upload
-          FF_UN7111_UPLOAD_THROUGH_BACKEND: {{ .Values.chat.nodeIngestion.env.FF_UN7111_UPLOAD_THROUGH_BACKEND | quote }}
           RERANKER_CONFIGURATION: {{ .Values.chat.nodeIngestion.env.RERANKER_CONFIGURATION | quote }}
           ADDITIONAL_INGESTION_QUEUES: '["chat_queue"]'
         envSecrets:
@@ -207,7 +206,7 @@ releases:
         eventBasedAutoscaling:
           enabled: true
           minReplicaCount: {{ .Values.eventBasedAutoscaling.nodeIngestionWorker | get "minReplicaCount" 0 }}
-          maxReplicaCount: {{ .Values.eventBasedAutoscaling.nodeIngestionWorker | get "maxReplicaCount" 4 }}
+          maxReplicaCount: {{ .Values.eventBasedAutoscaling.nodeIngestionWorker | get "maxReplicaCount" 6 }}
           cron: {{- if hasKey .Values.eventBasedAutoscaling.nodeIngestionWorker "cron" }}
             {{ toYaml .Values.eventBasedAutoscaling.nodeIngestionWorker.cron | nindent 12 }}
           {{- else }} null
@@ -269,7 +268,7 @@ releases:
         eventBasedAutoscaling:
           enabled: true
           minReplicaCount: {{ .Values.eventBasedAutoscaling.nodeIngestionWorkerChat | get "minReplicaCount" 0 }}
-          maxReplicaCount: {{ .Values.eventBasedAutoscaling.nodeIngestionWorkerChat | get "maxReplicaCount" 4 }}
+          maxReplicaCount: {{ .Values.eventBasedAutoscaling.nodeIngestionWorkerChat | get "maxReplicaCount" 6 }}
           cron: {{- if hasKey .Values.eventBasedAutoscaling.nodeIngestionWorkerChat "cron" }}
             {{ toYaml .Values.eventBasedAutoscaling.nodeIngestionWorkerChat.cron | nindent 12 }}
           {{- else }} null
@@ -312,6 +311,7 @@ releases:
           BENCHMARKS_PER_MINUTE_PER_PROCESS: {{ .Values.chat.nodeChat.env | get "BENCHMARKS_PER_MINUTE_PER_PROCESS" 1 }}
           AMQP_BENCHMARK_PREFETCH: {{ .Values.chat.nodeChat.env | get "AMQP_BENCHMARK_PREFETCH" 1 }}
           INTERNAL_MODULES_CONFIG: {{ .Values.chat.nodeChat.env.INTERNAL_MODULES_CONFIG | quote }}
+          ENABLE_CLIENT_INSIGHT_SHIPPER: {{ .Values.chat.nodeChat.env | get "ENABLE_CLIENT_INSIGHT_SHIPPER" false }}
         envSecrets:
           LAUNCH_DARKLY_SDK_KEY: {{ .Values.chat._common.secrets.LAUNCH_DARKLY_SDK_KEY | fetchSecretValue | quote }}
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/chat"
@@ -638,6 +638,7 @@ releases:
           MAX_HEAP_MB: {{ .Values.chat.nodeScopeManagement.env.MAX_HEAP_MB }}
           INGESTION_API_URL: http://node-ingestion.chat.svc.cluster.local:8091
           CHAT_API_URL: http://node-chat.chat.svc.cluster.local:8093
+          ENABLE_CLIENT_INSIGHT_SHIPPER: {{ .Values.chat.nodeScopeManagement.env | get "ENABLE_CLIENT_INSIGHT_SHIPPER" false }}
         envSecrets:
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/scope-management"
           ZITADEL_PAT: {{ .Values.chat.nodeScopeManagement.secrets.ZITADEL_PAT | fetchSecretValue | quote }}

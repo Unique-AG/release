@@ -497,8 +497,68 @@ variable "azure_aks_diagnostic_logs_categories" {
   type        = list(string)
   default     = ["kube-scheduler", "kube-apiserver", "kube-audit", "kube-audit-admin", "kube-controller-manager", "cluster-autoscaler", "cloud-controller-manager"]
 }
-variable "azure_prometheus_grafana_rabbitmq_alert_enabled" {
+variable "azure_prometheus_grafana_aks_services_alerts_enabled" {
   type        = bool
   default     = false
-  description = "Enable RabbitMQ prometheus alert"
+  description = "Enable AKS services alerts"
+}
+variable "aks_services_alerts_rules" {
+  type = map(object({
+    alert_name  = string
+    severity    = number
+    for         = string
+    expression  = string
+    action_type = string
+  }))
+  default = {
+    "HighCPUUsageContainersInAKS" = {
+      alert_name  = "HighCPUUsageContainersInAKS"
+      severity    = 0
+      for         = "PT5M"
+      expression  = "sum by (cluster, namespace, pod, container) (irate(container_cpu_usage_seconds_total{job=\"cadvisor\", image!=\"\"}[5m])) > 0.95"
+      action_type = "p0"
+    }
+    "HighMemoryUsageContainersInAKS" = {
+      alert_name  = "HighMemoryUsageContainersInAKS"
+      severity    = 0
+      for         = "PT5M"
+      expression  = "sum by (namespace, pod) (container_memory_working_set_bytes{job=\"cadvisor\", image!=\"\"}) > (0.95 * sum by (namespace, pod) (kube_pod_container_resource_limits{resource=\"memory\",job=\"kube-state-metrics\"}))"
+      action_type = "p0"
+    }
+    "Rabbitmq_Queue_Messages" = {
+      alert_name  = "Rabbitmq_Queue_Messages"
+      severity    = 1
+      for         = "PT5M"
+      expression  = "sum(rabbitmq_queue_messages{job=\"rabbitmq\"}) > 50"
+      action_type = "p1"
+    }
+    "Rabbitmq_Queue_Messages_Ready" = {
+      alert_name  = "Rabbitmq_Queue_Messages_Ready"
+      severity    = 1
+      for         = "PT5M"
+      expression  = "sum(rabbitmq_queue_messages_ready{job=\"rabbitmq\"}) > 40"
+      action_type = "p1"
+    }
+    "Rabbitmq_is_down" = {
+      alert_name  = "Rabbitmq_is_down"
+      severity    = 1
+      for         = "PT5M"
+      expression  = "up{job=\"rabbitmq\"} == 0"
+      action_type = "p1"
+    }
+    "Rabbitmq_Queue_Messages_Unacked" = {
+      alert_name  = "Rabbitmq_Queue_Messages_Unacked"
+      severity    = 1
+      for         = "PT5M"
+      expression  = "sum(rabbitmq_queue_messages_unacked{job=\"rabbitmq\"}) > 10"
+      action_type = "p1"
+    }
+    "node-chat-is-down" = {
+      alert_name  = "node-chat-is-down"
+      severity    = 1
+      for         = "PT5M"
+      expression  = "up{job=\"kubernetes-pods\", app_kubernetes_io_name=\"node-chat\"} == 0"
+      action_type = "p1"
+    }
+  }
 }

@@ -7,3 +7,6 @@ output "endpoints" {
 output "app_repository_logs_storage_account_id" {
   value = module.app-repository-logs.storage_account_id
 }
+output "openai" {
+  value = module.openai
+}

@@ -25,6 +25,7 @@ module "openai" {
       model_version = "2"
       sku_name      = "Standard"
       sku_capacity  = (var.openai_account_location == "francecentral" || var.openai_account_location == "westeurope") ? 240 : var.text_embedding_ada_002_tpm_thousands
+      chat          = false
     }
     "gpt-4" = {
       name          = "gpt-4"

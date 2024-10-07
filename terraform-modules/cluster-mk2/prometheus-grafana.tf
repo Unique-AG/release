@@ -327,29 +327,33 @@ sum(rate(node_cpu_seconds_total{job="node",mode!="idle",mode!="iowait",mode!="st
 EOF
   }
 }
-resource "azurerm_monitor_alert_prometheus_rule_group" "rabbitmq_alert_rules" {
-  count               = var.azure_prometheus_grafana_rabbitmq_alert_enabled ? 1 : 0
-  name                = "${azurerm_kubernetes_cluster.this.name}-RabbitMQ"
+resource "azurerm_monitor_alert_prometheus_rule_group" "aks_services_alerts" {
+  count               = var.azure_prometheus_grafana_aks_services_alerts_enabled ? 1 : 0
+  name                = "${azurerm_kubernetes_cluster.this.name}-AKSServicesAlerts"
   resource_group_name = module.context.resource_group.name
   location            = var.azure_prometheus_grafana_monitor.azure_monitor_location
   cluster_name        = azurerm_kubernetes_cluster.this.name
-  description         = "RabbitMQ alert rules"
+  description         = "AKS Services Alerts"
   rule_group_enabled  = true
-  interval            = "PT1M"
+  interval            = "PT5M"
   scopes              = [azurerm_monitor_workspace.this[count.index].id, azurerm_kubernetes_cluster.this.id]
-  rule {
-    alert      = "Rabbitmq_Queue_Messages_Ready"
-    enabled    = true
-    for        = "PT5M"
-    severity   = 0
-    expression = <<EOF
-sum(rabbitmq_queue_messages_ready{job="rabbitmq"}) > 5
-EOF
-    labels = {
-      workload_type = "job"
-    }
-    action {
-      action_group_id = var.monitor_action_group_ids.p0
+  dynamic "rule" {
+    for_each = var.aks_services_alerts_rules
+    content {
+      alert      = rule.value.alert_name
+      enabled    = true
+      severity   = rule.value.severity
+      for        = rule.value.for
+      expression = rule.value.expression
+      labels = {
+        workload_type = "job"
+      }
+      dynamic "action" {
+        for_each = var.monitor_action_group_ids[rule.value.action_type] != null ? [1] : []
+        content {
+          action_group_id = var.monitor_action_group_ids[rule.value.action_type]
+        }
+      }
     }
   }
 }

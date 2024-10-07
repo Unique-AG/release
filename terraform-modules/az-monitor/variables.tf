@@ -1,6 +1,9 @@
-variable "p0_email_addresses" {
+variable "action_group_list" {
+  description = "A list of action groups"
   type = map(object({
-    email_address = string
+    severity        = string
+    email_addresses = list(string)
   }))
-  description = "Email addresses for p0 alerts"
+  default = {
+  }
 }
