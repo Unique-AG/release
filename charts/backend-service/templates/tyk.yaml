@@ -45,6 +45,9 @@ spec:
                 {{- if .methods }}
                 {{- range .methods }}
                 {{ . }}:
+                  action: no_action
+                  code: 200
+                  headers: {}
                 {{- end }}
                 {{- end }}
               path: {{ .path }}

@@ -18,3 +18,8 @@ variable "vm_exclusion_tags" {
   default     = "[]"
   description = "List of tags to exclude from VM scanning."
 }
+variable "enable_auto_provisioning" {
+  type        = bool
+  default     = true
+  description = "Enable auto provisioning"
+}

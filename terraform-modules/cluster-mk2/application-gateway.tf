@@ -127,6 +127,26 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
     }
   }
   dynamic "custom_rules" {
+    for_each = var.gateway.sku == "WAF_v2" ? [1] : []
+    content {
+      name      = "AllowIngestionUpload"
+      priority  = 3
+      rule_type = "MatchRule"
+      action    = "Allow"
+      match_conditions {
+        match_variables {
+          variable_name = "RequestUri"
+        }
+        operator           = "BeginsWith"
+        negation_condition = false
+        match_values = [
+          "/scoped/ingestion/upload"
+        ]
+        transforms = ["Lowercase"]
+      }
+    }
+  }
+  dynamic "custom_rules" {
     for_each = var.gateway.sku == "WAF_v2" && length(var.gateway.waf.custom_rules) > 0 ? var.gateway.waf.custom_rules : []
     content {
       name      = custom_rules.value.name

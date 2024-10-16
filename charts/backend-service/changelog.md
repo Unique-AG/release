@@ -1,5 +1,8 @@
 # Changelog `backend-service`
 
+## [1.2.2]
+Add missing required ignorePaths configuration
+
 ## [1.2.1]
 Add a metadata map under deployment to add labels and annotations
 

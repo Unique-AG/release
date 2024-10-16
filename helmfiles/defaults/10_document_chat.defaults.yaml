@@ -38,7 +38,7 @@ chat:
       MAX_HEAP_MB: 400
       FEATURE_FLAG_NEW_TRANSLATION_UI_UN_7233: "true"
       FEATURE_FLAG_STOP_STREAMING_UN_4824: "true"
-      FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: ""
+      FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: "true"
     resources:
       requests:
         cpu: 300m
@@ -115,6 +115,7 @@ chat:
         {"name": "ImageUpload", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/image_upload"}
         ]
       ENABLE_CLIENT_INSIGHT_SHIPPER: "false"
+      MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER: '30'
     serviceAccount: {}
     resources:
       requests:

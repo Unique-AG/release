@@ -27,6 +27,7 @@ resource "azurerm_security_center_subscription_pricing" "cspm_full" {
   }
 }
 resource "azurerm_security_center_auto_provisioning" "auto_provisioning" {
+  count          = var.enable_auto_provisioning ? 1 : 0
   auto_provision = "On"
 }
 resource "azurerm_security_center_subscription_pricing" "cwp_storage" {

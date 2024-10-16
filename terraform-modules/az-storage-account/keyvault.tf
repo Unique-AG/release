@@ -15,7 +15,7 @@ data "azurerm_storage_account" "this" {
   resource_group_name = module.context.resource_group.name
 }
 resource "azurerm_key_vault" "this" {
-  name                        = module.context.full_name_truncated
+  name                        = replace(module.context.full_name_truncated, "--", "-")
   location                    = module.context.resource_group.location
   resource_group_name         = module.context.resource_group.name
   enabled_for_disk_encryption = true
