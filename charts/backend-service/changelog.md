@@ -1,5 +1,8 @@
 # Changelog `backend-service`
 
+## [1.2.3]
+Link the initContainer volume with the Deployment/Job/Cronjob containers
+
 ## [1.2.2]
 Add missing required ignorePaths configuration
 

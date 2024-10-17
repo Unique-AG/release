@@ -2,4 +2,4 @@ apiVersion: v2
 name: image-pull-secret
 description: A common helm chart for our image pull secret needed for each k8s namespace when using registries and username & password authentication.
 type: application
-version: 1.0.4
+version: 1.0.5

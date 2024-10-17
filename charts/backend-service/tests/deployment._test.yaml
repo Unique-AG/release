@@ -91,3 +91,36 @@ tests:
       - equal:
           path: metadata.annotations.test
           value: true
+
+  - it: When given an initContainer, should always render volumeMounts and volumes for them
+    set:
+      tyk.listenPath: /unit-test
+      image.tag: pinned-version
+      deployment.enabled: true
+      deployment.initContainers[0]:
+        volumeMounts:
+          - name: data
+            mountPath: /opt
+            mountPathDeployment: /opt/folder
+        command:
+          - "sh"
+          - "-e"
+          - "echo"
+          - "helloWorld"
+        
+    template: deployment.yaml
+    asserts:
+      - isKind:
+          of: Deployment
+      - isNotNullOrEmpty:
+          path: spec.template.spec.initContainers[0]
+      - isNotNullOrEmpty:
+          path: spec.template.spec.initContainers[?(@.name == "init-ut")]
+      - isNotNullOrEmpty:
+          path: spec.template.spec.volumes[?(@.name == "data")]
+      - isNotNullOrEmpty:
+          path: spec.template.spec.containers[?(@.name == "ut")].volumeMounts[?(@.name == "data")]
+      - isNotNullOrEmpty:
+          path: spec.template.spec.containers[?(@.name == "ut")].volumeMounts[?(@.mountPath == "/opt/folder")]
+      - isNotNullOrEmpty:
+          path: spec.template.spec.containers[?(@.name == "ut")].volumeMounts[?(@.readOnly == false)]

@@ -67,7 +67,7 @@ releases:
       -
         image:
           repository: {{ .Values.chat._common.acr.url }}/backend-service-ingestion
-          tag: {{ .Values.chat._common.tenantReleaseOverrides.nodeIngestion | default .Values.chat._common.defaultReleases.nodeIngestion }}
+          tag: {{ .Values.chat._common.tenantReleaseOverrides.nodeIngestion | default .Values.chat._common.defaultReleases.nodeIngestion | quote }}
         replicaCount: {{ .Values.chat.nodeIngestion | get "replicaCount" 2 }}
         imagePullSecrets:
           - name: image-pull-secret
@@ -161,7 +161,7 @@ releases:
       -
         image:
           repository: {{ .Values.chat._common.acr.url }}/backend-service-ingestion-worker
-          tag: {{ .Values.chat._common.tenantReleaseOverrides.nodeIngestionWorker | default .Values.chat._common.defaultReleases.nodeIngestionWorker }}
+          tag: {{ .Values.chat._common.tenantReleaseOverrides.nodeIngestionWorker | default .Values.chat._common.defaultReleases.nodeIngestionWorker | quote }}
         replicaCount: 0
         imagePullSecrets:
           - name: image-pull-secret
@@ -223,7 +223,7 @@ releases:
       -
         image:
           repository: {{ .Values.chat._common.acr.url }}/backend-service-ingestion-worker
-          tag: {{ .Values.chat._common.tenantReleaseOverrides.nodeIngestionWorker | default .Values.chat._common.defaultReleases.nodeIngestionWorker }}
+          tag: {{ .Values.chat._common.tenantReleaseOverrides.nodeIngestionWorker | default .Values.chat._common.defaultReleases.nodeIngestionWorker | quote }}
         replicaCount: 0
         imagePullSecrets:
           - name: image-pull-secret
@@ -285,7 +285,7 @@ releases:
       -
         image:
           repository: {{ .Values.chat._common.acr.url }}/backend-service-chat
-          tag: {{ .Values.chat._common.tenantReleaseOverrides.nodeChat | default .Values.chat._common.defaultReleases.nodeChat }}
+          tag: {{ .Values.chat._common.tenantReleaseOverrides.nodeChat | default .Values.chat._common.defaultReleases.nodeChat | quote }}
         replicaCount: {{ .Values.chat.nodeChat | get "replicaCount" 2 }}
         imagePullSecrets:
           - name: image-pull-secret
@@ -313,6 +313,7 @@ releases:
           INTERNAL_MODULES_CONFIG: {{ .Values.chat.nodeChat.env.INTERNAL_MODULES_CONFIG | quote }}
           ENABLE_CLIENT_INSIGHT_SHIPPER: {{ .Values.chat.nodeChat.env | get "ENABLE_CLIENT_INSIGHT_SHIPPER" false }}
           MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER: {{ .Values.chat.nodeChat.env | get "MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER" 30 }}
+          FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: {{ .Values.chat.nodeChat.env | get "FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747" true }}
         envSecrets:
           LAUNCH_DARKLY_SDK_KEY: {{ .Values.chat._common.secrets.LAUNCH_DARKLY_SDK_KEY | fetchSecretValue | quote }}
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/chat"
@@ -367,7 +368,7 @@ releases:
           type: {{ .Values.chat.nextKnowledgeUpload | get "strategy.type" "RollingUpdate" }}
         image:
           repository: {{ .Values.chat._common.acr.url }}/web-app-knowledge-upload
-          tag: {{ .Values.chat._common.tenantReleaseOverrides.nextKnowledgeUpload | default .Values.chat._common.defaultReleases.nextKnowledgeUpload }}
+          tag: {{ .Values.chat._common.tenantReleaseOverrides.nextKnowledgeUpload | default .Values.chat._common.defaultReleases.nextKnowledgeUpload | quote }}
         imagePullSecrets:
           - name: image-pull-secret
         env:
@@ -425,7 +426,7 @@ releases:
           type: {{ .Values.chat.nextChat | get "strategy.type" "RollingUpdate" }}
         image:
           repository: {{ .Values.chat._common.acr.url }}/web-app-chat
-          tag: {{ .Values.chat._common.tenantReleaseOverrides.nextChat | default .Values.chat._common.defaultReleases.nextChat }}
+          tag: {{ .Values.chat._common.tenantReleaseOverrides.nextChat | default .Values.chat._common.defaultReleases.nextChat | quote }}
         imagePullSecrets:
           - name: image-pull-secret
         resources:
@@ -434,6 +435,7 @@ releases:
           CHAT_APP_URL: https://{{ .Values.host }}/chat
           CHAT_BACKEND_API_URL: https://gateway.{{ .Values.host }}/chat
           INGESTION_BACKEND_API_URL: https://gateway.{{ .Values.host }}/ingestion
+          SCOPE_MANAGEMENT_BACKEND_API_URL: https://gateway.{{ .Values.host }}/scope-management
           THEME_BACKEND_API_URL: https://gateway.{{ .Values.host }}/theme
           KNOWLEDGE_UPLOAD_APP_URL: https://{{ .Values.host }}/knowledge-upload
           ADMIN_APP_URL: https://{{ .Values.host }}/admin
@@ -487,7 +489,7 @@ releases:
           type: {{ .Values.chat.nextTheme | get "strategy.type" "RollingUpdate" }}
         image:
           repository: {{ .Values.chat._common.acr.url }}/web-app-theme
-          tag: {{ .Values.chat._common.tenantReleaseOverrides.nextTheme | default .Values.chat._common.defaultReleases.nextTheme }}
+          tag: {{ .Values.chat._common.tenantReleaseOverrides.nextTheme | default .Values.chat._common.defaultReleases.nextTheme | quote }}
         imagePullSecrets:
           - name: image-pull-secret
         resources:
@@ -533,7 +535,7 @@ releases:
           type: {{ .Values.chat.nextAdmin | get "strategy.type" "RollingUpdate" }}
         image:
           repository: {{ .Values.chat._common.acr.url }}/web-app-admin
-          tag: {{ .Values.chat._common.tenantReleaseOverrides.nextAdmin | default .Values.chat._common.defaultReleases.nextAdmin }}
+          tag: {{ .Values.chat._common.tenantReleaseOverrides.nextAdmin | default .Values.chat._common.defaultReleases.nextAdmin | quote }}
         imagePullSecrets:
           - name: image-pull-secret
         resources:
@@ -587,7 +589,7 @@ releases:
       -
         image:
           repository: {{ .Values.chat._common.acr.url }}/backend-service-theme
-          tag: {{ .Values.chat._common.tenantReleaseOverrides.nodeTheme | default .Values.chat._common.defaultReleases.nodeTheme }}
+          tag: {{ .Values.chat._common.tenantReleaseOverrides.nodeTheme | default .Values.chat._common.defaultReleases.nodeTheme | quote }}
         replicaCount: {{ .Values.chat.nodeTheme | get "replicaCount" 1 }}
         imagePullSecrets:
           - name: image-pull-secret
@@ -624,7 +626,7 @@ releases:
       -
         image:
           repository: {{ .Values.chat._common.acr.url }}/backend-service-scope-management
-          tag: {{ .Values.chat._common.tenantReleaseOverrides.nodeScopeManagement | default .Values.chat._common.defaultReleases.nodeScopeManagement }}
+          tag: {{ .Values.chat._common.tenantReleaseOverrides.nodeScopeManagement | default .Values.chat._common.defaultReleases.nodeScopeManagement | quote }}
         replicaCount: {{ .Values.chat.nodeScopeManagement | get "replicaCount" 1 }}
         imagePullSecrets:
           - name: image-pull-secret
@@ -686,7 +688,7 @@ releases:
           type: {{ .Values.chat.assistantsCore | get "strategy.type" "RollingUpdate" }}
         image:
           repository: {{ .Values.chat._common.acr.url }}/ai-service-assistants-core
-          tag: {{ .Values.chat._common.tenantReleaseOverrides.assistantsCore | default .Values.chat._common.defaultReleases.assistantsCore }}
+          tag: {{ .Values.chat._common.tenantReleaseOverrides.assistantsCore | default .Values.chat._common.defaultReleases.assistantsCore | quote }}
         imagePullSecrets:
           - name: image-pull-secret
         env:

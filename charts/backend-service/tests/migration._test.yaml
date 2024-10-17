@@ -88,3 +88,36 @@ tests:
                 name: my-secret
           count: 1
           any: true
+
+  - it: When given an initContainer, should always render volumeMounts and volumes for them
+    set:
+      tyk.listenPath: /unit-test
+      image.tag: pinned-version
+      hooks.migration.enabled: true
+      hooks.migration.initContainers[0]:
+        volumeMounts:
+          - name: data
+            mountPath: /opt
+            mountPathJob: /opt/folder
+        command:
+          - "sh"
+          - "-e"
+          - "echo"
+          - "helloWorld"
+        
+    template: hooks/migration.yaml
+    asserts:
+      - isKind:
+          of: Job
+      - isNotNullOrEmpty:
+          path: spec.template.spec.initContainers[0]
+      - isNotNullOrEmpty:
+          path: spec.template.spec.initContainers[?(@.name == "init-ut")]
+      - isNotNullOrEmpty:
+          path: spec.template.spec.volumes[?(@.name == "data")]
+      - isNotNullOrEmpty:
+          path: spec.template.spec.containers[?(@.name == "db-migration")].volumeMounts[?(@.name == "data")]
+      - isNotNullOrEmpty:
+          path: spec.template.spec.containers[?(@.name == "db-migration")].volumeMounts[?(@.mountPath == "/opt/folder")]
+      - isNotNullOrEmpty:
+          path: spec.template.spec.containers[?(@.name == "db-migration")].volumeMounts[?(@.readOnly == false)]

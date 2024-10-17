@@ -21,16 +21,16 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:            2024.40
-      nextKnowledgeUpload: 2024.40
-      nextTheme:           2024.40
-      nextAdmin:           2024.40
-      nodeChat:            2024.40
-      nodeIngestion:       2024.40
-      nodeIngestionWorker: 2024.40
-      nodeTheme:           2024.40
-      nodeScopeManagement: 2024.40
-      assistantsCore:      2024.40
+      nextChat:            "2024.42"
+      nextKnowledgeUpload: "2024.42"
+      nextTheme:           "2024.42"
+      nextAdmin:           "2024.42"
+      nodeChat:            "2024.42"
+      nodeIngestion:       "2024.42"
+      nodeIngestionWorker: "2024.42"
+      nodeTheme:           "2024.42"
+      nodeScopeManagement: "2024.42"
+      assistantsCore:      "2024.42"
   _rootIngress:
     enabled: true
   nextChat:
@@ -115,7 +115,8 @@ chat:
         {"name": "ImageUpload", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/image_upload"}
         ]
       ENABLE_CLIENT_INSIGHT_SHIPPER: "false"
-      MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER: '30'
+      MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER: "30"
+      FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: "true"
     serviceAccount: {}
     resources:
       requests:

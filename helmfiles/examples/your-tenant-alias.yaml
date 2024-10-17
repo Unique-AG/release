@@ -144,6 +144,7 @@ appRepo:
       nodeWebhookWorker:
       nodeWebhookScheduler:
       typescriptServiceEventSocket:
+      clientInsightsExporter:
   nodeAppRepository:
     secrets:
       ENCRYPTION_KEY: ref+azurekeyvault://your-vault-name/manual-app-repository-encryption-key

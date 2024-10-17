@@ -47,7 +47,8 @@ spec:
           volumeMounts:
           {{- range .volumeMounts }}
             - name: {{ .name}}
-              mountPath: {{ .mountPath}}   
+              mountPath: {{ .mountPath }}   
+              readOnly: {{ .readOnly | default false }}
           {{- end }}
           {{- end }}
       {{- end }}
@@ -73,6 +74,17 @@ spec:
               readOnly: true
            {{- end }}
            {{- end }}
+          {{- if .Values.hooks.migration.initContainers }}
+          {{- range .Values.hooks.migration.initContainers }}
+          {{- if .volumeMounts }}
+          {{- range .volumeMounts }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPathJob | default .mountPath }}
+              readOnly: {{ .readOnly | default false }}
+          {{- end }}
+          {{- end }}   
+          {{- end }}
+          {{- end }}
           securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
           envFrom:
             - configMapRef:
@@ -136,6 +148,16 @@ spec:
       volumes:
       {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.hooks.migration.initContainers }}
+      {{- range .Values.hooks.migration.initContainers }}
+      {{- if .volumeMounts }}
+      {{- range .volumeMounts }}
+        - name: {{ .name }}
+          emptyDir: {}
+      {{- end }}
+      {{- end }}   
+      {{- end }}
       {{- end }}
       {{- if .Values.secretProvider }}
       {{- range $k, $v := .Values.secretProvider.vaults }}

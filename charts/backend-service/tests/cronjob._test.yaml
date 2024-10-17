@@ -71,3 +71,36 @@ tests:
           of: CronJob
       - isNotNullOrEmpty:
           path: spec.jobTemplate.spec.template.spec.containers[?(@.name == "ut")].env[?(@.name == "NAME_OF_ENV")]
+
+  - it: When given an initContainer, should always render volumeMounts and volumes for them
+    set:
+      tyk.listenPath: /unit-test
+      image.tag: pinned-version
+      cronJob.enabled: true
+      cronJob.jobTemplate.containers.name: ut
+      cronJob.initContainers[0]:
+        command:
+          - "sh"
+          - "-e"
+          - "echo"
+          - "helloWorld"
+        volumeMounts:
+          - name: data
+            mountPath: /opt
+            mountPathCronjob: /opt/folder
+    template: cronjob.yaml
+    asserts:
+      - isKind:
+          of: CronJob
+      - isNotNullOrEmpty:
+          path: spec.jobTemplate.spec.template.spec.initContainers[0]
+      - isNotNullOrEmpty:
+          path: spec.jobTemplate.spec.template.spec.initContainers[?(@.name == "init-ut")]
+      - isNotNullOrEmpty:
+          path: spec.jobTemplate.spec.template.spec.volumes[?(@.name == "data")]
+      - isNotNullOrEmpty:
+          path: spec.jobTemplate.spec.template.spec.containers[?(@.name == "ut")].volumeMounts[?(@.name == "data")]
+      - isNotNullOrEmpty:
+          path: spec.jobTemplate.spec.template.spec.containers[?(@.name == "ut")].volumeMounts[?(@.mountPath == "/opt/folder")]
+      - isNotNullOrEmpty:
+          path: spec.jobTemplate.spec.template.spec.containers[?(@.name == "ut")].volumeMounts[?(@.readOnly == false)]

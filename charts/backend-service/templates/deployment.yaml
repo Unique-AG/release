@@ -67,7 +67,8 @@ spec:
           volumeMounts:
           {{- range .volumeMounts }}
             - name: {{ .name}}
-              mountPath: {{ .mountPath}}   
+              mountPath: {{ .mountPath }}
+              readOnly: {{ .readOnly | default true }}
           {{- end }}
           {{- end }}
       {{- end }}
@@ -153,6 +154,17 @@ spec:
             - name: audit
               mountPath: {{ default "/audit" .Values.auditVolume.mountPath }}
           {{- end }}
+          {{- if .Values.deployment.initContainers }}
+          {{- range .Values.deployment.initContainers }}
+          {{- if .volumeMounts }}
+          {{- range .volumeMounts }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPathDeployment | default .mountPath }}
+              readOnly: {{ .readOnly | default false }}
+          {{- end }}
+          {{- end }}   
+          {{- end }}
+          {{- end }}
           {{- if .Values.secretProvider }}
           {{- range $k, $v := .Values.secretProvider.vaults }}
             - name: {{ $fullName }}-{{ $k }}
@@ -183,6 +195,16 @@ spec:
         - name: audit
           persistentVolumeClaim:
             claimName: {{ $fullName }}-audit
+      {{- end }}
+      {{- if .Values.deployment.initContainers }}
+      {{- range .Values.deployment.initContainers }}
+      {{- if .volumeMounts }}
+      {{- range .volumeMounts }}
+        - name: {{ .name }}
+          emptyDir: {}
+      {{- end }}
+      {{- end }}   
+      {{- end }}
       {{- end }}
       {{- if .Values.secretProvider }}
       {{- range $k, $v := .Values.secretProvider.vaults }}

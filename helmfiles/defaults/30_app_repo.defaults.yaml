@@ -9,10 +9,11 @@ appRepo:
       seccompProfile:
         type: RuntimeDefault
     defaultReleases:
-      nodeAppRepository:               2024.40
-      nodeWebhookWorker:               2024.40
-      nodeWebhookScheduler:            2024.40
-      typescriptServiceEventSocket:    2024.40
+      nodeAppRepository:            "2024.42"
+      nodeWebhookWorker:            "2024.42"
+      nodeWebhookScheduler:         "2024.42"
+      typescriptServiceEventSocket: "2024.42"
+      clientInsightsExporter:       "2024.42"
   nodeAppRepository:
     env:
       MAX_HEAP_MB: 750
@@ -72,3 +73,15 @@ appRepo:
           - path: "/events/stream" # Increase timeout for EventSource connections
             method: "GET"
             timeoutSeconds: 600 # 10 minutes
+  clientInsightsExporter:
+    env:
+      MAX_HEAP_MB: 200
+    resources:
+      requests:
+        cpu: 100m
+        memory: 300Mi
+      limits:
+        cpu: 200m
+        memory: 350Mi
+    cronJob:
+      enabled: false

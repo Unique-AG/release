@@ -45,6 +45,8 @@ deployment:
   #     volumeMounts:
   #       - name: data
   #         mountPath: /opt
+  #         mountPathDeployment: /opt/folder
+  #         readOnly: true
 
 service:
   enabled: true
@@ -192,6 +194,8 @@ cronJob:
   #     volumeMounts:
   #       - name: data
   #         mountPath: /opt
+  #         mountPathCronjob: /opt/folder
+  #         readOnly: true
 
 # !!! usePodIdentity will be deprecated in the future please use useVMManagedIdentity with the clientID
 # .Values.secretProvider lets you mount secrets from Azure Key Vault into the pod
@@ -250,7 +254,7 @@ hooks:
     enabled: false
     # name: "" defaults to db-migration
     command: ""
-    # initContainers:
+    # initContainers: 
     #   - command:
     #       - sh
     #       - -c
@@ -258,6 +262,8 @@ hooks:
     #     volumeMounts:
     #       - name: data
     #         mountPath: /opt
+    #         mountPathJob: /opt/folder
+    #         readOnly: true
 
 eventBasedAutoscaling:
   enabled: false

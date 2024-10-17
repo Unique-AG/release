@@ -6,7 +6,7 @@ environments:
       - ./your-tenant-alias.yaml
 releases:
   - name: image-pull-secret
-    chart: ../../../charts/image-pull-secret
+    chart: ../../charts/image-pull-secret
     namespace: apps
     createNamespace: true
     wait: false
@@ -25,7 +25,7 @@ releases:
       -
         image:
           repository: {{ .Values.appRepo._common.acr.url }}/backend-service-app-repository
-          tag: {{ .Values.appRepo._common.tenantReleaseOverrides.nodeAppRepository | default .Values.appRepo._common.defaultReleases.nodeAppRepository }}
+          tag: {{ .Values.appRepo._common.tenantReleaseOverrides.nodeAppRepository | default .Values.appRepo._common.defaultReleases.nodeAppRepository | quote }}
         replicaCount: {{ .Values.appRepo.nodeAppRepository | get "replicaCount" 1 }}
         imagePullSecrets:
           - name: image-pull-secret
@@ -74,7 +74,7 @@ releases:
       -
         image:
           repository: {{ .Values.appRepo._common.acr.url }}/backend-service-webhook-scheduler
-          tag: {{ .Values.appRepo._common.tenantReleaseOverrides.nodeWebhookScheduler | default .Values.appRepo._common.defaultReleases.nodeWebhookScheduler }}
+          tag: {{ .Values.appRepo._common.tenantReleaseOverrides.nodeWebhookScheduler | default .Values.appRepo._common.defaultReleases.nodeWebhookScheduler | quote }}
         replicaCount: {{ .Values.appRepo.nodeWebhookScheduler | get "replicaCount" 1 }}
         imagePullSecrets:
           - name: image-pull-secret
@@ -101,7 +101,7 @@ releases:
       -
         image:
           repository: {{ .Values.appRepo._common.acr.url }}/backend-service-webhook-worker
-          tag: {{ .Values.appRepo._common.tenantReleaseOverrides.nodeWebhookWorker | default .Values.appRepo._common.defaultReleases.nodeWebhookWorker }}
+          tag: {{ .Values.appRepo._common.tenantReleaseOverrides.nodeWebhookWorker | default .Values.appRepo._common.defaultReleases.nodeWebhookWorker | quote }}
         replicaCount: {{ .Values.appRepo.nodeWebhookWorker | get "replicaCount" 1 }}
         imagePullSecrets:
           - name: image-pull-secret
@@ -128,7 +128,7 @@ releases:
       -
         image:
           repository: {{ .Values.appRepo._common.acr.url }}/backend-service-event-socket
-          tag: {{ .Values.appRepo._common.tenantReleaseOverrides.typescriptServiceEventSocket | default .Values.appRepo._common.defaultReleases.typescriptServiceEventSocket }}
+          tag: {{ .Values.appRepo._common.tenantReleaseOverrides.typescriptServiceEventSocket | default .Values.appRepo._common.defaultReleases.typescriptServiceEventSocket | quote }}
         replicaCount: {{ .Values.appRepo.typescriptServiceEventSocket | get "replicaCount" 1 }}
         imagePullSecrets:
           - name: image-pull-secret
@@ -151,3 +151,41 @@ releases:
               {{ .Values.appRepo.typescriptServiceEventSocket.tyk.exposePublicApi.hardTimeouts | toYaml | nindent 14 }}
         resources:
           {{ .Values.appRepo.typescriptServiceEventSocket.resources | toYaml | nindent 10 }}
+  - name: client-insights-exporter
+    chart: ../../charts/backend-service
+    namespace: apps
+    createNamespace: true
+    wait: false
+    values:
+      -
+        image:
+          repository: {{ .Values.appRepo._common.acr.url }}/backend-service-client-insights-exporter
+          tag: {{ .Values.appRepo._common.tenantReleaseOverrides.clientInsightsExporter | default .Values.appRepo._common.defaultReleases.clientInsightsExporter | quote }}
+        replicaCount: {{ .Values.appRepo.clientInsightsExporter | get "replicaCount" 1 }}
+        imagePullSecrets:
+          - name: image-pull-secret
+        env:
+          LOG_LEVEL: info
+          MAX_HEAP_MB: {{ .Values.appRepo.clientInsightsExporter.env.MAX_HEAP_MB }}
+          DATA_SOURCE_URLS: http://node-scope-management.chat.svc.cluster.local:8094/insights;http://node-chat.chat.svc.cluster.local:8093/insights
+          CLIENT_INSIGHT_SERVER_URL: https://gateway.unique.app/insights/client-insights
+        securityContext:
+          {{ .Values.appRepo._common.securityContext | toYaml | nindent 10 }}
+        tyk:
+          enabled: false
+        resources:
+          {{ .Values.appRepo.clientInsightsExporter.resources | toYaml | nindent 10 }}
+        cronJob:
+          enabled: {{ .Values.appRepo.clientInsightsExporter.cronJob.enabled | quote }}
+          name: client-insights-exporter
+          suspend: false
+          schedule: "0 0 * * *"
+          timeZone: Europe/Zurich
+          concurrencyPolicy: Forbid
+          successfulJobsHistoryLimit: 1
+          failedJobsHistoryLimit: 1
+          startingDeadlineSeconds: 10
+          jobTemplate:
+            restartPolicy: Never
+            containers:
+              name: client-insights-exporter

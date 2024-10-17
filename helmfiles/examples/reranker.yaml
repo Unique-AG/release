@@ -1,5 +1,5 @@
 environments:
-  crown-prod:
+  your-tenant-alias:
     values:
       - ../defaults/01_system.defaults.yaml
       - ../defaults/40_reranker.defaults.yaml
