@@ -178,6 +178,11 @@ module "workload_identities" {
       namespace   = "chat"
       roles       = ["Cognitive Services User" /* Document Intelligence */]
     }
+    assistants-core = {
+      keyvault_id = module.chat.keyvault_id
+      namespace   = "python"
+      roles       = ["Cognitive Services User" /* Document Intelligence */]
+    }
   }
 }
 module "chat" {
