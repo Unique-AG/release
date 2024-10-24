@@ -43,6 +43,39 @@ ingress:
   tls:
     enabled: false
 
+httproute:
+  enabled: false
+  annotations: {}
+  gatewayName: kong
+  gatewayNamespace: system
+  hostnames: []
+  rules:
+    - matches:
+      - path:
+          type: PathPrefix
+          value: /
+      # backendRefs can be omitted to use the default service
+      # backendRefs:
+      #   - name: custom-service
+      #     kind: Service
+      #     port: 8080
+    # Example of a more complex rule
+    # - matches:
+    #   - headers:
+    #       - name: "X-Version"
+    #         value: "v3"
+    #     path:
+    #       type: PathPrefix
+    #       value: /test
+    #   backendRefs:
+    #     - name: api-v2
+    #       kind: Service
+    #       port: 8081
+    
+  # Additional HTTPRoutes
+  additionalRoutes: []
+
+
 env: {}
 
 # Names of existing config maps to be used as env vars (configMapRef in envFrom)

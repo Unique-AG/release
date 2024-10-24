@@ -42,6 +42,8 @@ tests:
           - name: data
             mountPath: /opt
             mountPathDeployment: /opt/folder
+            readOnly: true
+            emptyDir: true
         command:
           - "sh"
           - "-e"
@@ -62,4 +64,51 @@ tests:
       - isNotNullOrEmpty:
           path: spec.template.spec.containers[?(@.name == "ut")].volumeMounts[?(@.mountPath == "/opt/folder")]
       - isNotNullOrEmpty:
+          path: spec.template.spec.containers[?(@.name == "ut")].volumeMounts[?(@.readOnly == true)]
+      - isNotNullOrEmpty:
+          path: spec.template.spec.volumes[?(@.name == "data")]
+
+  - it: When given an initContainer and PVC enabled, should always render volumeMounts and volumes for them
+    set:
+      pvc.enabled: true
+      pvc.name: data-pvc
+      pvc.storage: 1Gi
+      pvc.storageClassName: azurefile
+      volumes:
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: static-claim
+      deployment.initContainers[0]:
+        volumeMounts:
+          - name: data-pvc
+            mountPath: /opt
+            mountPathDeployment: /opt/folder
+            readOnly: false
+            emptyDir: false 
+        command:
+          - "sh"
+          - "-e"
+          - "echo"
+          - "helloWorld"
+    template: deployment.yaml
+    asserts:
+      - isKind:
+          of: Deployment
+      - isNotNullOrEmpty:
+          path: spec.template.spec.initContainers[0]
+      - isNotNullOrEmpty:
+          path: spec.template.spec.initContainers[?(@.name == "init-ut")]
+      - isNotNullOrEmpty:
+          path: spec.template.spec.containers[?(@.name == "ut")].volumeMounts[?(@.name == "data-pvc")]
+      - isNotNullOrEmpty:
+          path: spec.template.spec.containers[?(@.name == "ut")].volumeMounts[?(@.mountPath == "/opt/folder")]
+      - isNotNullOrEmpty:
           path: spec.template.spec.containers[?(@.name == "ut")].volumeMounts[?(@.readOnly == false)]
+      - isNotNullOrEmpty:
+          path: spec.template.spec.volumes[?(@.name == "data-pvc")]
+      - isNotNullOrEmpty:
+          path: spec.template.spec.volumes[?(@.name == "data-pvc")].persistentVolumeClaim[?(@.claimName == "data-pvc")]
+      - isNotNullOrEmpty:
+          path: spec.template.spec.volumes[?(@.name == "data-volume")]
+      - isNotNullOrEmpty:
+          path: spec.template.spec.volumes[?(@.name == "data-volume")].persistentVolumeClaim[?(@.claimName == "static-claim")]

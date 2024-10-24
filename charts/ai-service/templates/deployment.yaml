@@ -56,7 +56,7 @@ spec:
           {{- range .volumeMounts }}
             - name: {{ .name}}
               mountPath: {{ .mountPath}}
-              readOnly: {{ .readOnly | default true }}
+              readOnly: {{ .readOnly | default false }}
           {{- end }}
           {{- end }}
       {{- end }}
@@ -155,12 +155,22 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
+      {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.pvc.enabled }}
+        - name: {{ .Values.pvc.name | default $fullName }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.pvc.name | default $fullName }}
+      {{- end }}
       {{- if .Values.deployment.initContainers }}
       {{- range .Values.deployment.initContainers }}
       {{- if .volumeMounts }}
       {{- range .volumeMounts }}
+       {{- if eq .emptyDir true }}
         - name: {{ .name }}
           emptyDir: {}
+       {{- end }}
       {{- end }}
       {{- end }}   
       {{- end }}

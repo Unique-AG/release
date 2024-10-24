@@ -126,7 +126,7 @@ module "cluster" {
       alert_name = "HighCPUUsageContainersInAKS"
       severity   = 0
       for        = "PT10M"
-      expression = "sum by (cluster, namespace, pod, container) (irate(container_cpu_usage_seconds_total{job=\"cadvisor\", image!=\"\"}[5m])) > 0.95"
+      expression = "sum by (cluster, namespace, pod, container) (irate(container_cpu_usage_seconds_total{job=\"cadvisor\", image!=\"\"}[15m])) > 0.95"
       receivers = [
         module.monitor.monitor_action_group_ids.slack-platform
       ]

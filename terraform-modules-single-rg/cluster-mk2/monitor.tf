@@ -5,7 +5,7 @@ resource "azurerm_monitor_metric_alert" "appgw_5xx" {
   scopes              = [azurerm_application_gateway.appgw.id]
   description         = "Action will be triggered if there are more than 0 failed requests (5xx) on the Application Gateway."
   severity            = "0"
-  frequency           = "PT1M"
+  frequency           = "PT5M"
   criteria {
     metric_namespace = "microsoft.network/applicationgateways"
     metric_name      = "ResponseStatus"

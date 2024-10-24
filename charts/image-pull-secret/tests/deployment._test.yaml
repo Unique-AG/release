@@ -1,0 +1,41 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/helm-unittest/helm-unittest/main/schema/helm-testsuite.json
+suite: Regression Test Deployment
+templates:
+  - deployment.yaml
+release:
+  name: ut
+tests:
+  - it: When given a secretProvider, should always render volumeMounts and volumes for them
+    set:
+      spc:
+        - name: my-spc
+          keyvaultName: my-azure-kv
+          install: true # If false the spc will not be created
+          useVMManagedIdentity: "true"
+          userAssignedIdentityID: "XXXXXX-XXXX-XXXX"
+          tenantId: "xxxx-xxxx-xxxxxx-x"
+          secrets:
+            - name: my-secret-1
+              type: Opaque
+              labels:
+                app: test-value
+                env: dev
+              data:
+                - objectName: my-demo-secret-1
+                  key: the-name-to-display-in-k8s
+                  objectType: secret
+                  objectVersion: ""
+
+    template: deployment.yaml
+    asserts:
+      - isKind:
+          of: Deployment
+
+      - isNotNullOrEmpty:
+          path: spec.template.spec.volumes[?(@.name == "my-spc")]
+
+      - isNotNullOrEmpty:
+          path: spec.template.spec.containers[?(@.name == "busybox")].volumeMounts[?(@.name == "my-spc")]
+      
+      - isNotNullOrEmpty:
+          path: spec.template.spec.volumes[?(@.name == "my-spc")].csi.volumeAttributes[?(@.secretProviderClass == "my-spc")]

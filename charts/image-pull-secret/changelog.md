@@ -1,5 +1,14 @@
 # Changelog `image-pull-secret`
 
+## [1.0.8]
+Set revisionHistoryLimit to 3 as default
+
+## [1.0.7]
+Add unittest and fix SecretProviderClass
+
+## [1.0.6]
+Change SecretProviderClass name
+
 ## [1.0.5]
 Add revisionHistoryLimit in deployment
 

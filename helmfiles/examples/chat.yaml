@@ -390,7 +390,6 @@ releases:
             {{ "#" }}{{ .Values.chat.nextTheme.env.STATIC_BACKGROUND_COLOR }}
           STATIC_TAB_NAME: {{ .Values.chat.nextTheme.env.STATIC_TAB_NAME | quote }}
           FEATURE_FLAG_NEW_KNOWLEDGE_BASE_UN_5652: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_NEW_KNOWLEDGE_BASE_UN_5652 | quote }}
-          FEATURE_FLAG_ENABLE_SPACE_FOLDER_UN_7028: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_ENABLE_SPACE_FOLDER_UN_7028 | quote }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
         resources:
           {{ .Values.chat.nextKnowledgeUpload.resources | toYaml | nindent 10 }}

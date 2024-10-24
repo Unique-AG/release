@@ -1,5 +1,11 @@
 # Changelog `ai-service`
 
+## [1.0.6]
+- Adjust the persistentVolumeClaim (PVC) to use its default name and configure the MountVolume in initContainers with readOnly set to false by default
+
+## [1.0.5]
+- Add volumes, PVC volumes, and emptyDir volumes in deployment
+
 ## [1.0.4]
 - Add sidecar initContainers and volumes
 
