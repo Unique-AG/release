@@ -63,6 +63,11 @@ resource "azurerm_key_vault_secret" "azure_document_intelligence_endpoints" {
   value        = jsonencode(var.azure_document_intelligence_endpoints)
   key_vault_id = azurerm_key_vault.document-chat.id
 }
+resource "azurerm_key_vault_secret" "azure_document_intelligence_endpoint_definitions" {
+  name         = "azure-document-intelligence-endpoint-definitions"
+  value        = jsonencode(var.azure_document_intelligence_endpoint_definitions)
+  key_vault_id = azurerm_key_vault.document-chat.id
+}
 resource "azurerm_key_vault_secret" "azure_websearch_api_url" {
   name         = "websearch-api-url"
   value        = jsondecode(azurerm_resource_group_template_deployment.argtd_bing_search_v7.output_content).endpoint.value

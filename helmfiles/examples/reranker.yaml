@@ -7,7 +7,8 @@ environments:
 ---
 releases:
   - name: assistants-reranker
-    chart: ../../charts/ai-service
+    chart: oci://ghcr.io/unique-ag/helm-charts/ai-service
+    version: 1.0.8
     namespace: chat
     wait: false
     values:

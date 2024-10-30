@@ -21,16 +21,16 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:            "2024.42"
-      nextKnowledgeUpload: "2024.42"
-      nextTheme:           "2024.42"
-      nextAdmin:           "2024.42"
-      nodeChat:            "2024.42"
-      nodeIngestion:       "2024.42"
-      nodeIngestionWorker: "2024.42"
-      nodeTheme:           "2024.42"
-      nodeScopeManagement: "2024.42"
-      assistantsCore:      "2024.42"
+      nextChat:            "2024.44"
+      nextKnowledgeUpload: "2024.44"
+      nextTheme:           "2024.44"
+      nextAdmin:           "2024.44"
+      nodeChat:            "2024.44"
+      nodeIngestion:       "2024.44"
+      nodeIngestionWorker: "2024.44"
+      nodeTheme:           "2024.44"
+      nodeScopeManagement: "2024.44"
+      assistantsCore:      "2024.44"
   _rootIngress:
     enabled: true
   nextChat:
@@ -81,8 +81,9 @@ chat:
   nextAdmin:
     env:
       MAX_HEAP_MB: 350
+      FEATURE_FLAG_ENABLE_ASSISTANT_ACCESS_UN_5775: true
       FEATURE_FLAG_NEW_TRANSLATION_UI_UN_7233: true
-      FEATURE_FLAG_KNOWLEDGE_SCOPE_UN_5773: ""
+      FEATURE_FLAG_KNOWLEDGE_SCOPE_UN_5773: true
     resources:
       requests:
         cpu: 300m
@@ -110,7 +111,8 @@ chat:
         {"name": "QuestionAnswerer", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/question_answerer"}, 
         {"name": "QuestionPredictor", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/question_predictor"}, 
         {"name": "DocumentSummarizerV2", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/document_summarizer"},
-        {"name": "ImageUpload", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/image_upload"}
+        {"name": "ImageUpload", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/image_upload"},
+        {"name": "DocumentTranslator", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/document_translator"}
         ]
       ENABLE_CLIENT_INSIGHT_SHIPPER: "false"
       MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER: "30"
@@ -180,6 +182,8 @@ chat:
       limits:
         cpu: 1
         memory: 1050Mi
+  nodeIngestionWorkerChat:
+    serviceAccount: {}
   nodeTheme:
     env:
       MAX_HEAP_MB: 200
@@ -210,9 +214,11 @@ chat:
         cpu: 1
         memory: 900Mi
   assistantsCore:
+    serviceAccount: {}
     env:
       GUNICORN_WORKERS: 2
       GUNICORN_THREADS: 4
+      AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT_DEFINITIONS: []
     resources:
       requests:
         cpu: 500m
@@ -239,7 +245,7 @@ zitadel:
   replicaCount: 2
   versions:
     chart: 8.1.0
-    image: v2.62.1
+    image: v2.62.7
   resources:
     requests:
       cpu: 1

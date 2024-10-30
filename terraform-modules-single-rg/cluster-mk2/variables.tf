@@ -108,6 +108,19 @@ variable "gateway" {
         })
       ), [])
       chat_export_ip_allowlist = optional(list(string), [])
+      exclusions = optional(list(
+        object({
+          match_variable          = string
+          selector_match_operator = string
+          selector                = string
+          excluded_rule_set = optional(object({
+            type            = string
+            version         = string
+            excluded_rules  = list(string)
+            rule_group_name = string
+          }))
+        })
+      ), [])
     }), {})
   })
   default = {}
@@ -499,19 +512,48 @@ variable "azure_aks_diagnostic_logs_categories" {
 }
 variable "aks_services_alerts_rules" {
   type = map(object({
+    enabled   = bool
+    receivers = list(string)
+  }))
+  default = {}
+}
+variable "default_aks_services_alerts_rules" {
+  type = map(object({
     alert_name = string
     severity   = number
     for        = string
     expression = string
-    receivers  = list(string)
   }))
   default = {
     "HighCPUUsageContainersInAKS" = {
       alert_name = "HighCPUUsageContainersInAKS"
-      severity   = 0
-      for        = "PT5M"
+      severity   = 3
+      for        = "PT25M"
       expression = "sum by (cluster, namespace, pod, container) (irate(container_cpu_usage_seconds_total{job=\"cadvisor\", image!=\"\"}[5m])) > 0.95"
-      receivers  = []
+    }
+    "HighMemoryUsageContainersInAKS" = {
+      alert_name = "HighMemoryUsageContainersInAKS"
+      severity   = 3
+      for        = "PT25M"
+      expression = "sum by (namespace, pod) (container_memory_working_set_bytes{job=\"cadvisor\", image!=\"\"}) > (0.95 * sum by (namespace, pod) (kube_pod_container_resource_limits{resource=\"memory\",job=\"kube-state-metrics\"}))"
+    }
+    "Rabbitmq_is_down" = {
+      alert_name = "Rabbitmq_is_down"
+      severity   = 0
+      for        = "PT15M"
+      expression = "up{job=\"rabbitmq\"} == 0"
+    }
+    "Rabbitmq_Queue_Messages" = {
+      alert_name = "Rabbitmq_Queue_Messages"
+      severity   = 3
+      for        = "PT15M"
+      expression = "sum(rabbitmq_queue_messages{job=\"rabbitmq\"}) > 1000"
+    }
+    "Rabbitmq_Queue_Messages_Unacked" = {
+      alert_name = "Rabbitmq_Queue_Messages_Unacked"
+      severity   = 3
+      for        = "PT15M"
+      expression = "sum(rabbitmq_queue_messages_unacked{job=\"rabbitmq\"}) > 500"
     }
   }
 }

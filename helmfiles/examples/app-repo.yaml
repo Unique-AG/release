@@ -17,7 +17,8 @@ releases:
           username: {{ .Values.appRepo._common.acr.username | fetchSecretValue | quote }}
           password: {{ .Values.appRepo._common.acr.password | fetchSecretValue | quote }}
   - name: node-app-repository
-    chart: ../../charts/backend-service
+    chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
+    version: 1.3.2
     namespace: apps
     createNamespace: true
     wait: false
@@ -66,7 +67,8 @@ releases:
         probes:
           enabled: false
   - name: node-webhook-scheduler
-    chart: ../../charts/backend-service
+    chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
+    version: 1.3.2
     namespace: apps
     createNamespace: true
     wait: false
@@ -93,7 +95,8 @@ releases:
         probes:
           enabled: false
   - name: node-webhook-worker
-    chart: ../../charts/backend-service
+    chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
+    version: 1.3.2
     namespace: apps
     createNamespace: true
     wait: false
@@ -120,7 +123,8 @@ releases:
         probes:
           enabled: false
   - name: typescript-service-event-socket
-    chart: ../../charts/backend-service
+    chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
+    version: 1.3.2
     namespace: apps
     createNamespace: true
     wait: false
@@ -152,7 +156,8 @@ releases:
         resources:
           {{ .Values.appRepo.typescriptServiceEventSocket.resources | toYaml | nindent 10 }}
   - name: client-insights-exporter
-    chart: ../../charts/backend-service
+    chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
+    version: 1.3.2
     namespace: apps
     createNamespace: true
     wait: false
@@ -169,6 +174,7 @@ releases:
           MAX_HEAP_MB: {{ .Values.appRepo.clientInsightsExporter.env.MAX_HEAP_MB }}
           DATA_SOURCE_URLS: http://node-scope-management.chat.svc.cluster.local:8094/insights;http://node-chat.chat.svc.cluster.local:8093/insights
           CLIENT_INSIGHT_SERVER_URL: https://gateway.unique.app/insights/client-insights
+          UNIQUE_INSTALLATION_ID: {{ .Values.host }}
         securityContext:
           {{ .Values.appRepo._common.securityContext | toYaml | nindent 10 }}
         tyk:

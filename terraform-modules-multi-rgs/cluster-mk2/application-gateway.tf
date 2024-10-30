@@ -77,6 +77,22 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
         }
       }
     }
+    dynamic "exclusion" {
+      for_each = var.gateway.waf.exclusions
+      content {
+        match_variable          = exclusion.value.match_variable
+        selector_match_operator = exclusion.value.selector_match_operator
+        selector                = exclusion.value.selector
+        excluded_rule_set {
+          type    = exclusion.value.excluded_rule_set.type
+          version = exclusion.value.excluded_rule_set.version
+          rule_group {
+            rule_group_name = exclusion.value.excluded_rule_set.rule_group_name
+            excluded_rules  = exclusion.value.excluded_rule_set.excluded_rules
+          }
+        }
+      }
+    }
   }
   dynamic "custom_rules" {
     for_each = var.gateway.sku == "WAF_v2" && length(local.ip_waf_list) > 0 ? [1] : []
@@ -125,6 +141,26 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
         match_values       = concat(custom_rules.value.list, ["${azurerm_public_ip.this.ip_address}"])
       }
       action = "Block"
+    }
+  }
+  dynamic "custom_rules" {
+    for_each = var.gateway.sku == "WAF_v2" ? [1] : []
+    content {
+      name      = "AllowIngestionUpload"
+      priority  = 3
+      rule_type = "MatchRule"
+      action    = "Allow"
+      match_conditions {
+        match_variables {
+          variable_name = "RequestUri"
+        }
+        operator           = "BeginsWith"
+        negation_condition = false
+        match_values = [
+          "/scoped/ingestion/upload"
+        ]
+        transforms = ["Lowercase"]
+      }
     }
   }
   dynamic "custom_rules" {

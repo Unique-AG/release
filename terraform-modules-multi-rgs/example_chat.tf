@@ -149,7 +149,7 @@ module "cluster" {
   }
   gateway = {
     sku  = "WAF_v2"
-    mode = "Detection"
+    mode = "Prevention"
     waf = {
       owasp_rules = [
         {
@@ -170,6 +170,19 @@ module "cluster" {
         }
       ]
       bot_rules = []
+      exclusions = [
+        {
+          match_variable          = "RequestArgNames",
+          selector                = "variables.input.favicon,variables.input.logoHeader,variables.input.logoNavbar"
+          selector_match_operator = "EqualsAny"
+          excluded_rule_set = {
+            type            = "OWASP"
+            version         = "3.2"
+            excluded_rules  = ["941130", "941170"]
+            rule_group_name = "REQUEST-941-APPLICATION-ATTACK-XSS"
+          }
+        }
+      ]
       custom_rules = [
         {
           name     = "AllowSpecificUrlsInHostHeader"
@@ -230,6 +243,16 @@ module "workload_identities" {
       namespace   = "chat"
       roles       = ["Cognitive Services User" /* Document Intelligence */]
     }
+    node-ingestion-worker-chat = {
+      keyvault_id = module.chat.keyvault_id
+      namespace   = "chat"
+      roles       = ["Cognitive Services User" /* Document Intelligence */]
+    }
+    assistants-core = {
+      keyvault_id = module.chat.keyvault_id
+      namespace   = "chat"
+      roles       = ["Cognitive Services User" /* Document Intelligence */]
+    }
   }
 }
 module "chat" {
@@ -257,9 +280,10 @@ module "chat" {
       max_age_in_seconds = 3600
     },
   ]
-  azure_openai_endpoints                = []
-  azure_document_intelligence_endpoints = []
-  postgres_server_id                    = module.postgres.server_id
+  azure_openai_endpoints                           = []
+  azure_document_intelligence_endpoints            = [module.document-ingelligence-switzerlandnorth.endpoint]
+  azure_document_intelligence_endpoint_definitions = [module.document-ingelligence-switzerlandnorth.endpoint_definition]
+  postgres_server_id                               = module.postgres.server_id
   user_assigned_identity_ids = [
     module.workload_identities.user_assigned_identity_ids["node-chat"],
     module.workload_identities.user_assigned_identity_ids["node-ingestion"],
@@ -283,4 +307,14 @@ module "tyk" {
   monitor_action_group_ids = {
     p0 = module.monitor.monitor_action_group_ids.slack-platform
   }
+}
+module "document-ingelligence-switzerlandnorth" {
+  source           = "./modules/az-document-intelligence"
+  context          = module.context
+  account_location = "switzerlandnorth"
+  user_assigned_identity_ids = [
+    module.workload_identities.user_assigned_identity_ids["node-ingestion-worker"],
+    module.workload_identities.user_assigned_identity_ids["assistants-core"],
+    module.workload_identities.user_assigned_identity_ids["node-ingestion-worker-chat"],
+  ]
 }

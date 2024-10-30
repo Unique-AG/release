@@ -123,10 +123,31 @@ module "cluster" {
   ]
   aks_services_alerts_rules = {
     "HighCPUUsageContainersInAKS" = {
-      alert_name = "HighCPUUsageContainersInAKS"
-      severity   = 0
-      for        = "PT10M"
-      expression = "sum by (cluster, namespace, pod, container) (irate(container_cpu_usage_seconds_total{job=\"cadvisor\", image!=\"\"}[15m])) > 0.95"
+      enabled = true
+      receivers = [
+        module.monitor.monitor_action_group_ids.slack-platform
+      ]
+    }
+    "HighMemoryUsageContainersInAKS" = {
+      enabled = true
+      receivers = [
+        module.monitor.monitor_action_group_ids.slack-platform
+      ]
+    }
+    "Rabbitmq_is_down" = {
+      enabled = true
+      receivers = [
+        module.monitor.monitor_action_group_ids.slack-platform
+      ]
+    }
+    "Rabbitmq_Queue_Messages" = {
+      enabled = true
+      receivers = [
+        module.monitor.monitor_action_group_ids.slack-platform
+      ]
+    }
+    "Rabbitmq_Queue_Messages_Unacked" = {
+      enabled = true
       receivers = [
         module.monitor.monitor_action_group_ids.slack-platform
       ]
@@ -178,9 +199,14 @@ module "workload_identities" {
       namespace   = "chat"
       roles       = ["Cognitive Services User" /* Document Intelligence */]
     }
+    node-ingestion-worker-chat = {
+      keyvault_id = module.chat.keyvault_id
+      namespace   = "chat"
+      roles       = ["Cognitive Services User" /* Document Intelligence */]
+    }
     assistants-core = {
       keyvault_id = module.chat.keyvault_id
-      namespace   = "python"
+      namespace   = "chat"
       roles       = ["Cognitive Services User" /* Document Intelligence */]
     }
   }

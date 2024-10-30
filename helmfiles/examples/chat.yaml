@@ -59,7 +59,8 @@ releases:
           failureThreshold: 30 # we allow such a long startup time in case qdrant needs to rebuild its WAL table
           periodSeconds: {{ .Values.qdrant | get "probes.startup.periodSeconds" 15 }}
   - name: node-ingestion
-    chart: ../../charts/backend-service
+    chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
+    version: 1.3.2
     namespace: chat
     createNamespace: true
     wait: false
@@ -97,6 +98,7 @@ releases:
           INGESTION_UPLOAD_API_URL: https://gateway.{{ .Values.host }}/scoped/ingestion/upload
           RERANKER_CONFIGURATION: {{ .Values.chat.nodeIngestion.env.RERANKER_CONFIGURATION | quote }}
           ADDITIONAL_INGESTION_QUEUES: '["chat_queue"]'
+          UNIQUE_INSTALLATION_ID: {{ .Values.host }}
         envSecrets:
           AZURE_OPENAI_API_ENDPOINT: {{ .Values.chat.nodeIngestion.secrets.AZURE_OPENAI_API_ENDPOINT | fetchSecretValue | quote }}
           AZURE_OPENAI_API_KEY: {{ .Values.chat.nodeIngestion.secrets.AZURE_OPENAI_API_KEY | fetchSecretValue | quote }}
@@ -153,7 +155,8 @@ releases:
             containers:
               name: node-ingestion-expired-content-deletion
   - name: node-ingestion-worker
-    chart: ../../charts/backend-service
+    chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
+    version: 1.3.2
     namespace: chat
     createNamespace: true
     wait: false
@@ -215,7 +218,8 @@ releases:
             queueName: unique.node.ingestion.queue
         terminationGracePeriodSeconds: 900 # 15min
   - name: node-ingestion-worker-chat
-    chart: ../../charts/backend-service
+    chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
+    version: 1.3.2
     namespace: chat
     createNamespace: true
     wait: false
@@ -230,7 +234,7 @@ releases:
         service:
           port: 8093
         serviceAccount:
-          {{ .Values.chat.nodeIngestionWorker.serviceAccount | toYaml | nindent 10 }}
+          {{ .Values.chat.nodeIngestionWorkerChat.serviceAccount | toYaml | nindent 10 }}
         env:
           LOG_LEVEL: info
           INGESTION_API_URL: http://node-ingestion.chat.svc.cluster.local:8091
@@ -277,7 +281,8 @@ releases:
             queueName: unique.node.ingestion.chat_queue
         terminationGracePeriodSeconds: 900 # 15min
   - name: node-chat
-    chart: ../../charts/backend-service
+    chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
+    version: 1.3.2
     namespace: chat
     createNamespace: true
     wait: false
@@ -314,6 +319,7 @@ releases:
           ENABLE_CLIENT_INSIGHT_SHIPPER: {{ .Values.chat.nodeChat.env | get "ENABLE_CLIENT_INSIGHT_SHIPPER" false }}
           MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER: {{ .Values.chat.nodeChat.env | get "MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER" 30 }}
           FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: {{ .Values.chat.nodeChat.env | get "FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747" true }}
+          UNIQUE_INSTALLATION_ID: {{ .Values.host }}
         envSecrets:
           LAUNCH_DARKLY_SDK_KEY: {{ .Values.chat._common.secrets.LAUNCH_DARKLY_SDK_KEY | fetchSecretValue | quote }}
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/chat"
@@ -355,9 +361,10 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /node/dist/apps/node-chat; npx prisma migrate deploy
+              cd /node/dist/apps/node-chat; npx prisma migrate deploy; cd /node; RUNNING_MODE=DATA_MIGRATION  node /node/dist/apps/node-chat/main.js up;
   - name: next-knowledge-upload
-    chart: ../../charts/web-app
+    chart: oci://ghcr.io/unique-ag/helm-charts/web-app
+    version: 1.4.1
     namespace: chat
     createNamespace: true
     wait: false
@@ -414,7 +421,8 @@ releases:
               port: http
             initialDelaySeconds: 5
   - name: next-chat
-    chart: ../../charts/web-app
+    chart: oci://ghcr.io/unique-ag/helm-charts/web-app
+    version: 1.4.1
     namespace: chat
     createNamespace: true
     wait: false
@@ -477,7 +485,8 @@ releases:
               port: http
             initialDelaySeconds: 5
   - name: next-theme
-    chart: ../../charts/web-app
+    chart: oci://ghcr.io/unique-ag/helm-charts/web-app
+    version: 1.4.1
     namespace: chat
     createNamespace: true
     wait: false
@@ -523,7 +532,8 @@ releases:
               port: http
             initialDelaySeconds: 5
   - name: next-admin
-    chart: ../../charts/web-app
+    chart: oci://ghcr.io/unique-ag/helm-charts/web-app
+    version: 1.4.1
     namespace: chat
     createNamespace: true
     wait: false
@@ -580,7 +590,8 @@ releases:
               port: http
             initialDelaySeconds: 5
   - name: node-theme
-    chart: ../../charts/backend-service
+    chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
+    version: 1.3.2
     namespace: chat
     createNamespace: true
     wait: false
@@ -617,7 +628,8 @@ releases:
             command: |
               cd /node/dist/apps/node-theme; npx prisma migrate deploy
   - name: node-scope-management
-    chart: ../../charts/backend-service
+    chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
+    version: 1.3.2
     namespace: chat
     createNamespace: true
     wait: false
@@ -641,6 +653,7 @@ releases:
           INGESTION_API_URL: http://node-ingestion.chat.svc.cluster.local:8091
           CHAT_API_URL: http://node-chat.chat.svc.cluster.local:8093
           ENABLE_CLIENT_INSIGHT_SHIPPER: {{ .Values.chat.nodeScopeManagement.env | get "ENABLE_CLIENT_INSIGHT_SHIPPER" false }}
+          UNIQUE_INSTALLATION_ID: {{ .Values.host }}
         envSecrets:
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/scope-management"
           ZITADEL_PAT: {{ .Values.chat.nodeScopeManagement.secrets.ZITADEL_PAT | fetchSecretValue | quote }}
@@ -676,13 +689,14 @@ releases:
             containers:
               name: node-scope-management-user-sync
   - name: assistants-core
-    chart: ../../charts/ai-service
+    chart: oci://ghcr.io/unique-ag/helm-charts/ai-service
+    version: 1.0.8
     namespace: chat
     createNamespace: true
     wait: false
     values:
       -
-        replicaCount: {{ .Values.chat.assistantsCore | get "replicaCount" 1 }}
+        replicaCount: {{ .Values.chat.assistantsCore | get "replicaCount" 2 }}
         strategy:
           type: {{ .Values.chat.assistantsCore | get "strategy.type" "RollingUpdate" }}
         image:
@@ -690,6 +704,8 @@ releases:
           tag: {{ .Values.chat._common.tenantReleaseOverrides.assistantsCore | default .Values.chat._common.defaultReleases.assistantsCore | quote }}
         imagePullSecrets:
           - name: image-pull-secret
+        serviceAccount:
+          {{ .Values.chat.assistantsCore.serviceAccount | toYaml | nindent 10 }}
         env:
           API_BASE: http://node-chat.chat.svc.cluster.local:8093/public
           GUNICORN_WORKERS: {{ .Values.chat.assistantsCore.env.GUNICORN_WORKERS }}

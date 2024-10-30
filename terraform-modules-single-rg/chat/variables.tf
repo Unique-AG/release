@@ -102,6 +102,14 @@ variable "azure_document_intelligence_endpoints" {
   description = "List of FormRecognizer endpoints as list which will be accessed using workload identity."
   default     = []
 }
+variable "azure_document_intelligence_endpoint_definitions" {
+  type = list(object({
+    endpoint = string
+    location = string
+  }))
+  description = "List of FormRecognizer endpoint definitions as list which will be accessed using workload identity."
+  default     = []
+}
 variable "user_assigned_identity_ids" {
   type    = list(string)
   default = []

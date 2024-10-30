@@ -40,9 +40,10 @@ This Terraform code defines the infrastructure for deploying Chat service. It us
    - The `merged_model_endpoints` variable creates a map of model names to their corresponding endpoints.
 
 7. **Resource "azurerm_key_vault_secret":**
-   - This resource defines two Key Vault secrets.
-   - The first secret stores the JSON-encoded `merged_model_endpoints` variable.
-   - The second secret stores the JSON-encoded `azure_document_intelligence_endpoints` variable.
+   - This resource defines the following Key Vault secrets.
+   - The JSON-encoded `merged_model_endpoints` variable.
+   - The JSON-encoded `azure_document_intelligence_endpoints` variable.
+   - The JSON-encoded `azure_document_intelligence_endpoint_definitions` variable.
 
 8. **Resource "azurerm_postgresql_flexible_server_database":**
    - This resource defines the PostgreSQL databases for the App Repository.

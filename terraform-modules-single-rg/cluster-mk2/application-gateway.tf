@@ -76,6 +76,22 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
         }
       }
     }
+    dynamic "exclusion" {
+      for_each = var.gateway.waf.exclusions
+      content {
+        match_variable          = exclusion.value.match_variable
+        selector_match_operator = exclusion.value.selector_match_operator
+        selector                = exclusion.value.selector
+        excluded_rule_set {
+          type    = exclusion.value.excluded_rule_set.type
+          version = exclusion.value.excluded_rule_set.version
+          rule_group {
+            rule_group_name = exclusion.value.excluded_rule_set.rule_group_name
+            excluded_rules  = exclusion.value.excluded_rule_set.excluded_rules
+          }
+        }
+      }
+    }
   }
   dynamic "custom_rules" {
     for_each = var.gateway.sku == "WAF_v2" && length(local.ip_waf_list) > 0 ? [1] : []
@@ -312,6 +328,7 @@ resource "azurerm_application_gateway" "appgw" {
       probe,
       frontend_port,
       http_listener,
+      rewrite_rule_set,
       redirect_configuration,
       request_routing_rule,
       ssl_certificate,

@@ -327,6 +327,14 @@ sum(rate(node_cpu_seconds_total{job="node",mode!="idle",mode!="iowait",mode!="st
 EOF
   }
 }
+locals {
+  alerts = length(var.aks_services_alerts_rules) > 0 ? {
+    for key, default_rule in var.default_aks_services_alerts_rules : key => merge(
+      default_rule,
+      var.aks_services_alerts_rules[key]
+    )
+  } : {}
+}
 resource "azurerm_monitor_alert_prometheus_rule_group" "aks_services_alerts" {
   count               = length(var.aks_services_alerts_rules) > 0 ? 1 : 0
   name                = "${azurerm_kubernetes_cluster.this.name}-AKSServicesAlerts"
@@ -338,10 +346,10 @@ resource "azurerm_monitor_alert_prometheus_rule_group" "aks_services_alerts" {
   interval            = "PT5M"
   scopes              = [azurerm_monitor_workspace.this[count.index].id, azurerm_kubernetes_cluster.this.id]
   dynamic "rule" {
-    for_each = var.aks_services_alerts_rules
+    for_each = local.alerts
     content {
       alert      = rule.value.alert_name
-      enabled    = true
+      enabled    = rule.value.enabled
       severity   = rule.value.severity
       for        = rule.value.for
       expression = rule.value.expression

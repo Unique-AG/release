@@ -6,7 +6,6 @@ You need to install `helm-unittest` to run the tests. Refer to the [official doc
 
 ### Run
 ```bash
-# charts/ai-service
 helm unittest .
 helm unittest . -d # to debug failing tests
 ```

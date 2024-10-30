@@ -1,6 +1,6 @@
 confluenceConnector:
   defaultReleases:
-    confluenceConnector: sha-729eb9c
+    confluenceConnector: sha-748a6a7
   replicaCount: 1
   env:
     CONFLUENCE_TOKENS_PER_MINUTE: 250
@@ -8,3 +8,21 @@ confluenceConnector:
     INGEST_SINGLE_LABEL: ai-ingest
     INGEST_ALL_LABEL: ai-ingest-all
     TEST_MODE: true
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 8083
+    initialDelaySeconds: 30
+    periodSeconds: 10
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 8083
+    initialDelaySeconds: 30
+    periodSeconds: 10
+  startupProbe:
+    httpGet:
+      path: /health
+      port: 8083
+    initialDelaySeconds: 30
+    periodSeconds: 10
