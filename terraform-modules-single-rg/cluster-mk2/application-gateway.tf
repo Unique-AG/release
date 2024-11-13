@@ -156,7 +156,8 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
         operator           = "BeginsWith"
         negation_condition = false
         match_values = [
-          "/scoped/ingestion/upload"
+          "/scoped/ingestion/upload",
+          "/ingestion/v1/content"
         ]
         transforms = ["Lowercase"]
       }

@@ -108,6 +108,19 @@ variable "gateway" {
         })
       ), [])
       chat_export_ip_allowlist = optional(list(string), [])
+      exclusions = optional(list(
+        object({
+          match_variable          = string
+          selector_match_operator = string
+          selector                = string
+          excluded_rule_set = optional(object({
+            type            = string
+            version         = string
+            excluded_rules  = optional(list(string), null)
+            rule_group_name = string
+          }), null)
+        })
+      ), [])
     }), {})
   })
   default = {}

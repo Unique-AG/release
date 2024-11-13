@@ -60,7 +60,7 @@ releases:
           periodSeconds: {{ .Values.qdrant | get "probes.startup.periodSeconds" 15 }}
   - name: node-ingestion
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 1.3.2
+    version: 1.4.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -156,7 +156,7 @@ releases:
               name: node-ingestion-expired-content-deletion
   - name: node-ingestion-worker
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 1.3.2
+    version: 1.4.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -219,7 +219,7 @@ releases:
         terminationGracePeriodSeconds: 900 # 15min
   - name: node-ingestion-worker-chat
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 1.3.2
+    version: 1.4.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -282,7 +282,7 @@ releases:
         terminationGracePeriodSeconds: 900 # 15min
   - name: node-chat
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 1.3.2
+    version: 1.4.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -317,6 +317,7 @@ releases:
           AMQP_BENCHMARK_PREFETCH: {{ .Values.chat.nodeChat.env | get "AMQP_BENCHMARK_PREFETCH" 1 }}
           INTERNAL_MODULES_CONFIG: {{ .Values.chat.nodeChat.env.INTERNAL_MODULES_CONFIG | quote }}
           ENABLE_CLIENT_INSIGHT_SHIPPER: {{ .Values.chat.nodeChat.env | get "ENABLE_CLIENT_INSIGHT_SHIPPER" false }}
+          EXPORT_PROMPTS_ACCESS_CONTROL: {{ .Values.chat.nodeChat.env | get "EXPORT_PROMPTS_ACCESS_CONTROL" false }}
           MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER: {{ .Values.chat.nodeChat.env | get "MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER" 30 }}
           FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: {{ .Values.chat.nodeChat.env | get "FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747" true }}
           UNIQUE_INSTALLATION_ID: {{ .Values.host }}
@@ -362,6 +363,22 @@ releases:
             enabled: true
             command: |
               cd /node/dist/apps/node-chat; npx prisma migrate deploy; cd /node; RUNNING_MODE=DATA_MIGRATION  node /node/dist/apps/node-chat/main.js up;
+        cronJob:
+          enabled: true
+          name: data-redaction-task
+          suspend: false
+          schedule: "0 0 * * *"
+          timeZone: Europe/Zurich
+          concurrencyPolicy: Forbid
+          successfulJobsHistoryLimit: 1
+          failedJobsHistoryLimit: 2
+          env:
+            RUNNING_MODE: 'DATA_REDACTION_TASK'
+          startingDeadlineSeconds: 10
+          jobTemplate:
+            restartPolicy: Never
+            containers:
+              name: redaction-job
   - name: next-knowledge-upload
     chart: oci://ghcr.io/unique-ag/helm-charts/web-app
     version: 1.4.1
@@ -396,7 +413,6 @@ releases:
           STATIC_BACKGROUND_COLOR:  >-
             {{ "#" }}{{ .Values.chat.nextTheme.env.STATIC_BACKGROUND_COLOR }}
           STATIC_TAB_NAME: {{ .Values.chat.nextTheme.env.STATIC_TAB_NAME | quote }}
-          FEATURE_FLAG_NEW_KNOWLEDGE_BASE_UN_5652: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_NEW_KNOWLEDGE_BASE_UN_5652 | quote }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
         resources:
           {{ .Values.chat.nextKnowledgeUpload.resources | toYaml | nindent 10 }}
@@ -591,7 +607,7 @@ releases:
             initialDelaySeconds: 5
   - name: node-theme
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 1.3.2
+    version: 1.4.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -629,7 +645,7 @@ releases:
               cd /node/dist/apps/node-theme; npx prisma migrate deploy
   - name: node-scope-management
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 1.3.2
+    version: 1.4.0
     namespace: chat
     createNamespace: true
     wait: false

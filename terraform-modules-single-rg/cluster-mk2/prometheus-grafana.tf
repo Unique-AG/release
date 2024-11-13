@@ -343,7 +343,7 @@ resource "azurerm_monitor_alert_prometheus_rule_group" "aks_services_alerts" {
   cluster_name        = azurerm_kubernetes_cluster.this.name
   description         = "AKS Services Alerts"
   rule_group_enabled  = true
-  interval            = "PT5M"
+  interval            = "PT10M"
   scopes              = [azurerm_monitor_workspace.this[count.index].id, azurerm_kubernetes_cluster.this.id]
   dynamic "rule" {
     for_each = local.alerts

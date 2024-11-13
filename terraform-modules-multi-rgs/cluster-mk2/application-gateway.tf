@@ -157,7 +157,8 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
         operator           = "BeginsWith"
         negation_condition = false
         match_values = [
-          "/scoped/ingestion/upload"
+          "/scoped/ingestion/upload",
+          "/ingestion/v1/content"
         ]
         transforms = ["Lowercase"]
       }
@@ -329,6 +330,7 @@ resource "azurerm_application_gateway" "appgw" {
       probe,
       frontend_port,
       http_listener,
+      rewrite_rule_set,
       redirect_configuration,
       request_routing_rule,
       ssl_certificate,

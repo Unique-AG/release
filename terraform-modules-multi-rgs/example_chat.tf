@@ -112,7 +112,7 @@ module "monitor" {
   action_group_list = {
     "slack-platform" = {
       severity        = "p0"
-      email_addresses = ["recipient@example.com"]
+      email_addresses = []
     },
   }
 }
@@ -165,11 +165,31 @@ module "cluster" {
           disabled_rule_ids = ["932100", "932105", "932115", "932130"]
         },
         {
+          rule_group_name   = "REQUEST-933-APPLICATION-ATTACK-PHP"
+          disabled_rule_ids = ["933160"]
+        },
+        {
           rule_group_name   = "REQUEST-942-APPLICATION-ATTACK-SQLI"
           disabled_rule_ids = ["942100", "942110", "942130", "942150", "942190", "942200", "942260", "942330", "942340", "942370", "942380", "942410", "942430", "942440", "942450"]
         }
       ]
-      bot_rules = []
+      bot_rules = [
+        {
+          rule_group_name = "UnknownBots"
+          rules = [
+            {
+              id      = "300300"
+              action  = "Log"
+              enabled = false
+            },
+            {
+              id      = "300700"
+              action  = "Log"
+              enabled = false
+            }
+          ]
+        }
+      ]
       exclusions = [
         {
           match_variable          = "RequestArgNames",
@@ -181,7 +201,38 @@ module "cluster" {
             excluded_rules  = ["941130", "941170"]
             rule_group_name = "REQUEST-941-APPLICATION-ATTACK-XSS"
           }
-        }
+        },
+        {
+          match_variable          = "RequestArgNames",
+          selector                = "variables.input.text"
+          selector_match_operator = "EqualsAny"
+          excluded_rule_set = {
+            type            = "OWASP"
+            version         = "3.2"
+            excluded_rules  = ["941150", "941340"]
+            rule_group_name = "REQUEST-941-APPLICATION-ATTACK-XSS"
+          }
+        },
+        {
+          match_variable          = "RequestArgNames",
+          selector                = "variables.text"
+          selector_match_operator = "Equals"
+          excluded_rule_set = {
+            type            = "OWASP"
+            version         = "3.2"
+            rule_group_name = "REQUEST-941-APPLICATION-ATTACK-XSS"
+          }
+        },
+        {
+          match_variable          = "RequestArgNames",
+          selector                = "variables.text"
+          selector_match_operator = "Equals"
+          excluded_rule_set = {
+            type            = "OWASP"
+            version         = "3.2"
+            rule_group_name = "REQUEST-942-APPLICATION-ATTACK-SQLI"
+          }
+        },
       ]
       custom_rules = [
         {

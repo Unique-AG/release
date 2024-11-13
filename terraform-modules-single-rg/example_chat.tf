@@ -122,18 +122,6 @@ module "cluster" {
     "node-ingestion-worker-chat",
   ]
   aks_services_alerts_rules = {
-    "HighCPUUsageContainersInAKS" = {
-      enabled = true
-      receivers = [
-        module.monitor.monitor_action_group_ids.slack-platform
-      ]
-    }
-    "HighMemoryUsageContainersInAKS" = {
-      enabled = true
-      receivers = [
-        module.monitor.monitor_action_group_ids.slack-platform
-      ]
-    }
     "Rabbitmq_is_down" = {
       enabled = true
       receivers = [

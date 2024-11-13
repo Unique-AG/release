@@ -116,9 +116,9 @@ variable "gateway" {
           excluded_rule_set = optional(object({
             type            = string
             version         = string
-            excluded_rules  = list(string)
+            excluded_rules  = optional(list(string), null)
             rule_group_name = string
-          }))
+          }), null)
         })
       ), [])
     }), {})
@@ -525,18 +525,6 @@ variable "default_aks_services_alerts_rules" {
     expression = string
   }))
   default = {
-    "HighCPUUsageContainersInAKS" = {
-      alert_name = "HighCPUUsageContainersInAKS"
-      severity   = 3
-      for        = "PT25M"
-      expression = "sum by (cluster, namespace, pod, container) (irate(container_cpu_usage_seconds_total{job=\"cadvisor\", image!=\"\"}[5m])) > 0.95"
-    }
-    "HighMemoryUsageContainersInAKS" = {
-      alert_name = "HighMemoryUsageContainersInAKS"
-      severity   = 3
-      for        = "PT25M"
-      expression = "sum by (namespace, pod) (container_memory_working_set_bytes{job=\"cadvisor\", image!=\"\"}) > (0.95 * sum by (namespace, pod) (kube_pod_container_resource_limits{resource=\"memory\",job=\"kube-state-metrics\"}))"
-    }
     "Rabbitmq_is_down" = {
       alert_name = "Rabbitmq_is_down"
       severity   = 0
