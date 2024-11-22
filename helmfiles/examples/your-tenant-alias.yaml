@@ -97,6 +97,26 @@ rabbitMQ:
           "consumer-timeout": 7200000
         },
         "priority": 1
+      },
+      {
+        "vhost": "/",
+        "name": "node-ingestion-timeout",
+        "pattern": "unique.node.ingestion.queue",
+        "apply-to": "queues",
+        "definition": {
+          "consumer-timeout": 7200000
+        },
+        "priority": 1
+      },
+      {
+        "vhost": "/",
+        "name": "node-ingestion-chat-timeout",
+        "pattern": "unique.node.ingestion.chat_queue",
+        "apply-to": "queues",
+        "definition": {
+          "consumer-timeout": 7200000
+        },
+        "priority": 1
       }
     ]
 zitadel:

@@ -153,6 +153,10 @@ module "cluster" {
     waf = {
       owasp_rules = [
         {
+          rule_group_name   = "REQUEST-913-SCANNER-DETECTION"
+          disabled_rule_ids = ["913101"]
+        },
+        {
           rule_group_name   = "REQUEST-920-PROTOCOL-ENFORCEMENT"
           disabled_rule_ids = ["920230", "920300", "920320", "920420"]
         },
@@ -204,33 +208,42 @@ module "cluster" {
         },
         {
           match_variable          = "RequestArgNames",
-          selector                = "variables.input.text"
+          selector                = "variables.input.text,variables.text"
           selector_match_operator = "EqualsAny"
           excluded_rule_set = {
             type            = "OWASP"
             version         = "3.2"
-            excluded_rules  = ["941150", "941340"]
             rule_group_name = "REQUEST-941-APPLICATION-ATTACK-XSS"
           }
         },
         {
           match_variable          = "RequestArgNames",
-          selector                = "variables.text"
-          selector_match_operator = "Equals"
-          excluded_rule_set = {
-            type            = "OWASP"
-            version         = "3.2"
-            rule_group_name = "REQUEST-941-APPLICATION-ATTACK-XSS"
-          }
-        },
-        {
-          match_variable          = "RequestArgNames",
-          selector                = "variables.text"
-          selector_match_operator = "Equals"
+          selector                = "variables.input.text,variables.text,variables.input.modules.upsert.create.configuration.systemPromptSearch"
+          selector_match_operator = "EqualsAny"
           excluded_rule_set = {
             type            = "OWASP"
             version         = "3.2"
             rule_group_name = "REQUEST-942-APPLICATION-ATTACK-SQLI"
+          }
+        },
+        {
+          match_variable          = "RequestArgNames",
+          selector                = "variables.input.text,variables.text,variables.input.modules.upsert.create.configuration.systemPromptSearch"
+          selector_match_operator = "EqualsAny"
+          excluded_rule_set = {
+            type            = "OWASP"
+            version         = "3.2"
+            rule_group_name = "REQUEST-932-APPLICATION-ATTACK-RCE"
+          }
+        },
+        {
+          match_variable          = "RequestArgNames",
+          selector                = "variables.input.text,variables.text,variables.input.modules.upsert.create.configuration.systemPromptSearch"
+          selector_match_operator = "EqualsAny"
+          excluded_rule_set = {
+            type            = "OWASP"
+            version         = "3.2"
+            rule_group_name = "REQUEST-933-APPLICATION-ATTACK-PHP"
           }
         },
       ]
