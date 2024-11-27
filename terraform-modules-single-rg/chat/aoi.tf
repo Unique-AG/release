@@ -43,4 +43,5 @@ module "openai" {
     }
   }
   user_assigned_identity_ids = var.user_assigned_identity_ids
+  log_analytics_workspace_id = var.log_analytics_workspace_id
 }

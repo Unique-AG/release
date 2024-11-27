@@ -24,3 +24,7 @@ variable "keyvault_access_principals" {
   description = "Principals that can read the vault"
   default     = []
 }
+variable "log_analytics_workspace_id" {
+  type    = string
+  default = ""
+}

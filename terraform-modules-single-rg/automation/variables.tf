@@ -43,3 +43,7 @@ variable "rabbitmq-port" {
   type    = number
   default = 5672
 }
+variable "log_analytics_workspace_id" {
+  type    = string
+  default = ""
+}

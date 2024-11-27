@@ -505,6 +505,38 @@ variable "maintenance_window_end" {
     error_message = "Invalid input given for a maintenance window end. Must be between 0 and 23"
   }
 }
+variable "maintenance_window_node_os" {
+  description = "Maintenance window for the OS of the nodes."
+  type = object({
+    frequency   = optional(string, "Weekly")
+    interval    = optional(number, 1)
+    duration    = optional(number, 6)
+    day_of_week = optional(string, "Sunday")
+    start_time  = optional(string, "00:00")
+    utc_offset  = optional(string, "+00:00")
+  })
+  default = {
+    frequency   = "Weekly"
+    interval    = 1
+    duration    = 6
+    day_of_week = "Sunday"
+    start_time  = "00:00"
+    utc_offset  = "+00:00"
+  }
+  nullable = true
+  validation {
+    condition     = var.maintenance_window_node_os == null ? true : contains(["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], var.maintenance_window_node_os.day_of_week)
+    error_message = "Invalid input given for a maintenance window day. Must be one of: Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday"
+  }
+  validation {
+    condition     = var.maintenance_window_node_os == null ? true : contains(["Weekly"], var.maintenance_window_node_os.frequency)
+    error_message = "Invalid input given for a maintenance window frequency. Must be one of: Weekly"
+  }
+  validation {
+    condition     = var.maintenance_window_node_os == null ? true : var.maintenance_window_node_os.duration >= 4 && var.maintenance_window_node_os.duration <= 24
+    error_message = "Invalid input given for a maintenance window duration. Must be between 4 and 24"
+  }
+}
 variable "azure_aks_diagnostic_logs_categories" {
   description = "Enable diagnostic logs of AKS. Possible categories are: cloud-controller-manager, cluster-autoscaler, csi-azuredisk-controller, csi-azurefile-controller, csi-snapshot-controller, guard, kube-apiserver, kube-audit, kube-audit-admin, kube-controller-manager, kube-scheduler and AllMetrics"
   type        = list(string)
@@ -549,6 +581,26 @@ variable "azure_alerts" {
   type = map(object({
     enabled         = bool
     action_group_id = string
+  }))
+  default = {}
+}
+variable "user_node_pools" {
+  description = "Map of node pools to be created in the cluster in the 'User' mode. Currently defaults to empty map until improvements are validated."
+  type = map(object({
+    vm_size              = string
+    node_count           = number
+    min_count            = number
+    max_count            = number
+    os_disk_size_gb      = number
+    os_sku               = optional(string, "Ubuntu")
+    os_type              = optional(string, "Linux")
+    node_labels          = map(string)
+    node_taints          = list(string)
+    auto_scaling_enabled = bool
+    zones                = list(string)
+    upgrade_settings = object({
+      max_surge = string
+    })
   }))
   default = {}
 }

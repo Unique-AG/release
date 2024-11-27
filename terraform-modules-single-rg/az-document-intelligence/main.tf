@@ -24,3 +24,16 @@ resource "azurerm_cognitive_account" "this" {
     }
   }
 }
+resource "azurerm_monitor_diagnostic_setting" "diagnostic_setting" {
+  count                      = var.log_analytics_workspace_id != "" ? 1 : 0
+  name                       = module.context.full_name_truncated
+  target_resource_id         = azurerm_cognitive_account.this.id
+  log_analytics_workspace_id = var.log_analytics_workspace_id
+  enabled_log {
+    category_group = "audit"
+  }
+  metric {
+    category = "AllMetrics"
+    enabled  = false
+  }
+}

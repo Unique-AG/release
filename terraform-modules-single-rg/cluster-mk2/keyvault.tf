@@ -22,3 +22,15 @@ resource "azurerm_role_assignment" "rbac_keyvault_managed_identity" {
   role_definition_name = each.value
   principal_id         = azurerm_storage_account.this.identity.0.principal_id
 }
+resource "azurerm_monitor_diagnostic_setting" "diagnostic_setting" {
+  name                       = module.context.full_name_truncated
+  target_resource_id         = azurerm_key_vault.this.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.this.id
+  enabled_log {
+    category_group = "audit"
+  }
+  metric {
+    category = "AllMetrics"
+    enabled  = false
+  }
+}

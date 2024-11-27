@@ -9,4 +9,5 @@ module "app-repository-logs" {
   keyvault_access_principals                        = var.keyvault_access_principals
   storage_account_key_list_operator_service_role_id = var.storage_account_key_list_operator_service_role_id
   sdk_deployment_service_principal_object_ids       = var.sdk_deployment_service_principal_object_ids
+  log_analytics_workspace_id                        = var.log_analytics_workspace_id
 }

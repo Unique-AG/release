@@ -25,6 +25,9 @@ resource "azurerm_security_center_subscription_pricing" "cspm_full" {
   extension {
     name = "EntraPermissionsManagement"
   }
+  extension {
+    name = "ApiPosture"
+  }
 }
 resource "azurerm_security_center_auto_provisioning" "auto_provisioning" {
   count          = var.enable_auto_provisioning ? 1 : 0
@@ -68,6 +71,25 @@ resource "azurerm_security_center_subscription_pricing" "cwp_resourcemanager" {
 resource "azurerm_security_center_subscription_pricing" "cwp_opensourcerelationaldb" {
   resource_type = "OpenSourceRelationalDatabases"
   tier          = "Standard"
+}
+resource "azurerm_security_center_subscription_pricing" "cwp_containers" {
+  tier          = "Standard"
+  resource_type = "Containers"
+  extension {
+    name = "ContainerRegistriesVulnerabilityAssessments"
+  }
+  extension {
+    name = "AgentlessDiscoveryForKubernetes"
+  }
+  extension {
+    name = "ContainerSensor"
+  }
+  extension {
+    name = "AgentlessVmScanning"
+    additional_extension_properties = {
+      ExclusionTags = "[]"
+    }
+  }
 }
 resource "azapi_resource" "security_contact" {
   type                      = "Microsoft.Security/securityContacts@2023-12-01-preview"

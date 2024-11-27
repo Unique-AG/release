@@ -14,6 +14,7 @@ resource "azurerm_kubernetes_cluster" "this" {
   sku_tier                            = "Standard"
   cost_analysis_enabled               = var.kubernetes_cost_analysis_enabled
   automatic_channel_upgrade           = "stable"
+  node_os_channel_upgrade             = "NodeImage"
   azure_policy_enabled                = true
   kubernetes_version                  = var.kubernetes_version
   local_account_disabled              = true
@@ -46,6 +47,17 @@ resource "azurerm_kubernetes_cluster" "this" {
     allowed {
       day   = var.maintenance_window_day
       hours = range(var.maintenance_window_start, var.maintenance_window_end)
+    }
+  }
+  dynamic "maintenance_window_node_os" {
+    for_each = var.maintenance_window_node_os != null ? [1] : []
+    content {
+      frequency   = var.maintenance_window_node_os.frequency
+      interval    = var.maintenance_window_node_os.interval
+      duration    = var.maintenance_window_node_os.duration
+      day_of_week = var.maintenance_window_node_os.day_of_week
+      start_time  = var.maintenance_window_node_os.start_time
+      utc_offset  = var.maintenance_window_node_os.utc_offset
     }
   }
   auto_scaler_profile {
@@ -99,4 +111,26 @@ resource "azurerm_kubernetes_cluster" "this" {
       kubernetes_version
     ]
   }
+}
+resource "azurerm_kubernetes_cluster_node_pool" "node_pool" {
+  for_each              = var.user_node_pools
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.this.id
+  name                  = each.key
+  vm_size               = each.value.vm_size
+  node_count            = each.value.node_count
+  enable_auto_scaling   = each.value.auto_scaling_enabled
+  min_count             = each.value.min_count
+  max_count             = each.value.max_count
+  os_disk_size_gb       = each.value.os_disk_size_gb
+  mode                  = "User"
+  node_labels           = each.value.node_labels
+  zones                 = each.value.zones
+  node_taints           = each.value.node_taints
+  os_sku                = each.value.os_sku
+  upgrade_settings {
+    max_surge = each.value.upgrade_settings.max_surge
+  }
+  tags           = var.tags
+  pod_subnet_id  = var.subnet_pods.id
+  vnet_subnet_id = var.subnet_nodes.id
 }

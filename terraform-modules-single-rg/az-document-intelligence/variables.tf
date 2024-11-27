@@ -13,3 +13,7 @@ variable "user_assigned_identity_ids" {
   type    = list(string)
   default = []
 }
+variable "log_analytics_workspace_id" {
+  type    = string
+  default = ""
+}

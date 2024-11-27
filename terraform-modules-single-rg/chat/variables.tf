@@ -171,3 +171,7 @@ variable "bing_search_v7_sku_name" {
   default     = "S2"
   type        = string
 }
+variable "log_analytics_workspace_id" {
+  type    = string
+  default = ""
+}

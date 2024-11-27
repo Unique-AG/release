@@ -102,3 +102,16 @@ resource "azurerm_key_vault_secret" "database_url" {
   value        = "postgresql://${data.azurerm_key_vault_secret.username[0].value}:${data.azurerm_key_vault_secret.password[0].value}@${data.azurerm_key_vault_secret.host[0].value}/${each.key}"
   key_vault_id = var.database_keyvault_id
 }
+resource "azurerm_monitor_diagnostic_setting" "diagnostic_setting" {
+  count                      = var.log_analytics_workspace_id != "" ? 1 : 0
+  name                       = module.context.full_name_truncated
+  target_resource_id         = azurerm_key_vault.document-chat.id
+  log_analytics_workspace_id = var.log_analytics_workspace_id
+  enabled_log {
+    category_group = "audit"
+  }
+  metric {
+    category = "AllMetrics"
+    enabled  = false
+  }
+}

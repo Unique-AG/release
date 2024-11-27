@@ -35,3 +35,7 @@ variable "monitor_action_group_ids" {
   description = "Action group ids for responders grouped by alert priority."
   default     = {}
 }
+variable "log_analytics_workspace_id" {
+  type    = string
+  default = ""
+}

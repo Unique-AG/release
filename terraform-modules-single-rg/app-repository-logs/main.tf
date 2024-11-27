@@ -142,3 +142,16 @@ resource "azurerm_key_vault_secret" "akvs_workload_identity_client_id" {
   value        = azurerm_user_assigned_identity.auai.client_id
   key_vault_id = azurerm_key_vault.akv.id
 }
+resource "azurerm_monitor_diagnostic_setting" "diagnostic_setting" {
+  count                      = var.log_analytics_workspace_id != "" ? 1 : 0
+  name                       = module.context.full_name_truncated
+  target_resource_id         = azurerm_key_vault.akv.id
+  log_analytics_workspace_id = var.log_analytics_workspace_id
+  enabled_log {
+    category_group = "audit"
+  }
+  metric {
+    category = "AllMetrics"
+    enabled  = false
+  }
+}

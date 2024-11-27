@@ -21,16 +21,16 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:            "2024.46"
-      nextKnowledgeUpload: "2024.46"
-      nextTheme:           "2024.46"
-      nextAdmin:           "2024.46"
-      nodeChat:            "2024.46"
-      nodeIngestion:       "2024.46"
-      nodeIngestionWorker: "2024.46"
-      nodeTheme:           "2024.46"
-      nodeScopeManagement: "2024.46"
-      assistantsCore:      "2024.46"
+      nextChat:            "2024.48"
+      nextKnowledgeUpload: "2024.48"
+      nextTheme:           "2024.48"
+      nextAdmin:           "2024.48"
+      nodeChat:            "2024.48"
+      nodeIngestion:       "2024.48"
+      nodeIngestionWorker: "2024.48"
+      nodeTheme:           "2024.48"
+      nodeScopeManagement: "2024.48"
+      assistantsCore:      "2024.48"
   _rootIngress:
     enabled: true
   nextChat:
@@ -101,18 +101,20 @@ chat:
       BENCHMARKS_PER_MINUTE_PER_PROCESS: 1
       AMQP_BENCHMARK_PREFETCH: 1
       INTERNAL_MODULES_CONFIG: >- 
-        [
-        {"name": "SearchInVectorDBV2", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/search"}, 
-        {"name": "ImageSummarizer", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/image_summarizer"}, 
-        {"name": "TranslationOneToOne", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/translation_one_to_one"}, 
-        {"name": "WebSearch", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/web_search"}, 
-        {"name": "ComplianceCheck", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/compliance_check"}, 
-        {"name": "QuestionExtractor", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/question_extractor"}, 
-        {"name": "QuestionAnswerer", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/question_answerer"}, 
-        {"name": "QuestionPredictor", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/question_predictor"}, 
+        [ 
+        {"name": "SearchInVectorDBV2", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/search"},
+        {"name": "ImageSummarizer", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/image_summarizer"},
+        {"name": "TranslationOneToOne", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/translation_one_to_one"},
+        {"name": "WebSearch", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/web_search"},
+        {"name": "ComplianceCheck", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/compliance_check"},
+        {"name": "QuestionExtractor", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/question_extractor"},
+        {"name": "QuestionAnswerer", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/question_answerer"},
+        {"name": "QuestionPredictor", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/question_predictor"},
         {"name": "DocumentSummarizerV2", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/document_summarizer"},
         {"name": "ImageUpload", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/image_upload"},
-        {"name": "DocumentTranslator", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/document_translator"}
+        {"name": "DocumentTranslator", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/document_translator"},
+        {"name": "AgenticSearch", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/agentic_search"},
+        {"name": "TranslatorV2", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/translator_v2"}
         ]
       ENABLE_CLIENT_INSIGHT_SHIPPER: "false"
       MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER: "30"

@@ -44,3 +44,7 @@ variable "logs_destination_azure_resource_group_name" {
   type        = string
   default     = ""
 }
+variable "log_analytics_workspace_id" {
+  type    = string
+  default = ""
+}
