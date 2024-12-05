@@ -16,6 +16,7 @@ resource "azurerm_cognitive_account" "this" {
   custom_subdomain_name = local.custom_subdomain_name
   sku_name              = "S0"
   tags                  = module.context.tags
+  local_auth_enabled    = var.local_auth_enabled
   dynamic "identity" {
     for_each = length(var.user_assigned_identity_ids) > 0 ? [1] : []
     content {

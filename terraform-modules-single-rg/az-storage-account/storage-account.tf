@@ -6,7 +6,6 @@ resource "azurerm_storage_account" "this" {
   account_replication_type        = "LRS"
   allow_nested_items_to_be_public = false
   min_tls_version                 = "TLS${replace(var.min_tls_version, ".", "_")}"
-  enable_https_traffic_only       = true
   tags                            = module.context.tags
   blob_properties {
     dynamic "cors_rule" {

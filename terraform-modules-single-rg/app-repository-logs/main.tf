@@ -21,7 +21,6 @@ resource "azurerm_storage_account" "asa" {
   account_replication_type        = "LRS"
   allow_nested_items_to_be_public = false
   min_tls_version                 = "TLS${replace(var.storage_account_min_tls_version, ".", "_")}"
-  enable_https_traffic_only       = true
   tags                            = module.context.tags
   identity {
     type = "SystemAssigned"

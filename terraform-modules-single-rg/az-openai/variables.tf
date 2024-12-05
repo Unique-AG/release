@@ -45,3 +45,8 @@ variable "log_analytics_workspace_id" {
   type    = string
   default = ""
 }
+variable "local_auth_enabled" {
+  description = "Enable local authentication on the cognitive account"
+  type        = bool
+  default     = true
+}

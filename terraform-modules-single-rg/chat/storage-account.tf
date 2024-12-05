@@ -6,7 +6,6 @@ resource "azurerm_storage_account" "document-chat" {
   account_replication_type        = "LRS"
   allow_nested_items_to_be_public = false
   min_tls_version                 = "TLS${replace(var.min_tls_version, ".", "_")}"
-  enable_https_traffic_only       = true
   tags                            = local.tags
   blob_properties {
     change_feed_enabled           = var.storage_account_change_feed_enabled
@@ -49,6 +48,17 @@ resource "azurerm_storage_account" "document-chat" {
     ignore_changes = [
       customer_managed_key
     ]
+  }
+  dynamic "network_rules" {
+    for_each = var.storage_account_network_access_restricted ? [1] : []
+    content {
+      default_action             = "Deny"
+      virtual_network_subnet_ids = [var.pods_subnet_id]
+      private_link_access {
+        endpoint_resource_id = "/subscriptions/${module.context.subscription_id}/providers/Microsoft.Security/datascanners/StorageDataScanner"
+        endpoint_tenant_id   = module.context.tenant_id
+      }
+    }
   }
 }
 resource "azurerm_key_vault_secret" "storage-account-connection-string-1" {

@@ -8,7 +8,6 @@ resource "azurerm_storage_account" "this" {
   min_tls_version                  = "TLS1_2"
   allow_nested_items_to_be_public  = false
   cross_tenant_replication_enabled = false
-  enable_https_traffic_only        = true
   nfsv3_enabled                    = true
   is_hns_enabled                   = true
   lifecycle {

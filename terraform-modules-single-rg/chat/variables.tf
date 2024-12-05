@@ -175,3 +175,13 @@ variable "log_analytics_workspace_id" {
   type    = string
   default = ""
 }
+variable "storage_account_network_access_restricted" {
+  description = "Limit network access to the storage account to pod subnet."
+  type        = bool
+  default     = false
+}
+variable "pods_subnet_id" {
+  description = "The ID of the pod subnet."
+  type        = string
+  default     = ""
+}

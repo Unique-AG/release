@@ -133,4 +133,9 @@ resource "azurerm_kubernetes_cluster_node_pool" "node_pool" {
   tags           = var.tags
   pod_subnet_id  = var.subnet_pods.id
   vnet_subnet_id = var.subnet_nodes.id
+  lifecycle {
+    ignore_changes = [
+      node_count
+    ]
+  }
 }
