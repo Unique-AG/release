@@ -9,11 +9,11 @@ appRepo:
       seccompProfile:
         type: RuntimeDefault
     defaultReleases:
-      nodeAppRepository:            "2024.48"
-      nodeWebhookWorker:            "2024.48"
-      nodeWebhookScheduler:         "2024.48"
-      typescriptServiceEventSocket: "2024.48"
-      clientInsightsExporter:       "2024.48"
+      nodeAppRepository:            "2024.50"
+      nodeWebhookWorker:            "2024.50"
+      nodeWebhookScheduler:         "2024.50"
+      typescriptServiceEventSocket: "2024.50"
+      clientInsightsExporter:       "2024.50"
   nodeAppRepository:
     env:
       MAX_HEAP_MB: 750

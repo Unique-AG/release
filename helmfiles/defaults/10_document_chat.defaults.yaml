@@ -21,16 +21,16 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:            "2024.48"
-      nextKnowledgeUpload: "2024.48"
-      nextTheme:           "2024.48"
-      nextAdmin:           "2024.48"
-      nodeChat:            "2024.48"
-      nodeIngestion:       "2024.48"
-      nodeIngestionWorker: "2024.48"
-      nodeTheme:           "2024.48"
-      nodeScopeManagement: "2024.48"
-      assistantsCore:      "2024.48"
+      nextChat:            "2024.50"
+      nextKnowledgeUpload: "2024.50"
+      nextTheme:           "2024.50"
+      nextAdmin:           "2024.50"
+      nodeChat:            "2024.50"
+      nodeIngestion:       "2024.50"
+      nodeIngestionWorker: "2024.50"
+      nodeTheme:           "2024.50"
+      nodeScopeManagement: "2024.50"
+      assistantsCore:      "2024.50"
   _rootIngress:
     enabled: true
   nextChat:
@@ -39,6 +39,8 @@ chat:
       FEATURE_FLAG_NEW_TRANSLATION_UI_UN_7233: "true"
       FEATURE_FLAG_STOP_STREAMING_UN_4824: "true"
       FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: "true"
+      FEATURE_FLAG_IN_DOCUMENT_TRANSLATOR_UN_8405: "false"
+      FEATURE_FLAG_ENABLE_LATEX_UN_8603: "false"
     resources:
       requests:
         cpu: 300m
@@ -150,7 +152,7 @@ chat:
       USE_SCOPE_MANAGEMENT: "true"
       ZITADEL_ROOT_ORG_ID: ""
       MAX_HEAP_MB: 550
-      ENABLE_MALWARE_SCAN: "false"
+      ENABLE_MALWARE_SCAN: "true"
       REPLICATION_FACTOR: 2
       FILE_RETENTION_IN_DAYS: 0
       FF_UN7111_UPLOAD_THROUGH_BACKEND: "true"
@@ -165,7 +167,11 @@ chat:
           - path: "/upload"
             method: "PUT"
             timeoutSeconds: 600 # for large files and bad connections during upload
-    serviceAccount: {}
+    serviceAccount:
+      enabled: true
+      workloadIdentity:
+        enabled: true
+        clientId: unset_default_value
     resources:
       requests:
         cpu: 200m
@@ -176,6 +182,10 @@ chat:
   nodeIngestionWorker:
     env:
       MAX_HEAP_MB: 850
+      CUSTOM_API_DEFINITIONS: >-
+        [ 
+        {"identifier": "Unique Text Extraction API", "url": "http://assistants-core.chat.svc.cluster.local:8081/core/text-extractions"} 
+        ]
     serviceAccount: {}
     resources:
       requests:
@@ -224,10 +234,10 @@ chat:
     resources:
       requests:
         cpu: 500m
-        memory: 550Mi
+        memory: 2Gi
       limits:
         cpu: 500m
-        memory: 600Mi
+        memory: 4Gi
 qdrant:
   chart:
     version: 0.7.3

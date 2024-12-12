@@ -49,7 +49,6 @@ chat:
   nodeIngestion:
     secrets:
       AZURE_OPENAI_API_ENDPOINT: ref+azurekeyvault://your-vault-name/openai-endpoint
-      AZURE_OPENAI_API_KEY: ref+azurekeyvault://your-vault-name/openai-key
       AZURE_FGPT_STORAGE_CONNECTION_STRING: ref+azurekeyvault://your-vault-name/storage-account-connection-string-1
       AZURE_INGESTION_CACHE_STORAGE_CONNECTION_STRING: ref+azurekeyvault://your-vault-name/storage-account-connection-string-1
       WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-node-ingestion
@@ -59,7 +58,6 @@ chat:
   nodeIngestionWorker:
     secrets:
       AZURE_OPENAI_API_ENDPOINT: ref+azurekeyvault://your-vault-name/openai-endpoint
-      AZURE_OPENAI_API_KEY: ref+azurekeyvault://your-vault-name/openai-key
       WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-node-ingestion-worker
       AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS: ref+azurekeyvault://your-vault-name/azure-document-intelligence-endpoints
     env:

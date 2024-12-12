@@ -292,6 +292,11 @@ module "workload_identities" {
   aks_oidc_issuer_url = module.cluster.aks_oidc_issuer_url
   management_group_id = local.management_group_id
   identities = {
+    cert-manager = {
+      keyvault_id = module.chat.keyvault_id
+      namespace   = "system"
+      roles       = ["DNS Zone Contributor"]
+    }
     node-chat = {
       keyvault_id = module.chat.keyvault_id
       namespace   = "chat"

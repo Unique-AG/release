@@ -75,7 +75,8 @@ releases:
         service:
           port: 8091
         serviceAccount:
-          {{ .Values.chat.nodeIngestion.serviceAccount | toYaml | nindent 10 }}
+          workloadIdentity:
+            clientId: {{ .Values.chat.nodeIngestion.secrets.WORKLOAD_IDENTITY_CLIENT_ID | fetchSecretValue | quote }}
         env:
           LOG_LEVEL: info
           AZURE_OPENAI_API_DEPLOYMENT_NAME: {{ .Values.chat.nodeIngestion.env.AZURE_OPENAI_API_DEPLOYMENT_NAME | quote }}
@@ -101,7 +102,6 @@ releases:
           UNIQUE_INSTALLATION_ID: {{ .Values.host }}
         envSecrets:
           AZURE_OPENAI_API_ENDPOINT: {{ .Values.chat.nodeIngestion.secrets.AZURE_OPENAI_API_ENDPOINT | fetchSecretValue | quote }}
-          AZURE_OPENAI_API_KEY: {{ .Values.chat.nodeIngestion.secrets.AZURE_OPENAI_API_KEY | fetchSecretValue | quote }}
           AMQP_URL: amqp://{{ .Values.rabbitMQ.username | fetchSecretValue }}:{{ .Values.rabbitMQ.password | fetchSecretValue }}@rabbitmq-headless.system.svc.cluster.local:5672/%2f
           AZURE_FGPT_STORAGE_CONNECTION_STRING: {{ .Values.chat.nodeIngestion.secrets.AZURE_FGPT_STORAGE_CONNECTION_STRING | fetchSecretValue | quote }}
           AZURE_INGESTION_CACHE_STORAGE_CONNECTION_STRING: {{.Values.chat.nodeIngestion.secrets.AZURE_INGESTION_CACHE_STORAGE_CONNECTION_STRING | fetchSecretValue | quote }}
@@ -686,7 +686,7 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /node/dist/apps/node-scope-management; npx prisma migrate deploy
+              cd /node/dist/apps/node-scope-management; npx prisma migrate deploy; cd /node; RUNNING_MODE=DATA_MIGRATION node /node/dist/apps/node-scope-management/main.js up;
         cronJob:
           enabled: true
           name: user-sync
@@ -1074,6 +1074,7 @@ releases:
               LoginPolicy:
                 AllowDomainDiscovery: true
                 AllowRegister: false
+                IgnoreUnknownUsernames: true
                 PasswordCheckLifetime: {{ .Values.zitadel | get "defaultInstance.loginPolicy.passwordCheckLifetime" "240h" }}
                 ExternalLoginCheckLifetime: {{ .Values.zitadel | get "defaultInstance.loginPolicy.externalLoginCheckLifetime" "240h" }}
               PrivacyPolicy:
@@ -1213,6 +1214,7 @@ releases:
                 AllowDomainDiscovery: false
                 AllowRegister: false
                 AllowExternalIDP: {{ .Values.zitadel | get "defaultInstance.loginPolicy.allowExternalIdp" false }}
+                IgnoreUnknownUsernames: true
               Org:
                 Name: Cluster IAM
                 Human:
