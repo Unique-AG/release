@@ -1,6 +1,6 @@
 confluenceConnector:
   defaultReleases:
-    confluenceConnector: sha-748a6a7
+    confluenceConnector: sha-3863569
   replicaCount: 1
   env:
     CONFLUENCE_TOKENS_PER_MINUTE: 250

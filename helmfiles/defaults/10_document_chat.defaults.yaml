@@ -21,16 +21,16 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:            "2024.50"
-      nextKnowledgeUpload: "2024.50"
-      nextTheme:           "2024.50"
-      nextAdmin:           "2024.50"
-      nodeChat:            "2024.50"
-      nodeIngestion:       "2024.50"
-      nodeIngestionWorker: "2024.50"
-      nodeTheme:           "2024.50"
-      nodeScopeManagement: "2024.50"
-      assistantsCore:      "2024.50"
+      nextChat:            "2024.52"
+      nextKnowledgeUpload: "2024.52"
+      nextTheme:           "2024.52"
+      nextAdmin:           "2024.52"
+      nodeChat:            "2024.52"
+      nodeIngestion:       "2024.52"
+      nodeIngestionWorker: "2024.52"
+      nodeTheme:           "2024.52"
+      nodeScopeManagement: "2024.52"
+      assistantsCore:      "2024.52"
   _rootIngress:
     enabled: true
   nextChat:
