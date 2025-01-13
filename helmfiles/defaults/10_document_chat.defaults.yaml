@@ -21,16 +21,16 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:            "2024.52"
-      nextKnowledgeUpload: "2024.52"
-      nextTheme:           "2024.52"
-      nextAdmin:           "2024.52"
-      nodeChat:            "2024.52"
-      nodeIngestion:       "2024.52"
-      nodeIngestionWorker: "2024.52"
-      nodeTheme:           "2024.52"
-      nodeScopeManagement: "2024.52"
-      assistantsCore:      "2024.52"
+      nextChat:            "2025.02"
+      nextKnowledgeUpload: "2025.02"
+      nextTheme:           "2025.02"
+      nextAdmin:           "2025.02"
+      nodeChat:            "2025.02"
+      nodeIngestion:       "2025.02"
+      nodeIngestionWorker: "2025.02"
+      nodeTheme:           "2025.02"
+      nodeScopeManagement: "2025.02"
+      assistantsCore:      "2025.02"
   _rootIngress:
     enabled: true
   nextChat:
@@ -39,7 +39,8 @@ chat:
       FEATURE_FLAG_NEW_TRANSLATION_UI_UN_7233: "true"
       FEATURE_FLAG_STOP_STREAMING_UN_4824: "true"
       FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: "true"
-      FEATURE_FLAG_IN_DOCUMENT_TRANSLATOR_UN_8405: "false"
+      FEATURE_FLAG_IN_DOCUMENT_TRANSLATOR_UN_8405: "true"
+      FILE_TYPES_DOCUMENT_TRANSLATOR: "docx,xlsx"
       FEATURE_FLAG_ENABLE_LATEX_UN_8603: "false"
     resources:
       requests:
@@ -116,7 +117,9 @@ chat:
         {"name": "ImageUpload", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/image_upload"},
         {"name": "DocumentTranslator", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/document_translator"},
         {"name": "AgenticSearch", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/agentic_search"},
-        {"name": "TranslatorV2", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/translator_v2"}
+        {"name": "TranslatorV2", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/translator_v2"},
+        {"name": "InvestmentResearch", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/investment_research"},
+        {"name": "EarningCallsBeta", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/earning_calls"}
         ]
       ENABLE_CLIENT_INSIGHT_SHIPPER: "false"
       MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER: "30"

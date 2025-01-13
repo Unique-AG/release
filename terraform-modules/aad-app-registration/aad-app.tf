@@ -4,7 +4,7 @@ resource "azuread_application" "this" {
   privacy_statement_url   = "https://www.unique.ch/privacy"
   terms_of_service_url    = "https://www.unique.ch/terms"
   group_membership_claims = var.group_membership_claims
-  owners                  = var.owner_user_object_ids
+  owners = var.owner_user_object_ids
   web {
     homepage_url = "https://www.unique.ch"
     implicit_grant {
@@ -67,9 +67,9 @@ resource "azuread_application" "this" {
   dynamic "required_resource_access" {
     for_each = var.use_intune ? [1] : []
     content {
-      resource_app_id = "0a5f63c0-b750-4f38-a71c-4fc0d58b89e2"
+      resource_app_id = "0a5f63c0-b750-4f38-a71c-4fc0d58b89e2" 
       resource_access {
-        id   = "3c7192af-9629-4473-9276-d35e4e4b36c5"
+        id   = "3c7192af-9629-4473-9276-d35e4e4b36c5" 
         type = "Scope"
       }
     }

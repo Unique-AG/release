@@ -475,6 +475,8 @@ releases:
           FEATURE_FLAG_STOP_STREAMING_UN_4824: {{ .Values.chat.nextChat.env.FEATURE_FLAG_STOP_STREAMING_UN_4824 | quote }}
           FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: {{ .Values.chat.nextChat.env | get "FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747" "" | quote }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
+          FEATURE_FLAG_IN_DOCUMENT_TRANSLATOR_UN_8405: {{ .Values.chat.nextChat.env.FEATURE_FLAG_IN_DOCUMENT_TRANSLATOR_UN_8405 | quote }}
+          FILE_TYPES_DOCUMENT_TRANSLATOR: {{ .Values.chat.nextChat.env.FILE_TYPES_DOCUMENT_TRANSLATOR | quote }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
         ingress:

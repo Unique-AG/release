@@ -6,8 +6,8 @@ resource "tls_private_key" "this" {
   rsa_bits  = "4096"
 }
 module "virtual-machine" {
-  source                          = "Azure/virtual-machine/azurerm"
-  version                         = "1.0.0"
+  source  = "Azure/virtual-machine/azurerm"
+  version = "1.0.0"
   name                            = module.context.full_name
   resource_group_name             = module.context.rg_app_main.name
   location                        = module.context.rg_app_main.location
@@ -63,7 +63,7 @@ module "virtual-machine" {
     }
   ]
   custom_data = base64encode(join("\n", [for file in tolist(fileset(path.module, "cloud-init-scripts${local.cloud_init_scripts_version}/*.sh")) : file("${path.module}/${file}")]))
-  tags        = module.context.tags
+  tags = module.context.tags
 }
 resource "azurerm_public_ip" "this" {
   name                = "${module.context.full_name}-bastion"
@@ -77,9 +77,9 @@ resource "azurerm_bastion_host" "this" {
   name                = module.context.full_name
   location            = module.context.rg_app_main.location
   resource_group_name = module.context.rg_app_main.name
-  sku                 = "Standard"
-  tunneling_enabled   = true
-  tags                = module.context.tags
+  sku               = "Standard"
+  tunneling_enabled = true 
+  tags              = module.context.tags
   ip_configuration {
     name                 = module.context.full_name
     subnet_id            = var.bastion_subnet.id

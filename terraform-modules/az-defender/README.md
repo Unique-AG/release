@@ -10,9 +10,6 @@ This Terraform code configures Azure Security Center for a subscription, enablin
      - The `cspm_full` resource enables the standard tier of CSPM, which provides additional features like vulnerability assessments, agentless VM scanning, and sensitive data discovery.
      - The `cwp_storage`, `cwp_servers`, `cwp_keyvaults`, and `cwp_resourcemanager` resources enable the standard tier of Cloud Workload Protection (CWP) for different resource types: Storage Accounts, Virtual Machines, Key Vaults, and Azure Resource Manager.
 
-2. **Security Center Auto Provisioning:**
-   - This section defines a resource of type `azurerm_security_center_auto_provisioning`. This resource enables automatic provisioning of security solutions for new resources created in the subscription.
-
 3. **Security Center Contact:**
    - This section defines a resource of type `azurerm_security_center_contact`. This resource creates a security contact with the specified email address. This contact will receive notifications about security alerts and incidents.
 

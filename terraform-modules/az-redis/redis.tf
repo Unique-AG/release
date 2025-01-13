@@ -8,7 +8,7 @@ resource "azurerm_redis_cache" "redis" {
   minimum_tls_version           = "1.2"
   public_network_access_enabled = false
   redis_version                 = 6
-  tags                          = local.tags
+  tags = local.tags
 }
 resource "azurerm_network_security_group" "redis" {
   name                = "${module.context.full_name}-redis"

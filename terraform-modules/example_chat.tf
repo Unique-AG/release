@@ -12,7 +12,7 @@ locals {
   management_group_id = "uqe-sb"
 }
 module "context" {
-  source      = "./modules/context"
+  source = "./modules/context"
   namespace   = "uq"
   project     = local.project
   environment = local.environment
@@ -124,8 +124,8 @@ module "cluster" {
   subnet_appgw                  = module.vnet.subnets["AppGW"]
   storage_retention_period_days = 1865
   keyvault_access_principals    = [module.jumpbox.vm_identity]
-  kubernetes_default_node_size  = var.kubernetes_default_node_size
-  kubernetes_version            = var.kubernetes_version
+  kubernetes_default_node_size = var.kubernetes_default_node_size
+  kubernetes_version           = var.kubernetes_version
   domain_config = {
     name        = local.base_domain
     sub_domains = ["gateway", "id"]
@@ -148,7 +148,7 @@ module "cluster" {
     p4 = module.monitor.monitor_action_group_ids.slack-platform
   }
   gateway = {
-    sku  = "WAF_v2"
+    sku  = "WAF_v2" 
     mode = "Prevention"
     waf = {
       owasp_rules = [
@@ -278,10 +278,10 @@ module "jumpbox" {
   cloud_init_scripts_version = "2024-04"
 }
 module "postgres" {
-  source                     = "./modules/postgres"
-  name                       = local.project_child
-  context                    = module.context
-  flex_storage_mb            = 131072
+  source  = "./modules/postgres"
+  name    = local.project_child
+  context = module.context
+  flex_storage_mb = 131072
   virtual_network_id         = module.vnet.virtual_network_id
   delegated_subnet_id        = module.vnet.subnets["Postgres"].id
   keyvault_access_principals = [module.jumpbox.vm_identity]
@@ -337,15 +337,15 @@ module "chat" {
     {
       allowed_origins    = ["https://${local.base_domain}"]
       allowed_methods    = ["OPTIONS", "PUT", "GET"]
-      allowed_headers    = ["*"]
-      exposed_headers    = ["*"]
+      allowed_headers    = ["*"] 
+      exposed_headers    = ["*"] 
       max_age_in_seconds = 3600
     },
     {
       allowed_origins    = ["https://*.${local.base_domain}"]
       allowed_methods    = ["OPTIONS", "PUT", "GET"]
-      allowed_headers    = ["*"]
-      exposed_headers    = ["*"]
+      allowed_headers    = ["*"] 
+      exposed_headers    = ["*"] 
       max_age_in_seconds = 3600
     },
   ]

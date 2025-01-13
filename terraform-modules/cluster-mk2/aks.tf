@@ -8,9 +8,9 @@ resource "azurerm_public_ip" "this" {
   tags                = module.context.tags
 }
 resource "azurerm_kubernetes_cluster" "this" {
-  name                                = module.context.full_name
-  location                            = module.context.rg_app_main.location
-  resource_group_name                 = module.context.rg_app_main.name
+  name                = module.context.full_name
+  location            = module.context.rg_app_main.location
+  resource_group_name = module.context.rg_app_main.name
   dns_prefix                          = module.context.full_name
   sku_tier                            = "Standard"
   cost_analysis_enabled               = var.kubernetes_cost_analysis_enabled
@@ -49,7 +49,7 @@ resource "azurerm_kubernetes_cluster" "this" {
     }
   }
   auto_scaler_profile {
-    max_graceful_termination_sec     = 4 * 3600
+    max_graceful_termination_sec     = 4 * 3600 
     skip_nodes_with_local_storage    = false
     expander                         = "least-waste"
     scale_down_unneeded              = "5m"

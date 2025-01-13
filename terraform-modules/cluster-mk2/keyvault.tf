@@ -7,8 +7,8 @@ resource "azurerm_key_vault" "this" {
   soft_delete_retention_days  = 7
   purge_protection_enabled    = true
   enable_rbac_authorization   = true
-  sku_name                    = "premium"
-  tags                        = module.context.tags
+  sku_name = "premium"
+  tags     = module.context.tags
 }
 resource "azurerm_role_assignment" "this_access_principals" {
   count                = length(var.keyvault_access_principals)

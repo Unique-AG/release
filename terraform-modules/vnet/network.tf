@@ -6,7 +6,7 @@ resource "azurerm_virtual_network" "this" {
   tags                = module.context.tags
 }
 resource "azurerm_virtual_network_peering" "shared" {
-  for_each                     = { for peering in var.virtual_network_peerings : peering.name => peering }
+  for_each = { for peering in var.virtual_network_peerings : peering.name => peering }
   name                         = "${module.context.full_name}-${each.value.name}"
   resource_group_name          = module.context.rg_app_net.name
   virtual_network_name         = azurerm_virtual_network.this.name

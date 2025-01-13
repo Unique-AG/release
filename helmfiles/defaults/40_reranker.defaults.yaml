@@ -7,7 +7,7 @@ reranker:
       seccompProfile:
         type: RuntimeDefault
     defaultReleases:
-      assistantsReranker: "2024.52"
+      assistantsReranker: "2025.02"
   assistantsReranker:
     env:
       GUNICORN_WORKERS: 1

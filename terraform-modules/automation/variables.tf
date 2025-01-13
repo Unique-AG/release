@@ -14,7 +14,7 @@ variable "keyvault_secret_placeholders" {
     "manual-slack-webhook-url",
     "manual-github-app-private-key",
     "manual-uniqueapp-docker-config-json",
-    "manual-chart-pull-password",
+    "manual-chart-pull-password", 
     "manual-confluence-connector-service-user-client-id",
     "manual-confluence-connector-service-user-client-secret",
     "manual-confluence-connector-username",

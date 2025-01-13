@@ -11,7 +11,7 @@ resource "azurerm_public_ip" "appgw" {
   allocation_method   = "Static"
   sku                 = "Standard"
   zones               = ["1", "2", "3"]
-  tags                = module.context.tags
+  tags = module.context.tags
 }
 resource "azurerm_web_application_firewall_policy" "wafpolicy" {
   count               = var.gateway.sku == "WAF_v2" ? 1 : 0
@@ -223,7 +223,7 @@ resource "azurerm_application_gateway" "appgw" {
   name                = "${module.context.full_name}${local.sku_suffix}"
   location            = module.context.rg_app_main.location
   resource_group_name = module.context.rg_app_main.name
-  enable_http2        = true
+  enable_http2 = true
   sku {
     name = var.gateway.sku
     tier = var.gateway.sku
@@ -322,7 +322,7 @@ resource "azurerm_application_gateway" "appgw" {
     }
   }
   firewall_policy_id = var.gateway.sku == "WAF_v2" ? azurerm_web_application_firewall_policy.wafpolicy[0].id : null
-  tags               = module.context.tags
+  tags = module.context.tags
   lifecycle {
     ignore_changes = [
       backend_http_settings,

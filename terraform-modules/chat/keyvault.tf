@@ -23,8 +23,8 @@ resource "azurerm_key_vault" "document-chat" {
   soft_delete_retention_days  = 7
   purge_protection_enabled    = true
   enable_rbac_authorization   = true
-  sku_name                    = "premium"
-  tags                        = local.tags
+  sku_name = "premium"
+  tags     = local.tags
 }
 resource "random_id" "ingestion_encryption_key" {
   byte_length = 32
