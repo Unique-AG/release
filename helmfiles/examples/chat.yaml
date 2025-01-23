@@ -8,8 +8,6 @@ environments:
 repositories:
   - name: qdrant
     url: https://qdrant.github.io/qdrant-helm
-  - name: tyk
-    url: https://helm.tyk.io/public/helm/charts
   - name: bedag
     url: https://bedag.github.io/helm-charts
   - name: zitadel
@@ -60,7 +58,7 @@ releases:
           periodSeconds: {{ .Values.qdrant | get "probes.startup.periodSeconds" 15 }}
   - name: node-ingestion
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 1.4.0
+    version: 3.1.1
     namespace: chat
     createNamespace: true
     wait: false
@@ -100,6 +98,7 @@ releases:
           RERANKER_CONFIGURATION: {{ .Values.chat.nodeIngestion.env.RERANKER_CONFIGURATION | quote }}
           ADDITIONAL_INGESTION_QUEUES: '["chat_queue"]'
           UNIQUE_INSTALLATION_ID: {{ .Values.host }}
+          USE_NEW_FTS_QUERY_APPROACH: {{ .Values.chat.nodeIngestion.env | get "USE_NEW_FTS_QUERY_APPROACH" "true" }}
         envSecrets:
           AZURE_OPENAI_API_ENDPOINT: {{ .Values.chat.nodeIngestion.secrets.AZURE_OPENAI_API_ENDPOINT | fetchSecretValue | quote }}
           AMQP_URL: amqp://{{ .Values.rabbitMQ.username | fetchSecretValue }}:{{ .Values.rabbitMQ.password | fetchSecretValue }}@rabbitmq-headless.system.svc.cluster.local:5672/%2f
@@ -107,18 +106,13 @@ releases:
           AZURE_INGESTION_CACHE_STORAGE_CONNECTION_STRING: {{.Values.chat.nodeIngestion.secrets.AZURE_INGESTION_CACHE_STORAGE_CONNECTION_STRING | fetchSecretValue | quote }}
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/ingestion"
           INGESTION_ENCRYPTION_KEY: {{ .Values.chat.nodeIngestion.secrets.INGESTION_ENCRYPTION_KEY | fetchSecretValue | quote }}
-        tyk:
-          jwtSource: https://{{ .Values.zitadel.hostName }}/oauth/v2/keys
-          listenPath: /ingestion
-          rateLimit:
-            rate: {{ .Values.chat.nodeIngestion.tyk.rateLimit.rate }}
-            quotaMax: {{ .Values.chat.nodeIngestion.tyk.rateLimit.quotaMax }}
-          scopedApi:
-            enabled: {{ .Values.chat.nodeIngestion.tyk.scopedApi.enabled }}
-            hardTimeouts:
-              {{ .Values.chat.nodeIngestion.tyk.scopedApi.hardTimeouts | toYaml | nindent 14 }}
+          AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS: {{ .Values.chat.nodeIngestion.secrets.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS | fetchSecretValue | quote }}
         resources:
           {{ .Values.chat.nodeIngestion.resources | toYaml | nindent 10 }}
+        routes:
+          {{- $routes := .Values.chat.nodeIngestion.routes | deepCopy }}
+          {{- $_ := set $routes "hostname" (printf "api.%s" .Values.host) }}
+          {{ $routes | toYaml | nindent 10 }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
         auditVolume:
@@ -156,7 +150,7 @@ releases:
               name: node-ingestion-expired-content-deletion
   - name: node-ingestion-worker
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 1.4.0
+    version: 3.1.1
     namespace: chat
     createNamespace: true
     wait: false
@@ -184,8 +178,6 @@ releases:
         envSecrets:
           AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS: {{ .Values.chat.nodeIngestionWorker.secrets.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS | fetchSecretValue | quote }}
           AMQP_URL: amqp://{{ .Values.rabbitMQ.username | fetchSecretValue }}:{{ .Values.rabbitMQ.password | fetchSecretValue }}@rabbitmq-headless.system.svc.cluster.local:5672/%2f
-        tyk:
-          enabled: false
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
         resources:
@@ -219,7 +211,7 @@ releases:
         terminationGracePeriodSeconds: 900 # 15min
   - name: node-ingestion-worker-chat
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 1.4.0
+    version: 3.1.1
     namespace: chat
     createNamespace: true
     wait: false
@@ -247,8 +239,6 @@ releases:
         envSecrets:
           AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS: {{ .Values.chat.nodeIngestionWorker.secrets.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS | fetchSecretValue | quote }}
           AMQP_URL: amqp://{{ .Values.rabbitMQ.username | fetchSecretValue }}:{{ .Values.rabbitMQ.password | fetchSecretValue }}@rabbitmq-headless.system.svc.cluster.local:5672/%2f
-        tyk:
-          enabled: false
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
         resources:
@@ -282,7 +272,7 @@ releases:
         terminationGracePeriodSeconds: 900 # 15min
   - name: node-chat
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 1.4.0
+    version: 3.1.1
     namespace: chat
     createNamespace: true
     wait: false
@@ -321,7 +311,6 @@ releases:
           FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: {{ .Values.chat.nodeChat.env | get "FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747" true }}
           UNIQUE_INSTALLATION_ID: {{ .Values.host }}
         envSecrets:
-          LAUNCH_DARKLY_SDK_KEY: {{ .Values.chat._common.secrets.LAUNCH_DARKLY_SDK_KEY | fetchSecretValue | quote }}
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/chat"
           PUBSUB_REDIS_PASSWORD: {{ .Values.tyk.redis.password | fetchSecretValue | quote }}
           AMQP_URL: amqp://{{ .Values.rabbitMQ.username | fetchSecretValue }}:{{ .Values.rabbitMQ.password | fetchSecretValue }}@rabbitmq-headless.system.svc.cluster.local:5672/%2f
@@ -329,20 +318,10 @@ releases:
           CHAT_LXM_ENCRYPTION_KEY: {{ .Values.chat.nodeChat.secrets.CHAT_LXM_ENCRYPTION_KEY | fetchSecretValue | quote }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
-        tyk:
-          jwtSource: https://{{ .Values.zitadel.hostName }}/oauth/v2/keys
-          listenPath: /chat
-          rateLimit:
-            rate: {{ .Values.chat.nodeChat.tyk.rateLimit.rate }}
-            quotaMax: {{ .Values.chat.nodeChat.tyk.rateLimit.quotaMax }}
-          hardTimeouts:
-            {{ .Values.chat.nodeChat.tyk.hardTimeouts | toYaml | nindent 12 }}
-          exposePublicApi:
-            enabled: {{ default false .Values.chat.nodeChat.tyk.exposePublicApi.enabled }}
-            appRepositoryUrlOverride: http://node-app-repository.apps.svc.cluster.local
-            appRepositoryPortOverride: 8088
-            hardTimeouts:
-              {{ .Values.chat.nodeChat.tyk.exposePublicApi.hardTimeouts | toYaml | nindent 14 }}
+        routes:
+          {{- $routes := .Values.chat.nodeChat.routes | deepCopy }}
+          {{- $_ := set $routes "hostname" (printf "api.%s" .Values.host) }}
+          {{ $routes | toYaml | nindent 10 }}
         resources:
           {{ .Values.chat.nodeChat.resources | toYaml | nindent 10 }}
         auditVolume:
@@ -380,7 +359,7 @@ releases:
               name: redaction-job
   - name: next-knowledge-upload
     chart: oci://ghcr.io/unique-ag/helm-charts/web-app
-    version: 1.4.1
+    version: 3.1.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -413,10 +392,15 @@ releases:
             {{ "#" }}{{ .Values.chat.nextTheme.env.STATIC_BACKGROUND_COLOR }}
           STATIC_TAB_NAME: {{ .Values.chat.nextTheme.env.STATIC_TAB_NAME | quote }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
+          FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411 | quote }}
         resources:
           {{ .Values.chat.nextKnowledgeUpload.resources | toYaml | nindent 10 }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
+        routes:
+          {{- $routes := .Values.chat.nextKnowledgeUpload.routes | deepCopy }}
+          {{- $_ := set $routes "hostname" .Values.host }}
+          {{ $routes | toYaml | nindent 10 }}
         ingress:
           {{ .Values.chat._common.ingressDefaults | toYaml | nindent 10 }}
           hosts:
@@ -437,7 +421,7 @@ releases:
             initialDelaySeconds: 5
   - name: next-chat
     chart: oci://ghcr.io/unique-ag/helm-charts/web-app
-    version: 1.4.1
+    version: 3.1.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -471,14 +455,23 @@ releases:
           MAX_HEAP_MB: {{ .Values.chat.nextChat.env | get "MAX_HEAP_MB" 400 }}
           STATIC_BACKGROUND_COLOR:  >-
             {{ "#" }}{{ .Values.chat.nextTheme.env.STATIC_BACKGROUND_COLOR }}
-          FEATURE_FLAG_NEW_TRANSLATION_UI_UN_7233: {{ .Values.chat.nextChat.env.FEATURE_FLAG_NEW_TRANSLATION_UI_UN_7233 | quote }}
           FEATURE_FLAG_STOP_STREAMING_UN_4824: {{ .Values.chat.nextChat.env.FEATURE_FLAG_STOP_STREAMING_UN_4824 | quote }}
           FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: {{ .Values.chat.nextChat.env | get "FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747" "" | quote }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
           FEATURE_FLAG_IN_DOCUMENT_TRANSLATOR_UN_8405: {{ .Values.chat.nextChat.env.FEATURE_FLAG_IN_DOCUMENT_TRANSLATOR_UN_8405 | quote }}
           FILE_TYPES_DOCUMENT_TRANSLATOR: {{ .Values.chat.nextChat.env.FILE_TYPES_DOCUMENT_TRANSLATOR | quote }}
+          FEATURE_FLAG_ENABLE_LATEX_UN_8603: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_LATEX_UN_8603 | quote }}
+          FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411 | quote }}
+        extraObjects:
+          {{ .Values.chat.nextChat.extraObjects | toYaml | nindent 10 }}
+        extraRoutes:
+          {{ .Values.chat.nextChat.extraRoutes | toYaml | nindent 10 }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
+        routes:
+          {{- $routes := .Values.chat.nextChat.routes | deepCopy }}
+          {{- $_ := set $routes "hostname" .Values.host }}
+          {{ $routes | toYaml | nindent 10 }}
         ingress:
           {{ .Values.chat._common.ingressDefaults | toYaml | nindent 10 }}
           hosts:
@@ -486,10 +479,6 @@ releases:
               paths:
                 - path: /chat
                   pathType: Prefix
-        rootIngress:
-          enabled: {{ .Values.chat._rootIngress.enabled }}
-          host: "{{ .Values.host }}"
-          redirectPath: /chat
         probes:
           liveness:
             httpGet:
@@ -503,7 +492,7 @@ releases:
             initialDelaySeconds: 5
   - name: next-theme
     chart: oci://ghcr.io/unique-ag/helm-charts/web-app
-    version: 1.4.1
+    version: 3.1.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -529,7 +518,12 @@ releases:
           CHAT_BACKEND_API_URL: https://gateway.{{ .Values.host }}/chat
           MAX_HEAP_MB: {{ .Values.chat.nextTheme.env.MAX_HEAP_MB }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
+          FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: {{ .Values.chat.nextTheme.env.FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411 | quote }}
         securityContext: null # FIXME should be set but we did not want to change it
+        routes:
+          {{- $routes := .Values.chat.nextTheme.routes | deepCopy }}
+          {{- $_ := set $routes "hostname" .Values.host }}
+          {{ $routes | toYaml | nindent 10 }}
         ingress:
           {{ .Values.chat._common.ingressDefaults | toYaml | nindent 10 }}
           hosts:
@@ -550,7 +544,7 @@ releases:
             initialDelaySeconds: 5
   - name: next-admin
     chart: oci://ghcr.io/unique-ag/helm-charts/web-app
-    version: 1.4.1
+    version: 3.1.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -583,11 +577,17 @@ releases:
           STATIC_BACKGROUND_COLOR:  >-
             {{ "#" }}{{ .Values.chat.nextTheme.env.STATIC_BACKGROUND_COLOR }}
           STATIC_TAB_NAME: {{ .Values.chat.nextTheme.env.STATIC_TAB_NAME | quote }}
-          FEATURE_FLAG_NEW_TRANSLATION_UI_UN_7233: {{ .Values.chat.nextAdmin.env.FEATURE_FLAG_NEW_TRANSLATION_UI_UN_7233 | quote }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
           INGESTION_BACKEND_API_URL: https://gateway.{{ .Values.host }}/ingestion
+          FEATURE_FLAG_KNOWLEDGE_SCOPE_UN_5773: {{ .Values.chat.nextAdmin.env.FEATURE_FLAG_KNOWLEDGE_SCOPE_UN_5773 | quote }}
+          FEATURE_FLAG_ENABLE_ASSISTANT_ACCESS_UN_5775: {{ .Values.chat.nextAdmin.env.FEATURE_FLAG_ENABLE_ASSISTANT_ACCESS_UN_5775 | quote }}
+          FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: {{ .Values.chat.nextAdmin.env.FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411 | quote }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
+        routes:
+          {{- $routes := .Values.chat.nextAdmin.routes | deepCopy }}
+          {{- $_ := set $routes "hostname" .Values.host }}
+          {{ $routes | toYaml | nindent 10 }}
         ingress:
           {{ .Values.chat._common.ingressDefaults | toYaml | nindent 10 }}
           hosts:
@@ -608,7 +608,7 @@ releases:
             initialDelaySeconds: 5
   - name: node-theme
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 1.4.0
+    version: 3.1.1
     namespace: chat
     createNamespace: true
     wait: false
@@ -631,12 +631,10 @@ releases:
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/theme"
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
-        tyk:
-          jwtSource: https://{{ .Values.zitadel.hostName }}/oauth/v2/keys
-          listenPath: /theme
-          rateLimit:
-            rate: {{ .Values.chat.nodeTheme.tyk.rateLimit.rate }}
-            quotaMax: {{ .Values.chat.nodeTheme.tyk.rateLimit.quotaMax }}
+        routes:
+          {{- $routes := .Values.chat.nodeTheme.routes | deepCopy }}
+          {{- $_ := set $routes "hostname" (printf "api.%s" .Values.host) }}
+          {{ $routes | toYaml | nindent 10 }}
         resources:
           {{ .Values.chat.nodeTheme.resources | toYaml | nindent 10 }}
         hooks:
@@ -646,7 +644,7 @@ releases:
               cd /node/dist/apps/node-theme; npx prisma migrate deploy
   - name: node-scope-management
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 1.4.0
+    version: 3.1.1
     namespace: chat
     createNamespace: true
     wait: false
@@ -676,12 +674,10 @@ releases:
           ZITADEL_PAT: {{ .Values.chat.nodeScopeManagement.secrets.ZITADEL_PAT | fetchSecretValue | quote }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
-        tyk:
-          jwtSource: https://{{ .Values.zitadel.hostName }}/oauth/v2/keys
-          listenPath: /scope-management
-          rateLimit:
-            rate: {{ .Values.chat.nodeScopeManagement.tyk.rateLimit.rate }}
-            quotaMax: {{ .Values.chat.nodeScopeManagement.tyk.rateLimit.quotaMax }}
+        routes:
+          {{- $routes := .Values.chat.nodeScopeManagement.routes | deepCopy }}
+          {{- $_ := set $routes "hostname" (printf "api.%s" .Values.host) }}
+          {{ $routes | toYaml | nindent 10 }}
         resources:
           {{ .Values.chat.nodeScopeManagement.resources | toYaml | nindent 10 }}
         hooks:
@@ -707,7 +703,7 @@ releases:
               name: node-scope-management-user-sync
   - name: assistants-core
     chart: oci://ghcr.io/unique-ag/helm-charts/ai-service
-    version: 1.0.8
+    version: 1.1.2
     namespace: chat
     createNamespace: true
     wait: false
@@ -728,6 +724,9 @@ releases:
           GUNICORN_WORKERS: {{ .Values.chat.assistantsCore.env.GUNICORN_WORKERS }}
           GUNICORN_THREADS: {{ .Values.chat.assistantsCore.env.GUNICORN_THREADS }}
           BING_API_ENDPOINT: {{ .Values.chat.assistantsCore.env.BING_API_ENDPOINT | fetchSecretValue | quote }}
+          AZURE_DOCUMENT_INTELLIGENCE_LOCATION: {{ .Values.chat.assistantsCore.env.AZURE_DOCUMENT_INTELLIGENCE_LOCATION | quote }}
+          AZURE_DOCUMENT_INTELLIGENCE_API_VERSION: {{ .Values.chat.assistantsCore.env.AZURE_DOCUMENT_INTELLIGENCE_API_VERSION | quote }}
+          ENABLED_MIME_TYPES_DOCUMENT_TRANSLATION: {{ .Values.chat.assistantsCore.env.ENABLED_MIME_TYPES_DOCUMENT_TRANSLATION | quote }}
         envSecrets:
           BING_SEARCH_V7_SUBSCRIPTION_KEY: {{ .Values.chat.assistantsCore.envSecrets.BING_SEARCH_V7_SUBSCRIPTION_KEY | fetchSecretValue | quote }}
         resources:
@@ -736,144 +735,6 @@ releases:
           enabled: false
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
-  - name: tyk-api-gateway
-    chart: tyk/tyk-headless
-    namespace: system
-    createNamespace: true
-    wait: false
-    jsonPatches:
-      - target:
-          group: apps
-          version: v1
-          kind: Deployment
-          name: gateway-tyk-api-gateway-tyk-headless
-        patch:
-        - op: replace
-          path: /spec/template/spec/volumes/0
-          value:
-            name: tyk-scratch
-            persistentVolumeClaim:
-              claimName: tyk-api-gateway-pvc
-      - target:
-          group: apps
-          version: v1
-          kind: Deployment
-          name: gateway-tyk-api-gateway-tyk-headless
-        patch:
-        - op: add
-          path: /spec/template/spec/imagePullSecrets
-          value:
-            - name: uq-public-acr
-            - name: image-pull-secret-system
-    values:
-      -
-        secrets:
-          APISecret: {{ .Values.tyk.apiSecret | fetchSecretValue | quote }}
-        redis:
-          host: {{ .Values.tyk.redis.host | fetchSecretValue | quote }}
-          port: {{ .Values.tyk.redis.port | fetchSecretValue | quote }}
-          pass: {{ .Values.tyk.redis.password | fetchSecretValue | quote }}
-          useSSL: true
-        gateway:
-          hostName: {{ .Values.tyk.hostName }}
-          replicaCount: 2
-          image:
-            repository: {{ .Values.chat._common.acr.url }}/custom-images/tyk-gateway
-            tag: v5.2.5
-            pullPolicy: IfNotPresent
-          service:
-            type: ClusterIP
-          control:
-            enabled: true
-          ingress:
-            enabled: true
-            className: azure-application-gateway
-            annotations:
-              appgw.ingress.kubernetes.io/request-timeout: {{ default 30 (.Values.tyk).agicRequestTimeout | quote }}
-              appgw.ingress.kubernetes.io/ssl-redirect: "true"
-              appgw.ingress.kubernetes.io/rewrite-rule-set: "security-headers"
-              cert-manager.io/cluster-issuer: letsencrypt
-            hosts:
-              - host: {{ .Values.tyk.hostName }}
-                paths:
-                  - path: /
-                    pathType: ImplementationSpecific
-            tls:
-              - secretName: tyktls
-                hosts:
-                  - {{ .Values.tyk.hostName }}
-          extraEnvs:
-            - name: TYK_GW_POLICIES_POLICYPATH
-              value: /mnt/tyk-gateway/policies
-            - name: TYK_GW_POLICIES_ALLOWEXPLICITPOLICYID
-              value: "true"
-            - name: TYK_GW_ENABLEJSVM
-              value: "true"
-            - name: TYK_GW_PROXYDEFAULTTIMEOUT
-              value: {{ default 30 (.Values.tyk).proxyDefaultTimeout | quote }}
-          resources:
-            {{ .Values.tyk.gateway.resources | toYaml | nindent 12 }}
-  - name: tyk-api-gateway-pvc
-    chart: bedag/raw
-    namespace: system
-    version: 2.0.0
-    wait: false
-    values:
-      - resources:
-          - kind: PersistentVolumeClaim
-            apiVersion: v1
-            metadata:
-              name: tyk-api-gateway-pvc
-              namespace: system
-            spec:
-              storageClassName: azurefile
-              accessModes:
-                - ReadWriteMany
-              resources:
-                requests:
-                  storage: 10Gi
-  - name: tyk-operator
-    chart: tyk/tyk-operator
-    namespace: system
-    createNamespace: true
-    wait: false
-    values:
-      -
-        image:
-          repository: tykio/tyk-operator
-          tag: v0.14.1
-          pullPolicy: IfNotPresent
-        envFrom: []
-        envVars:
-          - name: TYK_HTTPS_INGRESS_PORT
-            value: "8443"
-          - name: TYK_HTTP_INGRESS_PORT
-            value: "8080"
-          - name: TYK_MODE
-            value: "ce"
-          - name: TYK_URL
-            value: http://gateway-control-svc-tyk-api-gateway-tyk-headless.system.svc.cluster.local:9696
-          - name: TYK_AUTH
-            value: {{ .Values.tyk.apiSecret | fetchSecretValue | quote }}
-          - name: TYK_ORG
-            value: "0"
-          - name: WATCH_NAMESPACE
-            value: "chat,apps"
-        resources:
-          limits:
-              cpu: 100m
-              memory: 256Mi
-          requests:
-              cpu: 100m
-              memory: 256Mi
-        rbac:
-          resources:
-            limits:
-                cpu: 100m
-                memory: 256Mi
-            requests:
-                cpu: 100m
-                memory: 256Mi
   - name: zitadel-self-ca-cert
     chart: bedag/raw
     namespace: system

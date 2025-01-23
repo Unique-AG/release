@@ -18,7 +18,7 @@ releases:
           password: {{ .Values.appRepo._common.acr.password | fetchSecretValue | quote }}
   - name: node-app-repository
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 1.4.0
+    version: 3.1.1
     namespace: apps
     createNamespace: true
     wait: false
@@ -31,7 +31,7 @@ releases:
         imagePullSecrets:
           - name: image-pull-secret
         service:
-          port: 8088  # if changed also adjust all tyk.exposePublicApi.appRepositoryPortOverride !!
+          port: 8088
         env:
           LOG_LEVEL: info
           MAX_HEAP_MB: {{ .Values.appRepo.nodeAppRepository.env.MAX_HEAP_MB }}
@@ -46,12 +46,10 @@ releases:
           APP_LOGS_STORAGE_ACCOUNT: {{ default "" .Values.appRepo.nodeAppRepository.secrets.APP_LOGS_STORAGE_ACCOUNT | fetchSecretValue | quote }}
         securityContext:
           {{ .Values.appRepo._common.securityContext | toYaml | nindent 10 }}
-        tyk:
-          jwtSource: https://{{ .Values.zitadel.hostName }}/oauth/v2/keys
-          listenPath: /apps
-          rateLimit:
-            rate: {{ .Values.appRepo.nodeAppRepository.tyk.rateLimit.rate }}
-            quotaMax: {{ .Values.appRepo.nodeAppRepository.tyk.rateLimit.quotaMax }}
+        routes:
+          {{- $routes := .Values.appRepo.nodeAppRepository.routes | deepCopy }}
+          {{- $_ := set $routes "hostname" (printf "api.%s" .Values.host) }}
+          {{ $routes | toYaml | nindent 10 }}
         resources:
           {{ .Values.appRepo.nodeAppRepository.resources | toYaml | nindent 10 }}
         hooks:
@@ -68,7 +66,7 @@ releases:
           enabled: false
   - name: node-webhook-scheduler
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 1.4.0
+    version: 3.1.1
     namespace: apps
     createNamespace: true
     wait: false
@@ -88,7 +86,7 @@ releases:
           AMQP_URL: amqp://{{ .Values.rabbitMQ.username | fetchSecretValue }}:{{ .Values.rabbitMQ.password | fetchSecretValue }}@rabbitmq-headless.system.svc.cluster.local:5672/%2f
         securityContext:
           {{ .Values.appRepo._common.securityContext | toYaml | nindent 10 }}
-        tyk:
+        service:
           enabled: false
         resources:
           {{ .Values.appRepo.nodeWebhookScheduler.resources | toYaml | nindent 10 }}
@@ -96,7 +94,7 @@ releases:
           enabled: false
   - name: node-webhook-worker
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 1.4.0
+    version: 3.1.1
     namespace: apps
     createNamespace: true
     wait: false
@@ -116,7 +114,7 @@ releases:
           AMQP_URL: amqp://{{ .Values.rabbitMQ.username | fetchSecretValue }}:{{ .Values.rabbitMQ.password | fetchSecretValue }}@rabbitmq-headless.system.svc.cluster.local:5672/%2f
         securityContext:
           {{ .Values.appRepo._common.securityContext | toYaml | nindent 10 }}
-        tyk:
+        service:
           enabled: false
         resources:
           {{ .Values.appRepo.nodeWebhookWorker.resources | toYaml | nindent 10 }}
@@ -124,7 +122,7 @@ releases:
           enabled: false
   - name: typescript-service-event-socket
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 1.4.0
+    version: 3.1.1
     namespace: apps
     createNamespace: true
     wait: false
@@ -146,18 +144,15 @@ releases:
           AMQP_URL: amqp://{{ .Values.rabbitMQ.username | fetchSecretValue }}:{{ .Values.rabbitMQ.password | fetchSecretValue }}@rabbitmq-headless.system.svc.cluster.local:5672/%2f
         securityContext:
           {{ .Values.appRepo._common.securityContext | toYaml | nindent 10 }}
-        tyk:
-          enabled: false
-          listenPath: /event-socket
-          exposePublicApi:
-            enabled: {{ default false .Values.appRepo.typescriptServiceEventSocket.tyk.exposePublicApi.enabled }}
-            hardTimeouts:
-              {{ .Values.appRepo.typescriptServiceEventSocket.tyk.exposePublicApi.hardTimeouts | toYaml | nindent 14 }}
+        routes:
+          {{- $routes := .Values.appRepo.typescriptServiceEventSocket.routes | deepCopy }}
+          {{- $_ := set $routes "hostname" (printf "api.%s" .Values.host) }}
+          {{ $routes | toYaml | nindent 10 }}
         resources:
           {{ .Values.appRepo.typescriptServiceEventSocket.resources | toYaml | nindent 10 }}
   - name: client-insights-exporter
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 1.4.0
+    version: 3.1.1
     namespace: apps
     createNamespace: true
     wait: false
@@ -177,7 +172,7 @@ releases:
           UNIQUE_INSTALLATION_ID: {{ .Values.host }}
         securityContext:
           {{ .Values.appRepo._common.securityContext | toYaml | nindent 10 }}
-        tyk:
+        service:
           enabled: false
         resources:
           {{ .Values.appRepo.clientInsightsExporter.resources | toYaml | nindent 10 }}

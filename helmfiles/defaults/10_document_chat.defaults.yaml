@@ -21,27 +21,49 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:            "2025.02"
-      nextKnowledgeUpload: "2025.02"
-      nextTheme:           "2025.02"
-      nextAdmin:           "2025.02"
-      nodeChat:            "2025.02"
-      nodeIngestion:       "2025.02"
-      nodeIngestionWorker: "2025.02"
-      nodeTheme:           "2025.02"
-      nodeScopeManagement: "2025.02"
-      assistantsCore:      "2025.02"
-  _rootIngress:
-    enabled: true
+      nextChat:            "2025.04"
+      nextKnowledgeUpload: "2025.04"
+      nextTheme:           "2025.04"
+      nextAdmin:           "2025.04"
+      nodeChat:            "2025.04"
+      nodeIngestion:       "2025.04"
+      nodeIngestionWorker: "2025.04"
+      nodeTheme:           "2025.04"
+      nodeScopeManagement: "2025.04"
+      assistantsCore:      "2025.04"
   nextChat:
     env:
       MAX_HEAP_MB: 400
-      FEATURE_FLAG_NEW_TRANSLATION_UI_UN_7233: "true"
       FEATURE_FLAG_STOP_STREAMING_UN_4824: "true"
       FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: "true"
       FEATURE_FLAG_IN_DOCUMENT_TRANSLATOR_UN_8405: "true"
       FILE_TYPES_DOCUMENT_TRANSLATOR: "docx,xlsx"
       FEATURE_FLAG_ENABLE_LATEX_UN_8603: "false"
+      FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: "true"
+    extraObjects:
+      - apiVersion: configuration.konghq.com/v1
+        kind: KongPlugin
+        metadata:
+          name: uniquens-chat-redirect
+        plugin: redirect
+        config:
+          location: https://unset_default_value/chat
+    extraRoutes:
+      root-redirect:
+        enabled: true
+        annotations:
+          konghq.com/plugins: "uniquens-chat-redirect"
+        parentRefs:
+          - name: kong
+            namespace: system
+            group: gateway.networking.k8s.io
+            kind: Gateway
+        hostnames:
+          - unset_default_value
+        matches:
+          - path:
+              type: Exact
+              value: /
     resources:
       requests:
         cpu: 300m
@@ -50,12 +72,21 @@ chat:
         cpu: 300m
         memory: 550Mi
     replicaCount: 2
+    routes:
+      hostname: unset_default_value
+      pathPrefix: /chat
+      paths:
+        default:
+          enabled: true
+        root:
+          enabled: false
+          redirectPath: /chat
     strategy:
       type: Recreate
   nextKnowledgeUpload:
     env:
       MAX_HEAP_MB: 350
-      FEATURE_FLAG_NEW_KNOWLEDGE_BASE_UN_5652: "true"
+      FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: "true"
     resources:
       requests:
         cpu: 300m
@@ -64,13 +95,18 @@ chat:
         cpu: 300m
         memory: 500Mi
     replicaCount: 2
+    routes:
+      hostname: unset_default_value
+      pathPrefix: /knowledge-upload
+      paths:
+        default:
+          enabled: true
     strategy:
       type: Recreate
   nextTheme:
     env:
       MAX_HEAP_MB: 200
-      UNIQUE_THEME: {"color-primary-cta": "#a04044", "color-primary-variant": "#90393c", "color-secondary": "#5b5b5b", "color-secondary-variant": "#3e3e3e", "color-background": "#f6f6f6", "color-background-variant": "#ececec", "color-surface": "#ffffff", "color-control": "#cfcfcf", "color-info": "#4167a6", "color-success-light": "#ebfaf2", "color-success-dark": "#0f9451", "color-error-light": "#cc5e71", "color-error-dark": "#d12a46", "color-attention": "#db7600", "color-attention-variant": "#8d4c82", "color-on-primary": "#ffffff", "color-on-secondary": "#ffffff", "color-on-background-main": "#3e3e3e", "color-on-background-dimmed": "#787878", "color-on-surface": "#3e3e3e", "color-on-control-main": "#3e3e3e", "color-on-control-dimmed": "#b3b3b3", "color-on-info": "#ffffff", "color-on-success-light": "#3e3e3e", "color-on-success-dark": "#ffffff", "color-on-error-light": "#ffffff", "color-on-error-dark": "#ffffff", "color-on-attention": "#ffffff", "color-on-attention-variant": "#ffffff"}
-      UNIQUE_BACKGROUND_COLOR: F6F6F6
+      FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: "true"
     resources:
       requests:
         cpu: 100m
@@ -79,13 +115,20 @@ chat:
         cpu: 100m
         memory: 350Mi
     replicaCount: 2
+    routes:
+      hostname: unset_default_value
+      pathPrefix: /theme
+      paths:
+        default:
+          enabled: true
     strategy:
       type: Recreate
   nextAdmin:
     env:
       MAX_HEAP_MB: 350
-      FEATURE_FLAG_NEW_TRANSLATION_UI_UN_7233: true
-      FEATURE_FLAG_KNOWLEDGE_SCOPE_UN_5773: true
+      FEATURE_FLAG_KNOWLEDGE_SCOPE_UN_5773: "true"
+      FEATURE_FLAG_ENABLE_ASSISTANT_ACCESS_UN_5775: "true"
+      FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: "true"
     resources:
       requests:
         cpu: 300m
@@ -94,6 +137,12 @@ chat:
         cpu: 300m
         memory: 500Mi
     replicaCount: 2
+    routes:
+      hostname: unset_default_value
+      pathPrefix: /admin
+      paths:
+        default:
+          enabled: true
     strategy:
       type: Recreate
   nodeChat:
@@ -103,7 +152,7 @@ chat:
       BENCHMARKS_PER_MINUTE_PER_PROCESS: 1
       AMQP_BENCHMARK_PREFETCH: 1
       INTERNAL_MODULES_CONFIG: >- 
-        [ 
+        [
         {"name": "SearchInVectorDBV2", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/search"},
         {"name": "ImageSummarizer", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/image_summarizer"},
         {"name": "TranslationOneToOne", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/translation_one_to_one"},
@@ -123,7 +172,11 @@ chat:
       ENABLE_CLIENT_INSIGHT_SHIPPER: "false"
       MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER: "30"
       FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: "true"
-    serviceAccount: {}
+    serviceAccount:
+      enabled: true
+      workloadIdentity:
+        clientId: unset_default_value
+        enabled: true
     resources:
       requests:
         cpu: 500m
@@ -131,21 +184,16 @@ chat:
       limits:
         cpu: 500m
         memory: 600Mi
-    tyk:
-      rateLimit:
-        per: 60
-        rate: 4096
-        quotaMax: -1
-      hardTimeouts: []
-      exposePublicApi:
-        enabled: true
-        hardTimeouts:
-          - path: "/openai/chat/{:path}"
-            method: "POST"
-            timeoutSeconds: 600
-          - path: "/integrated/chat/{:path}"
-            method: "POST"
-            timeoutSeconds: 600
+    routes:
+      hostname: unset_default_value
+      pathPrefix: /chat
+      paths:
+        default:
+          enabled: true
+        versioned:
+          enabled: true
+        probe:
+          enabled: true
   nodeIngestion:
     env:
       AZURE_OPENAI_API_DEPLOYMENT_NAME: text-embedding-ada-002
@@ -157,18 +205,7 @@ chat:
       ENABLE_MALWARE_SCAN: "true"
       REPLICATION_FACTOR: 2
       FILE_RETENTION_IN_DAYS: 0
-      FF_UN7111_UPLOAD_THROUGH_BACKEND: "true"
       RERANKER_CONFIGURATION: '[{"deploymentName": "crossencoder_reranker", "apiUrl": "http://assistants-reranker.chat.svc.cluster.local:8081/reranker/rerank"}]'
-    tyk:
-      rateLimit:
-        rate: 4096
-        quotaMax: -1
-      scopedApi:
-        enabled: true
-        hardTimeouts:
-          - path: "/upload"
-            method: "PUT"
-            timeoutSeconds: 600 # for large files and bad connections during upload
     serviceAccount:
       enabled: true
       workloadIdentity:
@@ -181,14 +218,29 @@ chat:
       limits:
         cpu: 200m
         memory: 700Mi
+    routes:
+      hostname: unset_default_value
+      pathPrefix: /ingestion
+      paths:
+        default:
+          enabled: true
+        scoped:
+          enabled: true
+        probe:
+          enabled: true
   nodeIngestionWorker:
     env:
       MAX_HEAP_MB: 850
+      CONVERT_OFFICE_FILES_TO_PDF: "true"
       CUSTOM_API_DEFINITIONS: >-
         [ 
         {"identifier": "Unique Text Extraction API", "url": "http://assistants-core.chat.svc.cluster.local:8081/core/text-extractions"} 
         ]
-    serviceAccount: {}
+    serviceAccount:
+      enabled: true
+      workloadIdentity:
+        clientId: unset_default_value
+        enabled: true
     resources:
       requests:
         cpu: 1
@@ -197,7 +249,18 @@ chat:
         cpu: 1
         memory: 1050Mi
   nodeIngestionWorkerChat:
-    serviceAccount: {}
+    serviceAccount:
+      enabled: true
+      workloadIdentity:
+        clientId: unset_default_value
+        enabled: true
+    resources:
+      requests:
+        cpu: 1.5
+        memory: 1Gi
+      limits:
+        cpu: 1.5
+        memory: 1Gi
   nodeTheme:
     env:
       MAX_HEAP_MB: 200
@@ -208,18 +271,18 @@ chat:
       limits:
         cpu: 100m
         memory: 350Mi
-    tyk:
-      rateLimit:
-        rate: 4096
-        quotaMax: -1
+    routes:
+      hostname: unset_default_value
+      pathPrefix: /theme
+      paths:
+        default:
+          enabled: true
+        probe:
+          enabled: true
   nodeScopeManagement:
     env:
       MAX_HEAP_MB: 750
       ENABLE_CLIENT_INSIGHT_SHIPPER: "false"
-    tyk:
-      rateLimit:
-        rate: 4096
-        quotaMax: -1
     resources:
       requests:
         cpu: 500m
@@ -227,12 +290,43 @@ chat:
       limits:
         cpu: 1
         memory: 900Mi
+    routes:
+      hostname: unset_default_value
+      pathPrefix: /scope-management
+      paths:
+        default:
+          enabled: true
+        probe:
+          enabled: true
+    extraRoutes:
+      scim:
+        enabled: true
+        annotations:
+          konghq.com/plugins: unique-route-metrics
+        parentRefs:
+          - name: kong
+            namespace: system
+            group: gateway.networking.k8s.io
+            kind: Gateway
+        hostnames:
+          - unset_default_value
+        matches:
+          - path:
+              type: PathPrefix
+              value: /scim
   assistantsCore:
-    serviceAccount: {}
+    serviceAccount:
+      enabled: true
+      workloadIdentity:
+        clientId: unset_default_value
+        enabled: true
     env:
       GUNICORN_WORKERS: 2
       GUNICORN_THREADS: 4
       AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT_DEFINITIONS: []
+      AZURE_DOCUMENT_INTELLIGENCE_LOCATION: switzerlandnorth
+      AZURE_DOCUMENT_INTELLIGENCE_API_VERSION: 2023-07-31
+      ENABLED_MIME_TYPES_DOCUMENT_TRANSLATION: '["DOCX", "MSEXCEL", "EXCEL"]'
     resources:
       requests:
         cpu: 500m
@@ -267,18 +361,6 @@ zitadel:
     limits:
       cpu: 1
       memory: 1500Mi
-tyk:
-  agicRequestTimeout: 600 # 10 minutes to allow long-running LLM requests.
-  proxyDefaultTimeout: 600 # 10 minutes to allow long-running LLM requests.
-  replicaCount: 2
-  gateway:
-    resources:
-      limits:
-          cpu: 80m
-          memory: 250Mi
-      requests:
-          cpu: 80m
-          memory: 250Mi
 eventBasedAutoscaling:
   nodeIngestionWorker:
     minReplicaCount: 0

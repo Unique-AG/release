@@ -1,8 +1,6 @@
 host: tenantzone.unique.app
 chat:
   _common:
-    secrets:
-      LAUNCH_DARKLY_SDK_KEY: ref+azurekeyvault://your-vault-name/manual-ld-sdk-key
     database:
       host: ref+azurekeyvault://your-vault-name/host
       port: ref+azurekeyvault://your-vault-name/port
@@ -31,6 +29,19 @@ chat:
       STATIC_THEME_COLORS: {"color-primary-cta": "#D63384", "color-primary-variant": "#B2447A", "color-secondary": "#042834", "color-secondary-variant": "#03212B", "color-background": "#F7F7F7", "color-background-variant": "#EBEBED", "color-surface": "#FFFFFF", "color-control": "#D8D8D8", "color-info": "#0A96E6", "color-success-light": "#A0C855", "color-success-dark": "#3D9E3F", "color-error-light": "#F65D67", "color-error-dark": "#DC3545", "color-attention": "#FFC65C", "color-attention-variant": "#19AADA", "color-on-primary": "#FFFFFF", "color-on-secondary": "#FFFFFF", "color-on-background-main": "#02161D", "color-on-background-dimmed": "#1F505F", "color-on-surface": "#02161D", "color-on-control-main": "#02161D", "color-on-control-dimmed": "#9C9C9C", "color-on-info": "#FFFFFF", "color-on-success-light": "#FFFFFF", "color-on-success-dark": "#FFFFFF", "color-on-error-light": "#FFFFFF", "color-on-error-dark": "#FFFFFF", "color-on-attention": "#02161D", "color-on-attention-variant": "#FFFFFF"}
       STATIC_BACKGROUND_COLOR: F7F7F7
       STATIC_TAB_NAME: "YOUR_TAB_NAME"
+  nextChat:
+    extraObjects:
+      - apiVersion: configuration.konghq.com/v1
+        kind: KongPlugin
+        metadata:
+          name: uniquens-chat-redirect
+        plugin: redirect
+        config:
+          location: https://<your-hostname>/chat
+    extraRoutes:
+      root-redirect:
+        hostnames:
+          - <your-hostname>
   nodeChat:
     secrets:
       WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-node-chat
@@ -42,10 +53,6 @@ chat:
       workloadIdentity:
         enabled: true
         clientId: ref+azurekeyvault://your-vault-name/wid-client-id-node-chat
-    tyk:
-      rateLimit:
-        rate: 500
-        per: 60
   nodeIngestion:
     secrets:
       AZURE_OPENAI_API_ENDPOINT: ref+azurekeyvault://your-vault-name/openai-endpoint
@@ -67,11 +74,6 @@ chat:
       workloadIdentity:
         enabled: true
         clientId: ref+azurekeyvault://your-vault-name/wid-client-id-node-ingestion-worker
-  nodeTheme:
-    tyk:
-      rateLimit:
-        rate: 500
-        per: 60
   nodeScopeManagement:
     secrets:
       ZITADEL_PAT: ref+azurekeyvault://your-vault-name/manual-zitadel-scope-mgmt-pat
