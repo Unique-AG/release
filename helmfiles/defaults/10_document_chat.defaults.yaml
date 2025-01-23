@@ -84,7 +84,6 @@ chat:
   nextAdmin:
     env:
       MAX_HEAP_MB: 350
-      FEATURE_FLAG_ENABLE_ASSISTANT_ACCESS_UN_5775: true
       FEATURE_FLAG_NEW_TRANSLATION_UI_UN_7233: true
       FEATURE_FLAG_KNOWLEDGE_SCOPE_UN_5773: true
     resources:
