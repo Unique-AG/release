@@ -393,7 +393,7 @@ releases:
           SCOPE_MANAGEMENT_BACKEND_API_URL: https://api.{{ .Values.host }}/scope-management
           KNOWLEDGE_UPLOAD_APP_URL: https://{{ .Values.host }}/knowledge-upload
           ADMIN_APP_URL: https://{{ .Values.host }}/admin
-          THEME_BACKEND_API_URL: https://api.{{ .Values.host }}/theme
+          THEME_BACKEND_API_URL: https://api.{{ .Values.host }}/configuration
           SELF_URL: https://{{ .Values.host }}/knowledge-upload
           ZITADEL_CLIENT_ID: {{ .Values.zitadel.clientId | quote}}
           ZITADEL_ISSUER: https://id.{{ .Values.host }}
@@ -455,7 +455,7 @@ releases:
           CHAT_BACKEND_API_URL: https://api.{{ .Values.host }}/chat
           INGESTION_BACKEND_API_URL: https://api.{{ .Values.host }}/ingestion
           SCOPE_MANAGEMENT_BACKEND_API_URL: https://api.{{ .Values.host }}/scope-management
-          THEME_BACKEND_API_URL: https://api.{{ .Values.host }}/theme
+          THEME_BACKEND_API_URL: https://api.{{ .Values.host }}/configuration
           KNOWLEDGE_UPLOAD_APP_URL: https://{{ .Values.host }}/knowledge-upload
           ADMIN_APP_URL: https://{{ .Values.host }}/admin
           SELF_URL: https://{{ .Values.host }}/chat
@@ -475,6 +475,7 @@ releases:
           FILE_TYPES_DOCUMENT_TRANSLATOR: {{ .Values.chat.nextChat.env.FILE_TYPES_DOCUMENT_TRANSLATOR | quote }}
           FEATURE_FLAG_ENABLE_LATEX_UN_8603: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_LATEX_UN_8603 | quote }}
           FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411 | quote }}
+          FEATURE_FLAG_ENABLE_CHAT_HISTORY_UN_5803: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_CHAT_HISTORY_UN_5803 | quote }}
         extraObjects:
           {{ .Values.chat.nextChat.extraObjects | toYaml | nindent 10 }}
         extraRoutes:
@@ -527,7 +528,7 @@ releases:
           ZITADEL_ISSUER: https://id.{{ .Values.host }}
           ZITADEL_ORG_ID: {{ .Values.zitadel.orgId | quote }}
           ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote}}
-          THEME_BACKEND_API_URL: https://api.{{ .Values.host }}/theme
+          THEME_BACKEND_API_URL: https://api.{{ .Values.host }}/configuration
           CHAT_BACKEND_API_URL: https://api.{{ .Values.host }}/chat
           MAX_HEAP_MB: {{ .Values.chat.nextTheme.env.MAX_HEAP_MB }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
@@ -579,7 +580,7 @@ releases:
           SCOPE_MANAGEMENT_BACKEND_API_URL: https://api.{{ .Values.host }}/scope-management
           APP_REPOSITORY_BACKEND_API_URL: https://api.{{ .Values.host }}/apps
           KNOWLEDGE_UPLOAD_APP_URL: https://{{ .Values.host }}/knowledge-upload
-          THEME_BACKEND_API_URL: https://api.{{ .Values.host }}/theme
+          THEME_BACKEND_API_URL: https://api.{{ .Values.host }}/configuration
           SELF_URL: https://{{ .Values.host }}/admin
           ZITADEL_CLIENT_ID: {{ .Values.zitadel.clientId | quote}}
           ZITADEL_ISSUER: https://id.{{ .Values.host }}
@@ -654,6 +655,49 @@ releases:
             enabled: true
             command: |
               cd /node/dist/apps/node-theme; npx prisma migrate deploy
+        auditVolume:
+          enabled: {{ .Values.chat._common.auditVolume.enabled }}
+          mountPath: /audit
+          attributes:
+            resourceGroup: {{ .Values.chat._common.auditVolume.resourceGroup | fetchSecretValue | quote }}
+            storageAccount: {{ .Values.chat._common.auditVolume.storageAccount | fetchSecretValue | quote }}
+  - name: configuration-backend
+    chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
+    version: 3.3.0
+    namespace: chat
+    createNamespace: true
+    wait: false
+    values:
+      -
+        image:
+          repository: {{ .Values.chat._common.acr.url }}/backend-service-configuration
+          tag: {{ .Values.chat._common.tenantReleaseOverrides.configurationBackend | default .Values.chat._common.defaultReleases.configurationBackend | quote }}
+        replicaCount: {{ .Values.chat.configurationBackend | get "replicaCount" 1 }}
+        imagePullSecrets:
+          - name: image-pull-secret
+        service:
+          port: 8095
+        env:
+          AUDIT_LOG_DIR: /audit
+          LOG_LEVEL: info
+          ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote}}
+          CORS_ALLOWED_ORIGINS: https://{{ .Values.host }}
+          MAX_HEAP_MB: {{ .Values.chat.configurationBackend.env.MAX_HEAP_MB }}
+        envSecrets:
+          DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/theme"
+        securityContext:
+          {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
+        routes:
+          {{- $routes := .Values.chat.configurationBackend.routes | deepCopy }}
+          {{- $_ := set $routes "hostname" (printf "api.%s" .Values.host) }}
+          {{ $routes | toYaml | nindent 10 }}
+        resources:
+          {{ .Values.chat.configurationBackend.resources | toYaml | nindent 10 }}
+        hooks:
+          migration:
+            enabled: true
+            command: |
+              cd /home/node/app/prisma; npx prisma migrate deploy
         auditVolume:
           enabled: {{ .Values.chat._common.auditVolume.enabled }}
           mountPath: /audit

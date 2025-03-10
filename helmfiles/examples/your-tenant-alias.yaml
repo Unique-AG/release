@@ -22,6 +22,7 @@ chat:
       nodeIngestion:
       nodeIngestionWorker:
       nodeTheme:
+      configurationBackend:
       nodeScopeManagement:
       assistantsCore:
   nextTheme:

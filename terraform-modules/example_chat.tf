@@ -142,6 +142,7 @@ module "cluster" {
     "node-app-repository",
     "node-scope-management",
     "node-theme",
+    "configuration-backend",
   ]
   monitor_action_group_ids = {
     p0 = module.monitor.monitor_action_group_ids.slack-platform

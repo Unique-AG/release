@@ -21,25 +21,27 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:            "2025.08"
-      nextKnowledgeUpload: "2025.08"
-      nextTheme:           "2025.08"
-      nextAdmin:           "2025.08"
-      nodeChat:            "2025.08"
-      nodeIngestion:       "2025.08"
-      nodeIngestionWorker: "2025.08"
-      nodeTheme:           "2025.08"
-      nodeScopeManagement: "2025.08"
-      assistantsCore:      "2025.08"
+      nextChat:             "2025.10"
+      nextKnowledgeUpload:  "2025.10"
+      nextTheme:            "2025.10"
+      nextAdmin:            "2025.10"
+      nodeChat:             "2025.10"
+      nodeIngestion:        "2025.10"
+      nodeIngestionWorker:  "2025.10"
+      nodeTheme:            "2025.10"
+      configurationBackend: "2025.10"
+      nodeScopeManagement:  "2025.10"
+      assistantsCore:       "2025.10"
   nextChat:
     env:
       MAX_FILE_SIZE_IN_MB: 200
       MAX_HEAP_MB: 400
       FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: "true"
       FEATURE_FLAG_IN_DOCUMENT_TRANSLATOR_UN_8405: "true"
-      FILE_TYPES_DOCUMENT_TRANSLATOR: "docx,xlsx"
+      FILE_TYPES_DOCUMENT_TRANSLATOR: "docx,xlsx,pptx"
       FEATURE_FLAG_ENABLE_LATEX_UN_8603: "true"
       FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: "true"
+      FEATURE_FLAG_ENABLE_CHAT_HISTORY_UN_5803: "true"
     extraObjects:
       - apiVersion: configuration.konghq.com/v1
         kind: KongPlugin
@@ -158,6 +160,7 @@ chat:
         {"name": "ComplianceCheck", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/compliance_check"},
         {"name": "QuestionExtractor", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/question_extractor"},
         {"name": "QuestionAnswerer", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/question_answerer"},
+        {"name": "Questionnaire", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/question_answerer"},
         {"name": "QuestionPredictor", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/question_predictor"},
         {"name": "DocumentSummarizerV2", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/document_summarizer"},
         {"name": "ImageUpload", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/image_upload"},
@@ -166,7 +169,9 @@ chat:
         {"name": "TranslatorV2", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/translator_v2"},
         {"name": "InvestmentResearch", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/investment_research"},
         {"name": "EarningCallsBeta", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/earning_calls"},
-        {"name": "HallucinationLevelEvaluation", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/evaluations/hallucination-level"}
+        {"name": "HallucinationLevelEvaluation", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/evaluations/hallucination-level"},
+        {"name": "DueDiligence", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/magic_table_dd"},
+        {"name": "RfpAgent", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/rfp_agent"}
         ]
       ENABLE_CLIENT_INSIGHT_SHIPPER: "false"
       MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER: "30"
@@ -258,6 +263,24 @@ chat:
           enabled: true
         probe:
           enabled: true
+  configurationBackend:
+    env:
+      MAX_HEAP_MB: 200
+    resources:
+      requests:
+        cpu: 100m
+        memory: 300Mi
+      limits:
+        cpu: 100m
+        memory: 350Mi
+    routes:
+      hostname: unset_default_value
+      pathPrefix: /configuration
+      paths:
+        default:
+          enabled: true
+        probe:
+          enabled: true
   nodeScopeManagement:
     env:
       MAX_HEAP_MB: 750
@@ -300,7 +323,7 @@ chat:
       AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT_DEFINITIONS: []
       AZURE_DOCUMENT_INTELLIGENCE_LOCATION: switzerlandnorth
       AZURE_DOCUMENT_INTELLIGENCE_API_VERSION: 2023-07-31
-      ENABLED_MIME_TYPES_DOCUMENT_TRANSLATION: '["DOCX", "MSEXCEL", "EXCEL"]'
+      ENABLED_MIME_TYPES_DOCUMENT_TRANSLATION: '["DOCX", "MSEXCEL", "EXCEL", "PPT", "MSPPT"]'
     resources:
       requests:
         cpu: 500m
