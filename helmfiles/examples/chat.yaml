@@ -58,7 +58,7 @@ releases:
           periodSeconds: {{ .Values.qdrant | get "probes.startup.periodSeconds" 15 }}
   - name: node-ingestion
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 3.1.1
+    version: 3.3.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -73,8 +73,10 @@ releases:
         service:
           port: 8091
         serviceAccount:
+          enabled: true
           workloadIdentity:
             clientId: {{ .Values.chat.nodeIngestion.secrets.WORKLOAD_IDENTITY_CLIENT_ID | fetchSecretValue | quote }}
+            enabled: true
         env:
           LOG_LEVEL: info
           AZURE_OPENAI_API_DEPLOYMENT_NAME: {{ .Values.chat.nodeIngestion.env.AZURE_OPENAI_API_DEPLOYMENT_NAME | quote }}
@@ -94,14 +96,14 @@ releases:
           FILE_RETENTION_IN_DAYS: {{ .Values.chat.nodeIngestion.env | get "FILE_RETENTION_IN_DAYS" 0 }}
           EMBEDDING_DIMENSION: {{ .Values.chat.nodeIngestion.env | get "EMBEDDING_DIMENSION" 1536 }}
           REPLICATION_FACTOR: {{ .Values.chat.nodeIngestion.env | get "REPLICATION_FACTOR" 1 }}
-          INGESTION_UPLOAD_API_URL: https://gateway.{{ .Values.host }}/scoped/ingestion/upload
+          INGESTION_UPLOAD_API_URL: https://api.{{ .Values.host }}/scoped/ingestion/upload
           RERANKER_CONFIGURATION: {{ .Values.chat.nodeIngestion.env.RERANKER_CONFIGURATION | quote }}
           ADDITIONAL_INGESTION_QUEUES: '["chat_queue"]'
           UNIQUE_INSTALLATION_ID: {{ .Values.host }}
           USE_NEW_FTS_QUERY_APPROACH: {{ .Values.chat.nodeIngestion.env | get "USE_NEW_FTS_QUERY_APPROACH" "true" }}
         envSecrets:
           AZURE_OPENAI_API_ENDPOINT: {{ .Values.chat.nodeIngestion.secrets.AZURE_OPENAI_API_ENDPOINT | fetchSecretValue | quote }}
-          AMQP_URL: amqp://{{ .Values.rabbitMQ.username | fetchSecretValue }}:{{ .Values.rabbitMQ.password | fetchSecretValue }}@rabbitmq-headless.system.svc.cluster.local:5672/%2f
+          AMQP_URL: {{ .Values.rabbitMQ.url | fetchSecretValue | quote }}
           AZURE_FGPT_STORAGE_CONNECTION_STRING: {{ .Values.chat.nodeIngestion.secrets.AZURE_FGPT_STORAGE_CONNECTION_STRING | fetchSecretValue | quote }}
           AZURE_INGESTION_CACHE_STORAGE_CONNECTION_STRING: {{.Values.chat.nodeIngestion.secrets.AZURE_INGESTION_CACHE_STORAGE_CONNECTION_STRING | fetchSecretValue | quote }}
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/ingestion"
@@ -150,7 +152,7 @@ releases:
               name: node-ingestion-expired-content-deletion
   - name: node-ingestion-worker
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 3.1.1
+    version: 3.3.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -165,7 +167,10 @@ releases:
         service:
           port: 8093
         serviceAccount:
-          {{ .Values.chat.nodeIngestionWorker.serviceAccount | toYaml | nindent 10 }}
+          enabled: true
+          workloadIdentity:
+            clientId: {{ .Values.chat.nodeIngestionWorker.secrets.WORKLOAD_IDENTITY_CLIENT_ID | fetchSecretValue | quote }}
+            enabled: true
         env:
           LOG_LEVEL: info
           INGESTION_API_URL: http://node-ingestion.chat.svc.cluster.local:8091
@@ -175,9 +180,10 @@ releases:
           CONVERT_OFFICE_FILES_TO_PDF: {{ .Values.chat.nodeIngestionWorker.env.CONVERT_OFFICE_FILES_TO_PDF | quote }}
           EMBEDDING_BATCH_SIZE: {{ .Values.chat.nodeIngestionWorker.env | get "EMBEDDING_BATCH_SIZE" 16 }}
           INGESTION_QUEUE: 'queue'
+          CUSTOM_API_DEFINITIONS: {{ .Values.chat.nodeIngestionWorker.env.CUSTOM_API_DEFINITIONS | quote }}
         envSecrets:
           AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS: {{ .Values.chat.nodeIngestionWorker.secrets.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS | fetchSecretValue | quote }}
-          AMQP_URL: amqp://{{ .Values.rabbitMQ.username | fetchSecretValue }}:{{ .Values.rabbitMQ.password | fetchSecretValue }}@rabbitmq-headless.system.svc.cluster.local:5672/%2f
+          AMQP_URL: {{ .Values.rabbitMQ.url | fetchSecretValue | quote }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
         resources:
@@ -211,7 +217,7 @@ releases:
         terminationGracePeriodSeconds: 900 # 15min
   - name: node-ingestion-worker-chat
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 3.1.1
+    version: 3.3.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -226,7 +232,10 @@ releases:
         service:
           port: 8093
         serviceAccount:
-          {{ .Values.chat.nodeIngestionWorkerChat.serviceAccount | toYaml | nindent 10 }}
+          enabled: true
+          workloadIdentity:
+            clientId: {{ .Values.chat.nodeIngestionWorkerChat.secrets.WORKLOAD_IDENTITY_CLIENT_ID | fetchSecretValue | quote }}
+            enabled: true
         env:
           LOG_LEVEL: info
           INGESTION_API_URL: http://node-ingestion.chat.svc.cluster.local:8091
@@ -236,9 +245,10 @@ releases:
           CONVERT_OFFICE_FILES_TO_PDF: {{ .Values.chat.nodeIngestionWorker.env.CONVERT_OFFICE_FILES_TO_PDF | quote }}
           EMBEDDING_BATCH_SIZE: {{ .Values.chat.nodeIngestionWorker.env | get "EMBEDDING_BATCH_SIZE" 16 }}
           INGESTION_QUEUE: 'chat_queue'
+          CUSTOM_API_DEFINITIONS: {{ .Values.chat.nodeIngestionWorker.env.CUSTOM_API_DEFINITIONS | quote }}
         envSecrets:
           AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS: {{ .Values.chat.nodeIngestionWorker.secrets.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS | fetchSecretValue | quote }}
-          AMQP_URL: amqp://{{ .Values.rabbitMQ.username | fetchSecretValue }}:{{ .Values.rabbitMQ.password | fetchSecretValue }}@rabbitmq-headless.system.svc.cluster.local:5672/%2f
+          AMQP_URL: {{ .Values.rabbitMQ.url | fetchSecretValue | quote }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
         resources:
@@ -272,7 +282,7 @@ releases:
         terminationGracePeriodSeconds: 900 # 15min
   - name: node-chat
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 3.1.1
+    version: 3.3.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -287,7 +297,10 @@ releases:
         service:
           port: 8093
         serviceAccount:
-          {{ .Values.chat.nodeChat.serviceAccount | toYaml | nindent 10 }}
+          enabled: true
+          workloadIdentity:
+            clientId: {{ .Values.chat.nodeChat.secrets.WORKLOAD_IDENTITY_CLIENT_ID | fetchSecretValue | quote }}
+            enabled: true
         env:
           LOG_LEVEL: info
           AZURE_OPENAI_API_ENDPOINTS_JSON: {{ .Values.chat.nodeChat.secrets.AZURE_OPENAI_API_ENDPOINTS_JSON | fetchSecretValue | quote }}
@@ -308,12 +321,12 @@ releases:
           INTERNAL_MODULES_CONFIG: {{ .Values.chat.nodeChat.env.INTERNAL_MODULES_CONFIG | quote }}
           ENABLE_CLIENT_INSIGHT_SHIPPER: {{ .Values.chat.nodeChat.env | get "ENABLE_CLIENT_INSIGHT_SHIPPER" false }}
           MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER: {{ .Values.chat.nodeChat.env | get "MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER" 30 }}
-          FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: {{ .Values.chat.nodeChat.env | get "FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747" true }}
           UNIQUE_INSTALLATION_ID: {{ .Values.host }}
+          EXPORT_PROMPTS_ACCESS_CONTROL: {{ .Values.chat.nodeChat.env | get "EXPORT_PROMPTS_ACCESS_CONTROL" true }}
         envSecrets:
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/chat"
           PUBSUB_REDIS_PASSWORD: {{ .Values.tyk.redis.password | fetchSecretValue | quote }}
-          AMQP_URL: amqp://{{ .Values.rabbitMQ.username | fetchSecretValue }}:{{ .Values.rabbitMQ.password | fetchSecretValue }}@rabbitmq-headless.system.svc.cluster.local:5672/%2f
+          AMQP_URL: {{ .Values.rabbitMQ.url | fetchSecretValue | quote }}
           AZURE_FGPT_STORAGE_CONNECTION_STRING: {{ .Values.chat.nodeChat.secrets.AZURE_FGPT_STORAGE_CONNECTION_STRING | fetchSecretValue | quote }}
           CHAT_LXM_ENCRYPTION_KEY: {{ .Values.chat.nodeChat.secrets.CHAT_LXM_ENCRYPTION_KEY | fetchSecretValue | quote }}
         securityContext:
@@ -375,12 +388,12 @@ releases:
           - name: image-pull-secret
         env:
           CHAT_APP_URL: https://{{ .Values.host }}/chat
-          CHAT_BACKEND_API_URL: https://gateway.{{ .Values.host }}/chat
-          INGESTION_BACKEND_API_URL: https://gateway.{{ .Values.host }}/ingestion
-          SCOPE_MANAGEMENT_BACKEND_API_URL: https://gateway.{{ .Values.host }}/scope-management
+          CHAT_BACKEND_API_URL: https://api.{{ .Values.host }}/chat
+          INGESTION_BACKEND_API_URL: https://api.{{ .Values.host }}/ingestion
+          SCOPE_MANAGEMENT_BACKEND_API_URL: https://api.{{ .Values.host }}/scope-management
           KNOWLEDGE_UPLOAD_APP_URL: https://{{ .Values.host }}/knowledge-upload
           ADMIN_APP_URL: https://{{ .Values.host }}/admin
-          THEME_BACKEND_API_URL: https://gateway.{{ .Values.host }}/theme
+          THEME_BACKEND_API_URL: https://api.{{ .Values.host }}/theme
           SELF_URL: https://{{ .Values.host }}/knowledge-upload
           ZITADEL_CLIENT_ID: {{ .Values.zitadel.clientId | quote}}
           ZITADEL_ISSUER: https://id.{{ .Values.host }}
@@ -439,10 +452,10 @@ releases:
           {{ .Values.chat.nextChat.resources | toYaml | nindent 10 }}
         env:
           CHAT_APP_URL: https://{{ .Values.host }}/chat
-          CHAT_BACKEND_API_URL: https://gateway.{{ .Values.host }}/chat
-          INGESTION_BACKEND_API_URL: https://gateway.{{ .Values.host }}/ingestion
-          SCOPE_MANAGEMENT_BACKEND_API_URL: https://gateway.{{ .Values.host }}/scope-management
-          THEME_BACKEND_API_URL: https://gateway.{{ .Values.host }}/theme
+          CHAT_BACKEND_API_URL: https://api.{{ .Values.host }}/chat
+          INGESTION_BACKEND_API_URL: https://api.{{ .Values.host }}/ingestion
+          SCOPE_MANAGEMENT_BACKEND_API_URL: https://api.{{ .Values.host }}/scope-management
+          THEME_BACKEND_API_URL: https://api.{{ .Values.host }}/theme
           KNOWLEDGE_UPLOAD_APP_URL: https://{{ .Values.host }}/knowledge-upload
           ADMIN_APP_URL: https://{{ .Values.host }}/admin
           SELF_URL: https://{{ .Values.host }}/chat
@@ -452,10 +465,10 @@ releases:
           ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote}}
           STATIC_THEME_COLORS: {{ .Values.chat.nextTheme.env.STATIC_THEME_COLORS | mustToJson | toString | quote }}
           STATIC_TAB_NAME: {{ .Values.chat.nextTheme.env.STATIC_TAB_NAME | quote }}
+          MAX_FILE_SIZE_IN_MB: {{ .Values.chat.nextChat.env | get "MAX_FILE_SIZE_IN_MB" 100 }}
           MAX_HEAP_MB: {{ .Values.chat.nextChat.env | get "MAX_HEAP_MB" 400 }}
           STATIC_BACKGROUND_COLOR:  >-
             {{ "#" }}{{ .Values.chat.nextTheme.env.STATIC_BACKGROUND_COLOR }}
-          FEATURE_FLAG_STOP_STREAMING_UN_4824: {{ .Values.chat.nextChat.env.FEATURE_FLAG_STOP_STREAMING_UN_4824 | quote }}
           FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: {{ .Values.chat.nextChat.env | get "FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747" "" | quote }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
           FEATURE_FLAG_IN_DOCUMENT_TRANSLATOR_UN_8405: {{ .Values.chat.nextChat.env.FEATURE_FLAG_IN_DOCUMENT_TRANSLATOR_UN_8405 | quote }}
@@ -514,8 +527,8 @@ releases:
           ZITADEL_ISSUER: https://id.{{ .Values.host }}
           ZITADEL_ORG_ID: {{ .Values.zitadel.orgId | quote }}
           ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote}}
-          THEME_BACKEND_API_URL: https://gateway.{{ .Values.host }}/theme
-          CHAT_BACKEND_API_URL: https://gateway.{{ .Values.host }}/chat
+          THEME_BACKEND_API_URL: https://api.{{ .Values.host }}/theme
+          CHAT_BACKEND_API_URL: https://api.{{ .Values.host }}/chat
           MAX_HEAP_MB: {{ .Values.chat.nextTheme.env.MAX_HEAP_MB }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
           FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: {{ .Values.chat.nextTheme.env.FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411 | quote }}
@@ -562,11 +575,11 @@ releases:
           {{ .Values.chat.nextAdmin.resources | toYaml | nindent 10 }}
         env:
           CHAT_APP_URL: https://{{ .Values.host }}/chat
-          CHAT_BACKEND_API_URL: https://gateway.{{ .Values.host }}/chat
-          SCOPE_MANAGEMENT_BACKEND_API_URL: https://gateway.{{ .Values.host }}/scope-management
-          APP_REPOSITORY_BACKEND_API_URL: https://gateway.{{ .Values.host }}/apps
+          CHAT_BACKEND_API_URL: https://api.{{ .Values.host }}/chat
+          SCOPE_MANAGEMENT_BACKEND_API_URL: https://api.{{ .Values.host }}/scope-management
+          APP_REPOSITORY_BACKEND_API_URL: https://api.{{ .Values.host }}/apps
           KNOWLEDGE_UPLOAD_APP_URL: https://{{ .Values.host }}/knowledge-upload
-          THEME_BACKEND_API_URL: https://gateway.{{ .Values.host }}/theme
+          THEME_BACKEND_API_URL: https://api.{{ .Values.host }}/theme
           SELF_URL: https://{{ .Values.host }}/admin
           ZITADEL_CLIENT_ID: {{ .Values.zitadel.clientId | quote}}
           ZITADEL_ISSUER: https://id.{{ .Values.host }}
@@ -578,9 +591,7 @@ releases:
             {{ "#" }}{{ .Values.chat.nextTheme.env.STATIC_BACKGROUND_COLOR }}
           STATIC_TAB_NAME: {{ .Values.chat.nextTheme.env.STATIC_TAB_NAME | quote }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
-          INGESTION_BACKEND_API_URL: https://gateway.{{ .Values.host }}/ingestion
-          FEATURE_FLAG_KNOWLEDGE_SCOPE_UN_5773: {{ .Values.chat.nextAdmin.env.FEATURE_FLAG_KNOWLEDGE_SCOPE_UN_5773 | quote }}
-          FEATURE_FLAG_ENABLE_ASSISTANT_ACCESS_UN_5775: {{ .Values.chat.nextAdmin.env.FEATURE_FLAG_ENABLE_ASSISTANT_ACCESS_UN_5775 | quote }}
+          INGESTION_BACKEND_API_URL: https://api.{{ .Values.host }}/ingestion
           FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: {{ .Values.chat.nextAdmin.env.FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411 | quote }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
@@ -608,7 +619,7 @@ releases:
             initialDelaySeconds: 5
   - name: node-theme
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 3.1.1
+    version: 3.3.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -623,6 +634,7 @@ releases:
         service:
           port: 8095
         env:
+          AUDIT_LOG_DIR: /audit
           LOG_LEVEL: info
           ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote}}
           CORS_ALLOWED_ORIGINS: https://{{ .Values.host }}
@@ -642,9 +654,15 @@ releases:
             enabled: true
             command: |
               cd /node/dist/apps/node-theme; npx prisma migrate deploy
+        auditVolume:
+          enabled: {{ .Values.chat._common.auditVolume.enabled }}
+          mountPath: /audit
+          attributes:
+            resourceGroup: {{ .Values.chat._common.auditVolume.resourceGroup | fetchSecretValue | quote }}
+            storageAccount: {{ .Values.chat._common.auditVolume.storageAccount | fetchSecretValue | quote }}
   - name: node-scope-management
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 3.1.1
+    version: 3.3.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -659,6 +677,7 @@ releases:
         service:
           port: 8094
         env:
+          AUDIT_LOG_DIR: /audit
           LOG_LEVEL: info
           ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote}}
           CORS_ALLOWED_ORIGINS: https://{{ .Values.host }}
@@ -678,6 +697,8 @@ releases:
           {{- $routes := .Values.chat.nodeScopeManagement.routes | deepCopy }}
           {{- $_ := set $routes "hostname" (printf "api.%s" .Values.host) }}
           {{ $routes | toYaml | nindent 10 }}
+        extraRoutes:
+          {{ .Values.chat.nodeScopeManagement.extraRoutes | toYaml | nindent 10 }}
         resources:
           {{ .Values.chat.nodeScopeManagement.resources | toYaml | nindent 10 }}
         hooks:
@@ -696,14 +717,21 @@ releases:
           failedJobsHistoryLimit: 2
           env:
             RUNNING_MODE: 'user-sync'
+            AUDIT_LOG_DIR: /dev/stdout
           startingDeadlineSeconds: 10
           jobTemplate:
             restartPolicy: Never
             containers:
               name: node-scope-management-user-sync
+        auditVolume:
+          enabled: {{ .Values.chat._common.auditVolume.enabled }}
+          mountPath: /audit
+          attributes:
+            resourceGroup: {{ .Values.chat._common.auditVolume.resourceGroup | fetchSecretValue | quote }}
+            storageAccount: {{ .Values.chat._common.auditVolume.storageAccount | fetchSecretValue | quote }}
   - name: assistants-core
     chart: oci://ghcr.io/unique-ag/helm-charts/ai-service
-    version: 1.1.2
+    version: 1.2.6
     namespace: chat
     createNamespace: true
     wait: false
@@ -718,7 +746,10 @@ releases:
         imagePullSecrets:
           - name: image-pull-secret
         serviceAccount:
-          {{ .Values.chat.assistantsCore.serviceAccount | toYaml | nindent 10 }}
+          enabled: true
+          workloadIdentity:
+            clientId: {{ .Values.chat.assistantsCore.envSecrets.WORKLOAD_IDENTITY_CLIENT_ID | fetchSecretValue | quote }}
+            enabled: true
         env:
           API_BASE: http://node-chat.chat.svc.cluster.local:8093/public
           GUNICORN_WORKERS: {{ .Values.chat.assistantsCore.env.GUNICORN_WORKERS }}
@@ -729,6 +760,7 @@ releases:
           ENABLED_MIME_TYPES_DOCUMENT_TRANSLATION: {{ .Values.chat.assistantsCore.env.ENABLED_MIME_TYPES_DOCUMENT_TRANSLATION | quote }}
         envSecrets:
           BING_SEARCH_V7_SUBSCRIPTION_KEY: {{ .Values.chat.assistantsCore.envSecrets.BING_SEARCH_V7_SUBSCRIPTION_KEY | fetchSecretValue | quote }}
+          AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT_DEFINITIONS: {{ .Values.chat.assistantsCore.envSecrets.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT_DEFINITIONS | fetchSecretValue | quote }}
         resources:
           {{ .Values.chat.assistantsCore.resources | toYaml | nindent 10 }}
         eventBasedAutoscaling:

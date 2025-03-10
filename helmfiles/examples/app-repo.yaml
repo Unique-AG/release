@@ -18,7 +18,7 @@ releases:
           password: {{ .Values.appRepo._common.acr.password | fetchSecretValue | quote }}
   - name: node-app-repository
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 3.1.1
+    version: 3.3.0
     namespace: apps
     createNamespace: true
     wait: false
@@ -33,6 +33,7 @@ releases:
         service:
           port: 8088
         env:
+          AUDIT_LOG_DIR: /audit
           LOG_LEVEL: info
           MAX_HEAP_MB: {{ .Values.appRepo.nodeAppRepository.env.MAX_HEAP_MB }}
           ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote }}
@@ -64,9 +65,15 @@ releases:
             clientId: {{ default "" .Values.appRepo.nodeAppRepository.serviceAccount.workloadIdentity.clientId | fetchSecretValue | quote }}
         probes:
           enabled: false
+        auditVolume:
+          enabled: {{ .Values.chat._common.auditVolume.enabled }}
+          mountPath: /audit
+          attributes:
+            resourceGroup: {{ .Values.chat._common.auditVolume.resourceGroup | fetchSecretValue | quote }}
+            storageAccount: {{ .Values.chat._common.auditVolume.storageAccount | fetchSecretValue | quote }}
   - name: node-webhook-scheduler
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 3.1.1
+    version: 3.3.0
     namespace: apps
     createNamespace: true
     wait: false
@@ -94,7 +101,7 @@ releases:
           enabled: false
   - name: node-webhook-worker
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 3.1.1
+    version: 3.3.0
     namespace: apps
     createNamespace: true
     wait: false
@@ -122,7 +129,7 @@ releases:
           enabled: false
   - name: typescript-service-event-socket
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 3.1.1
+    version: 3.3.0
     namespace: apps
     createNamespace: true
     wait: false
@@ -152,7 +159,7 @@ releases:
           {{ .Values.appRepo.typescriptServiceEventSocket.resources | toYaml | nindent 10 }}
   - name: client-insights-exporter
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 3.1.1
+    version: 3.3.0
     namespace: apps
     createNamespace: true
     wait: false
@@ -176,6 +183,8 @@ releases:
           enabled: false
         resources:
           {{ .Values.appRepo.clientInsightsExporter.resources | toYaml | nindent 10 }}
+        deployment:
+          enabled: false
         cronJob:
           enabled: {{ .Values.appRepo.clientInsightsExporter.cronJob.enabled | quote }}
           name: client-insights-exporter

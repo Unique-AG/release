@@ -24,7 +24,7 @@ releases:
         service:
           enabled: false
         env:
-          APP_PORT: 8083
+          APP_PORT: 8080
           CONFLUENCE_TOKENS_PER_MINUTE: {{ .Values.confluenceConnector.env.CONFLUENCE_TOKENS_PER_MINUTE }}
           CONFLUENCE_URL: {{ .Values.confluenceConnector.env.CONFLUENCE_URL }}
           CRON_SCHEDULE: "0 0 * * *"
@@ -32,7 +32,7 @@ releases:
           INGEST_ALL_LABEL: {{ .Values.confluenceConnector.env.INGEST_ALL_LABEL }}
           INGESTION_URL: http://node-ingestion.chat.svc.cluster.local:8091
           OAUTH_TOKEN_URL: https://{{ .Values.zitadel.hostName }}/oauth/v2/token
-          PROJECT_ID: {{ .Values.zitadel.projectId }}
+          PROJECT_ID: {{ .Values.zitadel.projectId | quote }}
           TEST_MODE: {{ .Values.confluenceConnector.env.TEST_MODE }}
         envSecrets:
           CLIENT_ID: {{ .Values.confluenceConnector.secrets.CLIENT_ID | fetchSecretValue | quote }}

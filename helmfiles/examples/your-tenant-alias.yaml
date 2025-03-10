@@ -48,13 +48,9 @@ chat:
       AZURE_OPENAI_API_ENDPOINTS_JSON: ref+azurekeyvault://your-vault-name/azure-openai-endpoints-json
       AZURE_FGPT_STORAGE_CONNECTION_STRING: ref+azurekeyvault://your-vault-name/storage-account-connection-string-1
       CHAT_LXM_ENCRYPTION_KEY: ref+azurekeyvault://your-vault-name/chat-lxm-encryption-key
-    serviceAccount:
-      enabled: true
-      workloadIdentity:
-        enabled: true
-        clientId: ref+azurekeyvault://your-vault-name/wid-client-id-node-chat
   nodeIngestion:
     secrets:
+      AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS: ref+azurekeyvault://your-vault-name/azure-document-intelligence-endpoints
       AZURE_OPENAI_API_ENDPOINT: ref+azurekeyvault://your-vault-name/openai-endpoint
       AZURE_FGPT_STORAGE_CONNECTION_STRING: ref+azurekeyvault://your-vault-name/storage-account-connection-string-1
       AZURE_INGESTION_CACHE_STORAGE_CONNECTION_STRING: ref+azurekeyvault://your-vault-name/storage-account-connection-string-1
@@ -64,16 +60,11 @@ chat:
       ZITADEL_ROOT_ORG_ID: a-zitadel-id
   nodeIngestionWorker:
     secrets:
-      AZURE_OPENAI_API_ENDPOINT: ref+azurekeyvault://your-vault-name/openai-endpoint
       WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-node-ingestion-worker
       AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS: ref+azurekeyvault://your-vault-name/azure-document-intelligence-endpoints
-    env:
-      CONVERT_OFFICE_FILES_TO_PDF: "true"
-    serviceAccount:
-      enabled: true
-      workloadIdentity:
-        enabled: true
-        clientId: ref+azurekeyvault://your-vault-name/wid-client-id-node-ingestion-worker
+  nodeIngestionWorkerChat:
+    secrets:
+      WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-node-ingestion-worker-chat
   nodeScopeManagement:
     secrets:
       ZITADEL_PAT: ref+azurekeyvault://your-vault-name/manual-zitadel-scope-mgmt-pat
@@ -82,9 +73,12 @@ chat:
       BING_API_ENDPOINT: ref+azurekeyvault://your-vault-name/websearch-api-url
     envSecrets:
       BING_SEARCH_V7_SUBSCRIPTION_KEY: ref+azurekeyvault://your-vault-name/websearch-subscription-key
+      AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT_DEFINITIONS: ref+azurekeyvault://your-vault-name/azure-document-intelligence-endpoint-definitions
+      WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-assistants-core
 rabbitMQ:
   username: ref+azurekeyvault://your-vault-name/rabbitmq-username # ! can't be changed without deleting the PVC+PV
   password: ref+azurekeyvault://your-vault-name/rabbitmq-password # ! can't be changed without deleting the PVC+PV
+  url: ref+azurekeyvault://your-vault-name/rabbitmq-url
   erlangCookie: ref+azurekeyvault://your-vault-name/rabbitmq-erlang-cookie # ! can't be changed without deleting the PVC+PV
   load_definition_policies: |-
     [
@@ -156,6 +150,10 @@ appRepo:
       port: ref+azurekeyvault://your-vault-name/port
       password: ref+azurekeyvault://your-vault-name/password
       username: ref+azurekeyvault://your-vault-name/username
+    auditVolume:
+      enabled: true
+      resourceGroup: ref+azurekeyvault://your-vault-name/resource-group-name
+      storageAccount: ref+azurekeyvault://your-vault-name/storage-account-name
     acr:
       username: ref+azurekeyvault://your-vault-name/manual-acr-image-pull-username
       password: ref+azurekeyvault://your-vault-name/manual-acr-image-pull-password

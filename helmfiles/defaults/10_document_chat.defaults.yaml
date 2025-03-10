@@ -21,24 +21,24 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:            "2025.04"
-      nextKnowledgeUpload: "2025.04"
-      nextTheme:           "2025.04"
-      nextAdmin:           "2025.04"
-      nodeChat:            "2025.04"
-      nodeIngestion:       "2025.04"
-      nodeIngestionWorker: "2025.04"
-      nodeTheme:           "2025.04"
-      nodeScopeManagement: "2025.04"
-      assistantsCore:      "2025.04"
+      nextChat:            "2025.08"
+      nextKnowledgeUpload: "2025.08"
+      nextTheme:           "2025.08"
+      nextAdmin:           "2025.08"
+      nodeChat:            "2025.08"
+      nodeIngestion:       "2025.08"
+      nodeIngestionWorker: "2025.08"
+      nodeTheme:           "2025.08"
+      nodeScopeManagement: "2025.08"
+      assistantsCore:      "2025.08"
   nextChat:
     env:
+      MAX_FILE_SIZE_IN_MB: 200
       MAX_HEAP_MB: 400
-      FEATURE_FLAG_STOP_STREAMING_UN_4824: "true"
       FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: "true"
       FEATURE_FLAG_IN_DOCUMENT_TRANSLATOR_UN_8405: "true"
       FILE_TYPES_DOCUMENT_TRANSLATOR: "docx,xlsx"
-      FEATURE_FLAG_ENABLE_LATEX_UN_8603: "false"
+      FEATURE_FLAG_ENABLE_LATEX_UN_8603: "true"
       FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: "true"
     extraObjects:
       - apiVersion: configuration.konghq.com/v1
@@ -126,8 +126,6 @@ chat:
   nextAdmin:
     env:
       MAX_HEAP_MB: 350
-      FEATURE_FLAG_KNOWLEDGE_SCOPE_UN_5773: "true"
-      FEATURE_FLAG_ENABLE_ASSISTANT_ACCESS_UN_5775: "true"
       FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: "true"
     resources:
       requests:
@@ -167,16 +165,12 @@ chat:
         {"name": "AgenticSearch", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/agentic_search"},
         {"name": "TranslatorV2", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/translator_v2"},
         {"name": "InvestmentResearch", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/investment_research"},
-        {"name": "EarningCallsBeta", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/earning_calls"}
+        {"name": "EarningCallsBeta", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/earning_calls"},
+        {"name": "HallucinationLevelEvaluation", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/evaluations/hallucination-level"}
         ]
       ENABLE_CLIENT_INSIGHT_SHIPPER: "false"
       MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER: "30"
       FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: "true"
-    serviceAccount:
-      enabled: true
-      workloadIdentity:
-        clientId: unset_default_value
-        enabled: true
     resources:
       requests:
         cpu: 500m
@@ -206,11 +200,6 @@ chat:
       REPLICATION_FACTOR: 2
       FILE_RETENTION_IN_DAYS: 0
       RERANKER_CONFIGURATION: '[{"deploymentName": "crossencoder_reranker", "apiUrl": "http://assistants-reranker.chat.svc.cluster.local:8081/reranker/rerank"}]'
-    serviceAccount:
-      enabled: true
-      workloadIdentity:
-        enabled: true
-        clientId: unset_default_value
     resources:
       requests:
         cpu: 200m
@@ -236,11 +225,6 @@ chat:
         [ 
         {"identifier": "Unique Text Extraction API", "url": "http://assistants-core.chat.svc.cluster.local:8081/core/text-extractions"} 
         ]
-    serviceAccount:
-      enabled: true
-      workloadIdentity:
-        clientId: unset_default_value
-        enabled: true
     resources:
       requests:
         cpu: 1
@@ -249,11 +233,6 @@ chat:
         cpu: 1
         memory: 1050Mi
   nodeIngestionWorkerChat:
-    serviceAccount:
-      enabled: true
-      workloadIdentity:
-        clientId: unset_default_value
-        enabled: true
     resources:
       requests:
         cpu: 1.5
@@ -315,11 +294,6 @@ chat:
               type: PathPrefix
               value: /scim
   assistantsCore:
-    serviceAccount:
-      enabled: true
-      workloadIdentity:
-        clientId: unset_default_value
-        enabled: true
     env:
       GUNICORN_WORKERS: 2
       GUNICORN_THREADS: 4

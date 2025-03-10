@@ -11,7 +11,7 @@ locals {
 resource "azurerm_cognitive_account" "this" {
   name                  = local.account_name
   location              = var.account_location
-  resource_group_name   = module.context.resource_group.name
+  resource_group_name   = module.context.rg_app_main.name
   kind                  = "FormRecognizer"
   custom_subdomain_name = local.custom_subdomain_name
   sku_name              = "S0"

@@ -128,7 +128,7 @@ module "cluster" {
   kubernetes_version           = var.kubernetes_version
   domain_config = {
     name        = local.base_domain
-    sub_domains = ["gateway", "id"]
+    sub_domains = ["api", "id"]
   }
   azure_prometheus_grafana_monitor = {
     enabled                = true
@@ -139,6 +139,9 @@ module "cluster" {
     "node-ingestion",
     "node-ingestion-worker",
     "node-ingestion-worker-chat",
+    "node-app-repository",
+    "node-scope-management",
+    "node-theme",
   ]
   monitor_action_group_ids = {
     p0 = module.monitor.monitor_action_group_ids.slack-platform
@@ -349,14 +352,13 @@ module "chat" {
       max_age_in_seconds = 3600
     },
   ]
-  azure_openai_endpoints                           = []
+  azure_openai_endpoints                           = [module.switzerlandnorth.endpoints]
   azure_document_intelligence_endpoints            = [module.document-ingelligence-switzerlandnorth.endpoint]
   azure_document_intelligence_endpoint_definitions = [module.document-ingelligence-switzerlandnorth.endpoint_definition]
   postgres_server_id                               = module.postgres.server_id
   user_assigned_identity_ids = [
     module.workload_identities.user_assigned_identity_ids["node-chat"],
-    module.workload_identities.user_assigned_identity_ids["node-ingestion"],
-    module.workload_identities.user_assigned_identity_ids["node-ingestion-worker"]
+    module.workload_identities.user_assigned_identity_ids["node-ingestion"]
   ]
 }
 module "automation" {
@@ -385,5 +387,14 @@ module "document-ingelligence-switzerlandnorth" {
     module.workload_identities.user_assigned_identity_ids["node-ingestion-worker"],
     module.workload_identities.user_assigned_identity_ids["assistants-core"],
     module.workload_identities.user_assigned_identity_ids["node-ingestion-worker-chat"],
+  ]
+}
+module "switzerlandnorth" {
+  source           = "./modules/az-openai"
+  context          = module.context
+  account_location = "switzerlandnorth"
+  deployments      = var.openai_deployments_switzerlandnorth
+  user_assigned_identity_ids = [
+    module.workload_identities.user_assigned_identity_ids["node-chat"],
   ]
 }

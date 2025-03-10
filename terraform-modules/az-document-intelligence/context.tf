@@ -55,15 +55,24 @@ variable "resource_group" {
   })
   default = null
 }
+variable "rg_app_main" {
+  description = "The resource group to deploy resources to."
+  type = object({
+    id       = string
+    name     = string
+    location = string
+  })
+  default = null
+}
 module "context" {
-  source         = "../context"
-  context        = var.context
-  name           = var.name
-  namespace      = var.namespace
-  project        = var.project
-  environment    = var.environment
-  tags           = var.tags
-  resource_group = var.resource_group
+  source      = "../context"
+  context     = var.context
+  name        = var.name
+  namespace   = var.namespace
+  project     = var.project
+  environment = var.environment
+  tags        = var.tags
+  rg_app_main = var.rg_app_main
 }
 locals {
   tags = merge(module.context.tags, { UniqueModule = "az-document-intelligence" })
