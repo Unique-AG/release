@@ -162,3 +162,11 @@ variable "bing_search_v7_sku_name" {
   default     = "S2"
   type        = string
 }
+variable "scope_management_encryption_key_1_version" {
+  description = "To rotate this SCOPE MANAGEMENT encryption key increase the version."
+  default     = "1"
+}
+variable "scope_management_encryption_key_2_version" {
+  description = "To rotate this SCOPE MANAGEMENT encryption key increase the version."
+  default     = "1"
+}

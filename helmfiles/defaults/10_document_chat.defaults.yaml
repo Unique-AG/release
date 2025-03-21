@@ -21,17 +21,16 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:             "2025.10"
-      nextKnowledgeUpload:  "2025.10"
-      nextTheme:            "2025.10"
-      nextAdmin:            "2025.10"
-      nodeChat:             "2025.10"
-      nodeIngestion:        "2025.10"
-      nodeIngestionWorker:  "2025.10"
-      nodeTheme:            "2025.10"
-      configurationBackend: "2025.10"
-      nodeScopeManagement:  "2025.10"
-      assistantsCore:       "2025.10"
+      nextChat:             "2025.12"
+      nextKnowledgeUpload:  "2025.12"
+      nextTheme:            "2025.12"
+      nextAdmin:            "2025.12"
+      nodeChat:             "2025.12"
+      nodeIngestion:        "2025.12"
+      nodeIngestionWorker:  "2025.12"
+      configurationBackend: "2025.12"
+      nodeScopeManagement:  "2025.12"
+      assistantsCore:       "2025.12"
   nextChat:
     env:
       MAX_FILE_SIZE_IN_MB: 200
@@ -176,6 +175,7 @@ chat:
       ENABLE_CLIENT_INSIGHT_SHIPPER: "false"
       MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER: "30"
       FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: "true"
+      APP_REPOSITORY_URL: http://node-app-repository.apps.svc.cluster.local:8088
     resources:
       requests:
         cpu: 500m
@@ -205,6 +205,7 @@ chat:
       REPLICATION_FACTOR: 2
       FILE_RETENTION_IN_DAYS: 0
       RERANKER_CONFIGURATION: '[{"deploymentName": "crossencoder_reranker", "apiUrl": "http://assistants-reranker.chat.svc.cluster.local:8081/reranker/rerank"}]'
+      MAX_REQUEST_BODY_SIZE: '30mb'
     resources:
       requests:
         cpu: 200m
@@ -245,24 +246,6 @@ chat:
       limits:
         cpu: 1.5
         memory: 1Gi
-  nodeTheme:
-    env:
-      MAX_HEAP_MB: 200
-    resources:
-      requests:
-        cpu: 100m
-        memory: 300Mi
-      limits:
-        cpu: 100m
-        memory: 350Mi
-    routes:
-      hostname: unset_default_value
-      pathPrefix: /theme
-      paths:
-        default:
-          enabled: true
-        probe:
-          enabled: true
   configurationBackend:
     env:
       MAX_HEAP_MB: 200
@@ -338,9 +321,9 @@ qdrant:
   resources:
     requests:
       cpu: 100m
-      memory: 1.8Gi
+      memory: 3.6Gi
     limits:
-      memory: 2Gi
+      memory: 4Gi
   persistence:
     size: 10Gi
   probes:

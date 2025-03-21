@@ -102,3 +102,25 @@ resource "azurerm_key_vault_secret" "database_url" {
   value        = "postgresql://${data.azurerm_key_vault_secret.username[0].value}:${data.azurerm_key_vault_secret.password[0].value}@${data.azurerm_key_vault_secret.host[0].value}/${each.key}"
   key_vault_id = var.database_keyvault_id
 }
+resource "random_id" "scope_management_encryption_key_1" {
+  byte_length = 32
+  keepers = {
+    version = var.scope_management_encryption_key_1_version
+  }
+}
+resource "azurerm_key_vault_secret" "scope_management_encryption_key_1" {
+  name         = "scope-management-encryption-key-1"
+  value        = random_id.scope_management_encryption_key_1.hex
+  key_vault_id = azurerm_key_vault.document-chat.id
+}
+resource "random_id" "scope_management_encryption_key_2" {
+  byte_length = 32
+  keepers = {
+    version = var.scope_management_encryption_key_2_version
+  }
+}
+resource "azurerm_key_vault_secret" "scope_management_encryption_key_2" {
+  name         = "scope-management-encryption-key-2"
+  value        = random_id.scope_management_encryption_key_2.hex
+  key_vault_id = azurerm_key_vault.document-chat.id
+}

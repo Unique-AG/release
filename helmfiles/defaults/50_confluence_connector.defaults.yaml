@@ -7,4 +7,5 @@ confluenceConnector:
     CONFLUENCE_URL: https://your-confluence-url
     INGEST_SINGLE_LABEL: ai-ingest
     INGEST_ALL_LABEL: ai-ingest-all
-    TEST_MODE: true
+    TEST_MODE: true # if enabled, only dry run is performed
+    DEBUG_MODE: false

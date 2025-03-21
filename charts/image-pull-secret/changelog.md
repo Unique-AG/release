@@ -1,5 +1,8 @@
 # Changelog `image-pull-secret`
 
+## [1.0.9]
+Remove comments
+
 ## [1.0.8]
 Set revisionHistoryLimit to 3 as default
 

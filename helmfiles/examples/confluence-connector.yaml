@@ -30,10 +30,12 @@ releases:
           CRON_SCHEDULE: "0 0 * * *"
           INGEST_SINGLE_LABEL: {{ .Values.confluenceConnector.env.INGEST_SINGLE_LABEL }}
           INGEST_ALL_LABEL: {{ .Values.confluenceConnector.env.INGEST_ALL_LABEL }}
-          INGESTION_URL: http://node-ingestion.chat.svc.cluster.local:8091
+          INGESTION_URL: http://node-ingestion.chat.svc.cluster.local:8091/v1/content
           OAUTH_TOKEN_URL: https://{{ .Values.zitadel.hostName }}/oauth/v2/token
           PROJECT_ID: {{ .Values.zitadel.projectId | quote }}
           TEST_MODE: {{ .Values.confluenceConnector.env.TEST_MODE }}
+          DEBUG_MODE: {{ .Values.confluenceConnector.env.DEBUG_MODE }}
+          SCOPE_ID: {{ .Values.confluenceConnector.env.SCOPE_ID }}
         envSecrets:
           CLIENT_ID: {{ .Values.confluenceConnector.secrets.CLIENT_ID | fetchSecretValue | quote }}
           CLIENT_SECRET: {{ .Values.confluenceConnector.secrets.CLIENT_SECRET | fetchSecretValue | quote }}

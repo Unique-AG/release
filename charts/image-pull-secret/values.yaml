@@ -2,38 +2,3 @@ secret:
   url: ""
   username: ""
   password: ""
-
-# podDisruptionBudget:
-#   minAvailable: 1
-#   matchLabels:
-#     app: image-pull-secret
-
-# replicas: 3
-# spc:
-#   - name: my-spc
-#     keyvaultName: my-azure-kv
-#     install: true # If false the spc will not be created
-#     useVMManagedIdentity: "true"
-#     userAssignedIdentityID: "XXXXXX-XXXX-XXXX"
-#     tenantId: "xxxx-xxxx-xxxxxx-x"
-#     secrets:
-#       - name: my-secret-1
-#         type: Opaque
-#         labels:
-#           app: test-value
-#           env: dev
-#         data:
-#           - objectName: my-demo-secret-1
-#             key: the-name-to-display-in-k8s
-#             objectType: secret
-#             objectVersion: ""
-
-#       - name: my-secret-2
-#         type: Opaque
-#         labels:
-#           app: test-value
-#           env: dev
-#         data:
-#           - objectName: my-demo-secret-2
-#             objectType: secret
-#             objectVersion: ""
