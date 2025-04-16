@@ -182,6 +182,7 @@ releases:
           EMBEDDING_BATCH_SIZE: {{ .Values.chat.nodeIngestionWorker.env | get "EMBEDDING_BATCH_SIZE" 16 }}
           INGESTION_QUEUE: 'queue'
           CUSTOM_API_DEFINITIONS: {{ .Values.chat.nodeIngestionWorker.env.CUSTOM_API_DEFINITIONS | quote }}
+          FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444: {{ .Values.chat.nodeIngestionWorker.env.FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444 | quote }}
         envSecrets:
           AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS: {{ .Values.chat.nodeIngestionWorker.secrets.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS | fetchSecretValue | quote }}
           AMQP_URL: {{ .Values.rabbitMQ.url | fetchSecretValue | quote }}
@@ -530,8 +531,11 @@ releases:
           ZITADEL_ISSUER: https://id.{{ .Values.host }}
           ZITADEL_ORG_ID: {{ .Values.zitadel.orgId | quote }}
           ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote}}
-          THEME_BACKEND_API_URL: https://api.{{ .Values.host }}/configuration
+          ADMIN_APP_URL: https://{{ .Values.host }}/admin
           CHAT_BACKEND_API_URL: https://api.{{ .Values.host }}/chat
+          CHAT_APP_URL: https://{{ .Values.host }}/chat
+          KNOWLEDGE_UPLOAD_APP_URL: https://{{ .Values.host }}/knowledge-upload
+          THEME_BACKEND_API_URL: https://api.{{ .Values.host }}/configuration
           MAX_HEAP_MB: {{ .Values.chat.nextTheme.env.MAX_HEAP_MB }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
           FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: {{ .Values.chat.nextTheme.env.FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411 | quote }}

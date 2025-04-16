@@ -266,6 +266,20 @@ module "cluster" {
               match_values = ["kubernetes.default.svc", "github.com/Unique-AG/monorepo"]
             }
           ]
+        },
+        {
+          name     = "AllowScimEndpoint"
+          action   = "Allow"
+          priority = 98
+          match_conditions = [
+            {
+              match_variables = [{
+                variable_name = "RequestUri"
+              }]
+              operator     = "BeginsWith"
+              match_values = ["/scope-management/scim"]
+            }
+          ]
         }
       ]
     }

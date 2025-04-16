@@ -119,6 +119,10 @@ rabbitMQ:
         "priority": 1
       }
     ]
+reranker:
+  _common:
+    tenantReleaseOverrides:
+      assistantsReranker:
 zitadel:
   orgId: a-zitadel-id
   projectId: a-zitadel-id

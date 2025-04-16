@@ -21,16 +21,16 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:             "2025.12"
-      nextKnowledgeUpload:  "2025.12"
-      nextTheme:            "2025.12"
-      nextAdmin:            "2025.12"
-      nodeChat:             "2025.12"
-      nodeIngestion:        "2025.12"
-      nodeIngestionWorker:  "2025.12"
-      configurationBackend: "2025.12"
-      nodeScopeManagement:  "2025.12"
-      assistantsCore:       "2025.12"
+      nextChat:             "2025.14.3"
+      nextKnowledgeUpload:  "2025.14.3"
+      nextTheme:            "2025.14.3"
+      nextAdmin:            "2025.14.3"
+      nodeChat:             "2025.14.3"
+      nodeIngestion:        "2025.14.3"
+      nodeIngestionWorker:  "2025.14.3"
+      configurationBackend: "2025.14.3"
+      nodeScopeManagement:  "2025.14.3"
+      assistantsCore:       "2025.14.3"
   nextChat:
     env:
       MAX_FILE_SIZE_IN_MB: 200
@@ -227,6 +227,7 @@ chat:
     env:
       MAX_HEAP_MB: 850
       CONVERT_OFFICE_FILES_TO_PDF: "true"
+      FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444: "true"
       CUSTOM_API_DEFINITIONS: >-
         [ 
         {"identifier": "Unique Text Extraction API", "url": "http://assistants-core.chat.svc.cluster.local:8081/core/text-extractions"} 
