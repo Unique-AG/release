@@ -21,16 +21,16 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:             "2025.14.3"
-      nextKnowledgeUpload:  "2025.14.3"
-      nextTheme:            "2025.14.3"
-      nextAdmin:            "2025.14.3"
-      nodeChat:             "2025.14.3"
-      nodeIngestion:        "2025.14.3"
-      nodeIngestionWorker:  "2025.14.3"
-      configurationBackend: "2025.14.3"
-      nodeScopeManagement:  "2025.14.3"
-      assistantsCore:       "2025.14.3"
+      nextChat:             "2025.16"
+      nextKnowledgeUpload:  "2025.16"
+      nextTheme:            "2025.16"
+      nextAdmin:            "2025.16"
+      nodeChat:             "2025.16"
+      nodeIngestion:        "2025.16"
+      nodeIngestionWorker:  "2025.16"
+      configurationBackend: "2025.16"
+      nodeScopeManagement:  "2025.16"
+      assistantsCore:       "2025.16"
   nextChat:
     env:
       MAX_FILE_SIZE_IN_MB: 200
@@ -176,6 +176,9 @@ chat:
       MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER: "30"
       FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: "true"
       APP_REPOSITORY_URL: http://node-app-repository.apps.svc.cluster.local:8088
+      ENABLE_DOWNLOAD_UPLOAD_FILES_AS_STREAM: "true"
+      ENABLE_UPLOAD_CHAT_INTERACTIONS_AS_STREAM: "true"
+      ENABLE_ANALYTICS_CHAT_DETAILED_INTERACTIONS_PRISMA_CURSOR: "true"
     resources:
       requests:
         cpu: 500m
@@ -228,6 +231,7 @@ chat:
       MAX_HEAP_MB: 850
       CONVERT_OFFICE_FILES_TO_PDF: "true"
       FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444: "true"
+      FEATURE_FLAG_ENABLE_LANDSCAPED_PDF_PAGE_BASED_CHUNKING_UN_10606: "true"
       CUSTOM_API_DEFINITIONS: >-
         [ 
         {"identifier": "Unique Text Extraction API", "url": "http://assistants-core.chat.svc.cluster.local:8081/core/text-extractions"} 
@@ -334,7 +338,7 @@ zitadel:
   replicaCount: 2
   versions:
     chart: 8.1.0
-    image: v2.62.7
+    image: v2.63.9
   resources:
     requests:
       cpu: 1

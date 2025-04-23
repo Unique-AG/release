@@ -66,14 +66,16 @@ chat:
     secrets:
       WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-node-ingestion-worker-chat
   nodeScopeManagement:
+    env:
+      ZITADEL_ROOT_ORG_ID: a-zitadel-id
     extraRoutes:
       scim:
         hostnames:
           - <your-hostname> # backend hostname e.g.: api.your-hostname.com or gateway.your-hostname.com
     secrets:
-      ZITADEL_PAT: ref+azurekeyvault://your-vault-name/manual-zitadel-scope-mgmt-pat
       SCOPE_MANAGEMENT_ENCRYPTION_KEY_1: ref+azurekeyvault://your-vault-name/scope-management-encryption-key-1
       SCOPE_MANAGEMENT_ENCRYPTION_KEY_2: ref+azurekeyvault://your-vault-name/scope-management-encryption-key-2
+      ZITADEL_PAT: ref+azurekeyvault://your-vault-name/manual-zitadel-scope-mgmt-pat
   assistantsCore:
     env:
       BING_API_ENDPOINT: ref+azurekeyvault://your-vault-name/websearch-api-url

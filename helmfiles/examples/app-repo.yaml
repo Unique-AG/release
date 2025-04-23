@@ -4,6 +4,7 @@ environments:
       - ../defaults/01_system.defaults.yaml
       - ../defaults/30_app_repo.defaults.yaml
       - ./your-tenant-alias.yaml
+---
 releases:
   - name: image-pull-secret
     chart: ../../charts/image-pull-secret

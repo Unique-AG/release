@@ -58,7 +58,7 @@ releases:
           periodSeconds: {{ .Values.qdrant | get "probes.startup.periodSeconds" 15 }}
   - name: node-ingestion
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 3.3.0
+    version: 3.3.1
     namespace: chat
     createNamespace: true
     wait: false
@@ -153,7 +153,7 @@ releases:
               name: node-ingestion-expired-content-deletion
   - name: node-ingestion-worker
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 3.3.0
+    version: 3.3.1
     namespace: chat
     createNamespace: true
     wait: false
@@ -174,6 +174,7 @@ releases:
             enabled: true
         env:
           LOG_LEVEL: info
+          CHAT_API_URL: http://node-chat.chat.svc.cluster.local:8092
           INGESTION_API_URL: http://node-ingestion.chat.svc.cluster.local:8091
           ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote}}
           AUDIT_LOG_DIR: /audit
@@ -183,6 +184,7 @@ releases:
           INGESTION_QUEUE: 'queue'
           CUSTOM_API_DEFINITIONS: {{ .Values.chat.nodeIngestionWorker.env.CUSTOM_API_DEFINITIONS | quote }}
           FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444: {{ .Values.chat.nodeIngestionWorker.env.FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444 | quote }}
+          FEATURE_FLAG_ENABLE_LANDSCAPED_PDF_PAGE_BASED_CHUNKING_UN_10606: {{ .Values.chat.nodeIngestionWorker.env.FEATURE_FLAG_ENABLE_LANDSCAPED_PDF_PAGE_BASED_CHUNKING_UN_10606 | quote }}
         envSecrets:
           AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS: {{ .Values.chat.nodeIngestionWorker.secrets.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS | fetchSecretValue | quote }}
           AMQP_URL: {{ .Values.rabbitMQ.url | fetchSecretValue | quote }}
@@ -219,7 +221,7 @@ releases:
         terminationGracePeriodSeconds: 900 # 15min
   - name: node-ingestion-worker-chat
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 3.3.0
+    version: 3.3.1
     namespace: chat
     createNamespace: true
     wait: false
@@ -248,6 +250,9 @@ releases:
           EMBEDDING_BATCH_SIZE: {{ .Values.chat.nodeIngestionWorker.env | get "EMBEDDING_BATCH_SIZE" 16 }}
           INGESTION_QUEUE: 'chat_queue'
           CUSTOM_API_DEFINITIONS: {{ .Values.chat.nodeIngestionWorker.env.CUSTOM_API_DEFINITIONS | quote }}
+          CHAT_API_URL: http://node-chat.chat.svc.cluster.local:8092
+          FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444: {{ .Values.chat.nodeIngestionWorker.env.FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444 | quote }}
+          FEATURE_FLAG_ENABLE_LANDSCAPED_PDF_PAGE_BASED_CHUNKING_UN_10606: {{ .Values.chat.nodeIngestionWorker.env.FEATURE_FLAG_ENABLE_LANDSCAPED_PDF_PAGE_BASED_CHUNKING_UN_10606 | quote }}
         envSecrets:
           AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS: {{ .Values.chat.nodeIngestionWorker.secrets.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS | fetchSecretValue | quote }}
           AMQP_URL: {{ .Values.rabbitMQ.url | fetchSecretValue | quote }}
@@ -284,7 +289,7 @@ releases:
         terminationGracePeriodSeconds: 900 # 15min
   - name: node-chat
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 3.3.0
+    version: 3.3.1
     namespace: chat
     createNamespace: true
     wait: false
@@ -326,6 +331,9 @@ releases:
           UNIQUE_INSTALLATION_ID: {{ .Values.host }}
           EXPORT_PROMPTS_ACCESS_CONTROL: {{ .Values.chat.nodeChat.env | get "EXPORT_PROMPTS_ACCESS_CONTROL" true }}
           APP_REPOSITORY_URL: {{ .Values.chat.nodeChat.env | get "APP_REPOSITORY_URL" "http://node-app-repository.apps.svc.cluster.local:8088" }}
+          ENABLE_DOWNLOAD_UPLOAD_FILES_AS_STREAM: {{ .Values.chat.nodeChat.env | get "ENABLE_DOWNLOAD_UPLOAD_FILES_AS_STREAM" true }}
+          ENABLE_UPLOAD_CHAT_INTERACTIONS_AS_STREAM: {{ .Values.chat.nodeChat.env | get "ENABLE_UPLOAD_CHAT_INTERACTIONS_AS_STREAM" true }}
+          ENABLE_ANALYTICS_CHAT_DETAILED_INTERACTIONS_PRISMA_CURSOR: {{ .Values.chat.nodeChat.env | get "ENABLE_ANALYTICS_CHAT_DETAILED_INTERACTIONS_PRISMA_CURSOR" true }}
         envSecrets:
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/chat"
           PUBSUB_REDIS_PASSWORD: {{ .Values.tyk.redis.password | fetchSecretValue | quote }}
@@ -375,7 +383,7 @@ releases:
               name: redaction-job
   - name: next-knowledge-upload
     chart: oci://ghcr.io/unique-ag/helm-charts/web-app
-    version: 3.1.0
+    version: 3.2.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -437,7 +445,7 @@ releases:
             initialDelaySeconds: 5
   - name: next-chat
     chart: oci://ghcr.io/unique-ag/helm-charts/web-app
-    version: 3.1.0
+    version: 3.2.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -509,7 +517,7 @@ releases:
             initialDelaySeconds: 5
   - name: next-theme
     chart: oci://ghcr.io/unique-ag/helm-charts/web-app
-    version: 3.1.0
+    version: 3.2.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -564,7 +572,7 @@ releases:
             initialDelaySeconds: 5
   - name: next-admin
     chart: oci://ghcr.io/unique-ag/helm-charts/web-app
-    version: 3.1.0
+    version: 3.2.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -626,7 +634,7 @@ releases:
             initialDelaySeconds: 5
   - name: configuration-backend
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 3.3.0
+    version: 3.3.1
     namespace: chat
     createNamespace: true
     wait: false
@@ -669,7 +677,7 @@ releases:
             storageAccount: {{ .Values.chat._common.auditVolume.storageAccount | fetchSecretValue | quote }}
   - name: node-scope-management
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 3.3.0
+    version: 3.3.1
     namespace: chat
     createNamespace: true
     wait: false
@@ -687,6 +695,7 @@ releases:
           AUDIT_LOG_DIR: /audit
           LOG_LEVEL: info
           ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote}}
+          ZITADEL_ROOT_ORG_ID: {{ .Values.chat.nodeScopeManagement.env.ZITADEL_ROOT_ORG_ID | quote }}
           CORS_ALLOWED_ORIGINS: https://{{ .Values.host }}
           ZITADEL_HOST: https://id.{{ .Values.host }}
           ZITADEL_INTERNAL_HOST: http://zitadel.system.svc.cluster.local:8080
@@ -740,7 +749,7 @@ releases:
             storageAccount: {{ .Values.chat._common.auditVolume.storageAccount | fetchSecretValue | quote }}
   - name: assistants-core
     chart: oci://ghcr.io/unique-ag/helm-charts/ai-service
-    version: 1.2.6
+    version: 1.2.7
     namespace: chat
     createNamespace: true
     wait: false
