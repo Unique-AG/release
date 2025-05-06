@@ -102,6 +102,7 @@ releases:
           UNIQUE_INSTALLATION_ID: {{ .Values.host }}
           USE_NEW_FTS_QUERY_APPROACH: {{ .Values.chat.nodeIngestion.env | get "USE_NEW_FTS_QUERY_APPROACH" "true" }}
           MAX_REQUEST_BODY_SIZE: {{ .Values.chat.nodeIngestion.env | get "MAX_REQUEST_BODY_SIZE" "30mb" }}
+          PDF_READ_MODE: {{ .Values.chat.nodeIngestion.env.PDF_READ_MODE | quote }}
         envSecrets:
           AZURE_OPENAI_API_ENDPOINT: {{ .Values.chat.nodeIngestion.secrets.AZURE_OPENAI_API_ENDPOINT | fetchSecretValue | quote }}
           AMQP_URL: {{ .Values.rabbitMQ.url | fetchSecretValue | quote }}
@@ -487,6 +488,7 @@ releases:
           FEATURE_FLAG_ENABLE_LATEX_UN_8603: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_LATEX_UN_8603 | quote }}
           FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411 | quote }}
           FEATURE_FLAG_ENABLE_CHAT_HISTORY_UN_5803: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_CHAT_HISTORY_UN_5803 | quote }}
+          FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270 | quote }}
         extraObjects:
           {{ .Values.chat.nextChat.extraObjects | toYaml | nindent 10 }}
         extraRoutes:
@@ -709,6 +711,7 @@ releases:
           ZITADEL_PAT: {{ .Values.chat.nodeScopeManagement.secrets.ZITADEL_PAT | fetchSecretValue | quote }}
           SCOPE_MANAGEMENT_ENCRYPTION_KEY_1: {{ .Values.chat.nodeScopeManagement.secrets.SCOPE_MANAGEMENT_ENCRYPTION_KEY_1 | fetchSecretValue | quote }}
           SCOPE_MANAGEMENT_ENCRYPTION_KEY_2: {{ .Values.chat.nodeScopeManagement.secrets.SCOPE_MANAGEMENT_ENCRYPTION_KEY_2 | fetchSecretValue | quote }}
+          AMQP_URL: {{ .Values.rabbitMQ.url | fetchSecretValue | quote }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
         routes:

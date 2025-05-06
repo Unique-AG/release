@@ -21,16 +21,16 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:             "2025.16"
-      nextKnowledgeUpload:  "2025.16"
-      nextTheme:            "2025.16"
-      nextAdmin:            "2025.16"
-      nodeChat:             "2025.16"
-      nodeIngestion:        "2025.16"
-      nodeIngestionWorker:  "2025.16"
-      configurationBackend: "2025.16"
-      nodeScopeManagement:  "2025.16"
-      assistantsCore:       "2025.16"
+      nextChat:             "2025.18"
+      nextKnowledgeUpload:  "2025.18"
+      nextTheme:            "2025.18"
+      nextAdmin:            "2025.18"
+      nodeChat:             "2025.18"
+      nodeIngestion:        "2025.18"
+      nodeIngestionWorker:  "2025.18"
+      configurationBackend: "2025.18"
+      nodeScopeManagement:  "2025.18"
+      assistantsCore:       "2025.18"
   nextChat:
     env:
       MAX_FILE_SIZE_IN_MB: 200
@@ -41,6 +41,7 @@ chat:
       FEATURE_FLAG_ENABLE_LATEX_UN_8603: "true"
       FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: "true"
       FEATURE_FLAG_ENABLE_CHAT_HISTORY_UN_5803: "true"
+      FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270: "false"
     extraObjects:
       - apiVersion: configuration.konghq.com/v1
         kind: KongPlugin
@@ -170,7 +171,8 @@ chat:
         {"name": "EarningCallsBeta", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/earning_calls"},
         {"name": "HallucinationLevelEvaluation", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/evaluations/hallucination-level"},
         {"name": "DueDiligence", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/magic_table_dd"},
-        {"name": "RfpAgent", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/rfp_agent"}
+        {"name": "RfpAgent", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/rfp_agent"},
+        {"name": "UniqueAi", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/unique_ai"}
         ]
       ENABLE_CLIENT_INSIGHT_SHIPPER: "false"
       MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER: "30"
@@ -182,10 +184,10 @@ chat:
     resources:
       requests:
         cpu: 500m
-        memory: 550Mi
+        memory: 950Mi
       limits:
         cpu: 500m
-        memory: 600Mi
+        memory: 1000Mi
     routes:
       hostname: unset_default_value
       pathPrefix: /chat
@@ -209,6 +211,7 @@ chat:
       FILE_RETENTION_IN_DAYS: 0
       RERANKER_CONFIGURATION: '[{"deploymentName": "crossencoder_reranker", "apiUrl": "http://assistants-reranker.chat.svc.cluster.local:8081/reranker/rerank"}]'
       MAX_REQUEST_BODY_SIZE: '30mb'
+      PDF_READ_MODE: DOC_INTELLIGENCE_DEFAULT # Uses MDI for ingestion. Unique recommends this as default if MDI is available.
     resources:
       requests:
         cpu: 200m
