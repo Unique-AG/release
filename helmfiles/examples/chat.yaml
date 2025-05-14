@@ -700,7 +700,7 @@ releases:
           ZITADEL_ROOT_ORG_ID: {{ .Values.chat.nodeScopeManagement.env.ZITADEL_ROOT_ORG_ID | quote }}
           CORS_ALLOWED_ORIGINS: https://{{ .Values.host }}
           ZITADEL_HOST: https://id.{{ .Values.host }}
-          ZITADEL_INTERNAL_HOST: http://zitadel.system.svc.cluster.local:8080
+          ZITADEL_GRPC_HOST: http://zitadel.system.svc.cluster.local:8080
           MAX_HEAP_MB: {{ .Values.chat.nodeScopeManagement.env.MAX_HEAP_MB }}
           INGESTION_API_URL: http://node-ingestion.chat.svc.cluster.local:8091
           CHAT_API_URL: http://node-chat.chat.svc.cluster.local:8093

@@ -18,7 +18,7 @@ releases:
           type: {{ .Values.reranker.assistantsReranker | get "strategy.type" "RollingUpdate" }}
         image:
           repository: uniquecr.azurecr.io/ai-service-assistants-reranker
-          tag: {{ .Values.reranker._common.tenantReleaseOverrides.assistantsReranker | default .Values.reranker._common.defaultReleases.assistantsReranker }}
+          tag: {{ .Values.reranker._common.tenantReleaseOverrides.assistantsReranker | default .Values.reranker._common.defaultReleases.assistantsReranker | quote }}
         imagePullSecrets:
           - name: image-pull-secret
         env:
