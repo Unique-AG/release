@@ -3,6 +3,103 @@ locals {
     name = "IpList"
     list = var.gateway.ip_list
   }]
+  custom_rules = concat(
+    var.gateway.sku == "WAF_v2" && length(local.ip_waf_list) > 0 ? [
+      {
+        name     = "AllowHttpsChallenges"
+        priority = 1
+        action   = "Allow"
+        match_conditions = [
+          {
+            match_variables = [{ variable_name = "RequestHeaders", selector = "User-Agent" }]
+            operator        = "Contains"
+            match_values    = ["https://www.letsencrypt.org"]
+            transforms      = ["Lowercase"]
+          },
+          {
+            match_variables = [{ variable_name = "RequestUri" }]
+            operator        = "BeginsWith"
+            match_values    = ["/.well-known/acme-challenge/"]
+            transforms      = ["Lowercase"]
+          }
+        ]
+      }
+    ] : [],
+    var.gateway.sku == "WAF_v2" && length(local.ip_waf_list) > 0 && var.gateway.better_uptime == true ? [
+      {
+        name     = "AllowBetterUptimeAgentOnStatusUrls"
+        priority = 2
+        action   = "Allow"
+        match_conditions = [
+          {
+            match_variables = [{ variable_name = "RequestHeaders", selector = "User-Agent" }]
+            operator        = "Equal"
+            match_values    = ["Better Stack Better Uptime Bot Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"]
+          },
+          {
+            match_variables = [{ variable_name = "RequestUri" }]
+            operator        = "Equal"
+            match_values = [
+              "/probe", "/chat/api/health", "/knowledge-upload/api/health", "/sidebar/browser", "/debug/ready", "/", "/browser",
+              "/chat/probe", "/ingestion/probe", "/api/probe", "/scope-management/probe", "/health"
+            ]
+            transforms = ["Lowercase"]
+          }
+        ]
+      }
+    ] : [],
+    length(var.gateway.waf.chat_export_ip_allowlist) > 0 ? [
+      {
+        name     = "ChatExportAdminRouteIpRestriction"
+        priority = 3
+        action   = "Block"
+        match_conditions = [
+          {
+            match_variables    = [{ variable_name = "RemoteAddr" }]
+            operator           = "IPMatch"
+            negation_condition = true
+            match_values       = var.gateway.waf.chat_export_ip_allowlist
+          },
+          {
+            match_variables = [{ variable_name = "RequestUri" }]
+            operator        = "BeginsWith"
+            match_values    = ["/chat/analytics/user-chat-export"]
+            transforms      = ["Lowercase"]
+          }
+        ]
+      }
+    ] : [],
+    var.gateway.sku == "WAF_v2" ? [
+      {
+        name     = "AllowIngestionUpload"
+        priority = 5
+        action   = "Allow"
+        match_conditions = [
+          {
+            match_variables = [{ variable_name = "RequestUri" }]
+            operator        = "BeginsWith"
+            match_values    = ["/scoped/ingestion/upload", "/ingestion/v1/content"]
+            transforms      = ["Lowercase"]
+          }
+        ]
+      }
+    ] : [],
+    var.gateway.sku == "WAF_v2" ? [
+      {
+        name     = "AllowSpecificUrlsInHostHeader"
+        priority = 99
+        action   = "Allow"
+        match_conditions = [
+          {
+            match_variables = [{ variable_name = "RequestHeaders", selector = "host" }]
+            operator        = "Contains"
+            match_values    = ["kubernetes.default.svc", "github.com/Unique-AG/monorepo"]
+          }
+        ]
+      }
+    ] : [],
+    var.gateway.sku == "WAF_v2" && length(var.gateway.waf.custom_rules) > 0 ? var.gateway.waf.custom_rules : []
+  )
 }
 resource "azurerm_public_ip" "appgw" {
   name                = module.context.full_name
@@ -18,42 +115,27 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
   name                = "${module.context.full_name}-waf-policy"
   resource_group_name = module.context.rg_app_main.name
   location            = module.context.rg_app_main.location
-  tags                = module.context.tags
   policy_settings {
     enabled                     = true
     mode                        = var.gateway.mode
     request_body_check          = true
-    file_upload_limit_in_mb     = 100
-    max_request_body_size_in_kb = 1024
+    file_upload_limit_in_mb     = var.gateway.file_upload_limit_in_mb
+    max_request_body_size_in_kb = var.gateway.max_request_body_size_in_kb
   }
   managed_rules {
     managed_rule_set {
       type    = "OWASP"
       version = "3.2"
       dynamic "rule_group_override" {
-        for_each = var.waf_policy_managed_rule_settings
-        content {
-          rule_group_name = rule_group_override.value.rule_group_name
-          dynamic "rule" {
-            for_each = rule_group_override.value.disabled_rule_ids
-            content {
-              id      = rule.value
-              action  = "AnomalyScoring"
-              enabled = false
-            }
-          }
-        }
-      }
-      dynamic "rule_group_override" {
         for_each = var.gateway.waf.owasp_rules
         content {
           rule_group_name = rule_group_override.value.rule_group_name
           dynamic "rule" {
-            for_each = rule_group_override.value.disabled_rule_ids
+            for_each = rule_group_override.value.rules
             content {
-              id      = rule.value
-              action  = "AnomalyScoring"
-              enabled = false
+              id      = rule.value.id
+              action  = rule.value.action
+              enabled = rule.value.enabled
             }
           }
         }
@@ -95,43 +177,12 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
     }
   }
   dynamic "custom_rules" {
-    for_each = var.gateway.sku == "WAF_v2" && length(local.ip_waf_list) > 0 ? [1] : []
-    content {
-      name      = "AllowHttpsChallenges"
-      priority  = 1
-      rule_type = "MatchRule"
-      action    = "Allow"
-      match_conditions {
-        match_variables {
-          variable_name = "RequestHeaders"
-          selector      = "User-Agent"
-        }
-        operator           = "Contains"
-        negation_condition = false
-        match_values = [
-          "https://www.letsencrypt.org"
-        ]
-        transforms = ["Lowercase"]
-      }
-      match_conditions {
-        match_variables {
-          variable_name = "RequestUri"
-        }
-        operator           = "BeginsWith"
-        negation_condition = false
-        match_values = [
-          "/.well-known/acme-challenge/"
-        ]
-        transforms = ["Lowercase"]
-      }
-    }
-  }
-  dynamic "custom_rules" {
     for_each = local.ip_waf_list
     content {
       name      = custom_rules.value.name
-      priority  = 2
+      priority  = 4
       rule_type = "MatchRule"
+      action    = "Block"
       match_conditions {
         match_variables {
           variable_name = "RemoteAddr"
@@ -140,35 +191,13 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
         negation_condition = true
         match_values       = concat(custom_rules.value.list, ["${azurerm_public_ip.this.ip_address}"])
       }
-      action = "Block"
     }
   }
   dynamic "custom_rules" {
-    for_each = var.gateway.sku == "WAF_v2" ? [1] : []
-    content {
-      name      = "AllowIngestionUpload"
-      priority  = 3
-      rule_type = "MatchRule"
-      action    = "Allow"
-      match_conditions {
-        match_variables {
-          variable_name = "RequestUri"
-        }
-        operator           = "BeginsWith"
-        negation_condition = false
-        match_values = [
-          "/scoped/ingestion/upload",
-          "/ingestion/v1/content"
-        ]
-        transforms = ["Lowercase"]
-      }
-    }
-  }
-  dynamic "custom_rules" {
-    for_each = var.gateway.sku == "WAF_v2" && length(var.gateway.waf.custom_rules) > 0 ? var.gateway.waf.custom_rules : []
+    for_each = local.custom_rules
     content {
       name      = custom_rules.value.name
-      priority  = lookup(custom_rules.value, "priority", 100)
+      priority  = custom_rules.value.priority
       rule_type = lookup(custom_rules.value, "rule_type", "MatchRule")
       action    = lookup(custom_rules.value, "action", "Block")
       enabled   = lookup(custom_rules.value, "enabled", true)
@@ -179,7 +208,7 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
             for_each = match_conditions.value.match_variables
             content {
               variable_name = match_variables.value.variable_name
-              selector      = match_variables.value.selector
+              selector      = lookup(match_variables.value, "selector", null)
             }
           }
           operator           = match_conditions.value.operator
@@ -187,31 +216,6 @@ resource "azurerm_web_application_firewall_policy" "wafpolicy" {
           match_values       = lookup(match_conditions.value, "match_values", [])
           transforms         = lookup(match_conditions.value, "transforms", null)
         }
-      }
-    }
-  }
-  dynamic "custom_rules" {
-    for_each = length(var.gateway.waf.chat_export_ip_allowlist) > 0 ? [1] : []
-    content {
-      name      = "ChatExportAdminRouteIpRestriction"
-      priority  = 3
-      rule_type = "MatchRule"
-      action    = "Block"
-      match_conditions {
-        match_variables {
-          variable_name = "RemoteAddr"
-        }
-        operator           = "IPMatch"
-        negation_condition = true
-        match_values       = var.gateway.waf.chat_export_ip_allowlist
-      }
-      match_conditions {
-        transforms = ["Lowercase"]
-        match_variables {
-          variable_name = "RequestUri"
-        }
-        operator     = "BeginsWith"
-        match_values = ["/chat/analytics/user-chat-export"]
       }
     }
   }

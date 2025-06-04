@@ -135,7 +135,7 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /node/dist/apps/node-ingestion; npx prisma migrate deploy
+              cd /home/node/app/services/node-ingestion/prisma; npx prisma migrate deploy;
         cronJob:
           enabled: true
           name: expired-content-deletion
@@ -365,7 +365,7 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /node/dist/apps/node-chat; npx prisma migrate deploy; cd /node; RUNNING_MODE=DATA_MIGRATION  node /node/dist/apps/node-chat/main.js up;
+              cd /home/node/app/services/node-chat/prisma; npx prisma migrate deploy; cd /home/node/app/services/node-chat/dist; RUNNING_MODE=DATA_MIGRATION node /home/node/app/services/node-chat/dist/main.js;
         cronJob:
           enabled: true
           name: data-redaction-task
@@ -489,10 +489,6 @@ releases:
           FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411 | quote }}
           FEATURE_FLAG_ENABLE_CHAT_HISTORY_UN_5803: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_CHAT_HISTORY_UN_5803 | quote }}
           FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270 | quote }}
-        extraObjects:
-          {{ .Values.chat.nextChat.extraObjects | toYaml | nindent 10 }}
-        extraRoutes:
-          {{ .Values.chat.nextChat.extraRoutes | toYaml | nindent 10 }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
         routes:
@@ -670,7 +666,7 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /home/node/app/prisma; npx prisma migrate deploy
+              cd /home/node/app/services/configuration-backend/prisma; npx prisma migrate deploy;
         auditVolume:
           enabled: {{ .Values.chat._common.auditVolume.enabled }}
           mountPath: /audit
@@ -726,7 +722,7 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /node/dist/apps/node-scope-management; npx prisma migrate deploy; cd /node; RUNNING_MODE=DATA_MIGRATION node /node/dist/apps/node-scope-management/main.js up;
+              cd /home/node/app/services/node-scope-management/prisma; npx prisma migrate deploy; cd /home/node/app/services/node-scope-management/dist; RUNNING_MODE=DATA_MIGRATION  node /home/node/app/services/node-scope-management/dist/main.js;
         cronJob:
           enabled: true
           name: user-sync

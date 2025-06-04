@@ -62,32 +62,102 @@ variable "monitor_action_group_ids" {
 variable "gateway" {
   description = "Application gateway parameters."
   type = object({
-    sku     = optional(string, "Standard_v2")
-    mode    = optional(string, "Detection")
-    ip_list = optional(list(string), [])
+    sku                         = optional(string, "Standard_v2")
+    mode                        = optional(string, "Detection")
+    ip_list                     = optional(list(string), [])
+    better_uptime               = optional(bool, false)
+    file_upload_limit_in_mb     = optional(number, 100)
+    max_request_body_size_in_kb = optional(number, 1024)
     waf = optional(object({
       owasp_rules = optional(list(
         object({
-          rule_group_name   = string
-          disabled_rule_ids = list(string)
+          rule_group_name = string
+          rules = list(
+            object({
+              id      = string
+              action  = optional(string, "AnomalyScoring")
+              enabled = optional(bool, false)
+            })
+          )
         })
-      ), [])
+        ),
+        [
+          {
+            rule_group_name = "REQUEST-913-SCANNER-DETECTION"
+            rules           = [{ id = "913101" }]
+          },
+          {
+            rule_group_name = "REQUEST-920-PROTOCOL-ENFORCEMENT"
+            rules           = [{ id = "920230" }, { id = "920300" }, { id = "920320" }, { id = "920420" }]
+          },
+          {
+            rule_group_name = "REQUEST-931-APPLICATION-ATTACK-RFI"
+            rules           = [{ id = "931130" }]
+          },
+          {
+            rule_group_name = "REQUEST-932-APPLICATION-ATTACK-RCE"
+            rules           = [{ id = "932100" }, { id = "932105" }, { id = "932115" }, { id = "932130" }]
+          },
+          {
+            rule_group_name = "REQUEST-933-APPLICATION-ATTACK-PHP"
+            rules           = [{ id = "933160" }]
+          },
+          {
+            rule_group_name = "REQUEST-942-APPLICATION-ATTACK-SQLI"
+            rules = [
+              { id = "942100" },
+              { id = "942110" },
+              { id = "942130" },
+              { id = "942150" },
+              { id = "942190" },
+              { id = "942200" },
+              { id = "942260" },
+              { id = "942330" },
+              { id = "942340" },
+              { id = "942370" },
+              { id = "942380" },
+              { id = "942410" },
+              { id = "942430" },
+              { id = "942440" },
+              { id = "942450" }
+            ]
+          }
+        ]
+      )
       bot_rules = optional(list(
         object({
           rule_group_name = string
           rules = list(
             object({
               id      = string
-              action  = string
-              enabled = bool
+              action  = optional(string, "AnomalyScoring")
+              enabled = optional(bool, false)
             })
           )
         })
-      ), [])
+        ),
+        [
+          {
+            rule_group_name = "UnknownBots"
+            rules = [
+              {
+                id      = "300300"
+                action  = "Log"
+                enabled = false
+              },
+              {
+                id      = "300700"
+                action  = "Log"
+                enabled = false
+              }
+            ]
+          }
+        ]
+      )
       custom_rules = optional(list(
         object({
           name      = string
-          priority  = optional(number, 100)
+          priority  = number
           action    = optional(string, "Block")
           rule_type = optional(string, "MatchRule")
           enabled   = optional(bool, true)
@@ -96,7 +166,7 @@ variable "gateway" {
               match_variables = list(
                 object({
                   variable_name = string
-                  selector      = string
+                  selector      = optional(string)
                 })
               )
               operator           = string
@@ -120,10 +190,74 @@ variable "gateway" {
             rule_group_name = string
           }), null)
         })
-      ), [])
+        ),
+        [
+          {
+            match_variable          = "RequestArgNames",
+            selector                = "variables.input.favicon,variables.input.logoHeader,variables.input.logoNavbar"
+            selector_match_operator = "EqualsAny"
+            excluded_rule_set = {
+              type            = "OWASP"
+              version         = "3.2"
+              excluded_rules  = ["941130", "941170"]
+              rule_group_name = "REQUEST-941-APPLICATION-ATTACK-XSS"
+            }
+          },
+          {
+            match_variable          = "RequestArgNames",
+            selector                = "variables.input.text,variables.text"
+            selector_match_operator = "EqualsAny"
+            excluded_rule_set = {
+              type            = "OWASP"
+              version         = "3.2"
+              rule_group_name = "REQUEST-941-APPLICATION-ATTACK-XSS"
+            }
+          },
+          {
+            match_variable          = "RequestArgNames",
+            selector                = "variables.input.text,variables.text,variables.input.modules.upsert.create.configuration.systemPromptSearch"
+            selector_match_operator = "EqualsAny"
+            excluded_rule_set = {
+              type            = "OWASP"
+              version         = "3.2"
+              rule_group_name = "REQUEST-942-APPLICATION-ATTACK-SQLI"
+            }
+          },
+          {
+            match_variable          = "RequestArgNames",
+            selector                = "variables.input.text,variables.text,variables.input.modules.upsert.create.configuration.systemPromptSearch"
+            selector_match_operator = "EqualsAny"
+            excluded_rule_set = {
+              type            = "OWASP"
+              version         = "3.2"
+              rule_group_name = "REQUEST-932-APPLICATION-ATTACK-RCE"
+            }
+          },
+          {
+            match_variable          = "RequestArgNames",
+            selector                = "variables.input.text,variables.text,variables.input.modules.upsert.create.configuration.systemPromptSearch"
+            selector_match_operator = "EqualsAny"
+            excluded_rule_set = {
+              type            = "OWASP"
+              version         = "3.2"
+              rule_group_name = "REQUEST-933-APPLICATION-ATTACK-PHP"
+            }
+          },
+          {
+            match_variable          = "RequestCookieNames",
+            selector                = "__Secure-next-auth.session-token"
+            selector_match_operator = "EqualsAny"
+            excluded_rule_set = {
+              type            = "OWASP"
+              version         = "3.2"
+              rule_group_name = "REQUEST-942-APPLICATION-ATTACK-SQLI"
+            }
+          },
+        ]
+      )
     }), {})
   })
-  default = {}
+  default = {} 
   validation {
     condition     = var.gateway.sku == "Standard_v2" || var.gateway.sku == "WAF_v2"
     error_message = "gateway.sku must be either Standard_v2 or WAF_v2"
@@ -147,6 +281,10 @@ variable "gateway" {
   validation {
     condition     = alltrue([for rule in var.gateway.waf.custom_rules : alltrue([for match_cond in rule.match_conditions : contains(["Any", "IPMatch", "GeoMatch", "Equal", "Contains", "LessThan", "GreaterThan", "LessThanOrEqual", "GreaterThanOrEqual", "BeginsWith", "EndsWith", "Regex"], match_cond.operator)])])
     error_message = "custom_rules.match_conditions.operator must be one of: Any, IPMatch, GeoMatch, Equal, Contains, LessThan, GreaterThan, LessThanOrEqual, GreaterThanOrEqual, BeginsWith, EndsWith, Regex"
+  }
+  validation {
+    condition     = var.gateway.max_request_body_size_in_kb <= 2000
+    error_message = "max_request_body_size_in_kb must be less than or equal to 2000"
   }
 }
 variable "subnet_nodes" {

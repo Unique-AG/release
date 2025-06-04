@@ -7,7 +7,7 @@ resource "tls_private_key" "this" {
 }
 module "virtual-machine" {
   source  = "Azure/virtual-machine/azurerm"
-  version = "1.0.0"
+  version = "1.2.0"
   name                            = module.context.full_name
   resource_group_name             = module.context.rg_app_main.name
   location                        = module.context.rg_app_main.location
