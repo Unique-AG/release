@@ -21,16 +21,16 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:             "2025.22"
-      nextKnowledgeUpload:  "2025.22"
-      nextTheme:            "2025.22"
-      nextAdmin:            "2025.22"
-      nodeChat:             "2025.22"
-      nodeIngestion:        "2025.22"
-      nodeIngestionWorker:  "2025.22"
-      configurationBackend: "2025.22"
-      nodeScopeManagement:  "2025.22"
-      assistantsCore:       "2025.22"
+      nextChat:             "2025.24.1"
+      nextKnowledgeUpload:  "2025.24.1"
+      nextTheme:            "2025.24.1"
+      nextAdmin:            "2025.24.1"
+      nodeChat:             "2025.24.1"
+      nodeIngestion:        "2025.24.1"
+      nodeIngestionWorker:  "2025.24.1"
+      configurationBackend: "2025.24.1"
+      nodeScopeManagement:  "2025.24.1"
+      assistantsCore:       "2025.24.1"
   nextChat:
     env:
       MAX_FILE_SIZE_IN_MB: 200
@@ -65,6 +65,7 @@ chat:
     env:
       MAX_HEAP_MB: 350
       FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: "true"
+      FEATURE_FLAG_PERMISSION_PROPAGATION_KB_UN_11168: "false"
     resources:
       requests:
         cpu: 300m
@@ -148,7 +149,8 @@ chat:
         {"name": "HallucinationLevelEvaluation", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/evaluations/hallucination-level"},
         {"name": "DueDiligence", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/magic_table_dd"},
         {"name": "RfpAgent", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/rfp_agent"},
-        {"name": "UniqueAi", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/unique_ai"}
+        {"name": "UniqueAi", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/unique_ai"},
+        {"name": "KycReviewAgent", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/kyc_review_agent"}
         ]
       ENABLE_CLIENT_INSIGHT_SHIPPER: "false"
       MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER: "30"

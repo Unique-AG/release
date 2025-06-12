@@ -175,6 +175,8 @@ releases:
         image:
           tag: {{ .Values.rabbitMQ.versions.image }}
         global:
+          security:
+            allowInsecureImages: true # https://github.com/bitnami/charts/issues/30850 --> 2nd to last section
           storageClass: default-zrs
         replicaCount: {{ .Values.rabbitMQ | get "replicaCount" 1 }} # use odd numbers
         auth:

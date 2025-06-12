@@ -418,6 +418,7 @@ releases:
           STATIC_TAB_NAME: {{ .Values.chat.nextTheme.env.STATIC_TAB_NAME | quote }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
           FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411 | quote }}
+          FEATURE_FLAG_PERMISSION_PROPAGATION_KB_UN_11168: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_PERMISSION_PROPAGATION_KB_UN_11168 | quote }}
         resources:
           {{ .Values.chat.nextKnowledgeUpload.resources | toYaml | nindent 10 }}
         securityContext:
