@@ -14,11 +14,14 @@ resource "azurerm_kubernetes_cluster" "this" {
   dns_prefix                          = module.context.full_name
   sku_tier                            = "Standard"
   cost_analysis_enabled               = var.kubernetes_cost_analysis_enabled
-  automatic_channel_upgrade           = "stable"
+  automatic_upgrade_channel           = "stable"
+  node_os_upgrade_channel             = "NodeImage"
   azure_policy_enabled                = true
   kubernetes_version                  = var.kubernetes_version
   local_account_disabled              = true
   oidc_issuer_enabled                 = true
+  image_cleaner_enabled               = true
+  image_cleaner_interval_hours        = 48
   workload_identity_enabled           = true
   private_cluster_enabled             = true
   private_dns_zone_id                 = "None"
@@ -35,8 +38,8 @@ resource "azurerm_kubernetes_cluster" "this" {
     blob_driver_enabled = true
   }
   azure_active_directory_role_based_access_control {
-    managed            = true
     azure_rbac_enabled = true
+    tenant_id          = module.context.tenant_id
   }
   workload_autoscaler_profile {
     keda_enabled                    = true
@@ -59,7 +62,7 @@ resource "azurerm_kubernetes_cluster" "this" {
     name                        = "default"
     temporary_name_for_rotation = "defaultrepl"
     vm_size                     = var.kubernetes_default_node_size
-    enable_auto_scaling         = true
+    auto_scaling_enabled        = true
     min_count                   = var.kubernetes_default_node_count_min
     max_count                   = var.kubernetes_default_node_count_max
     os_disk_size_gb             = var.kubernetes_default_node_os_disk_size

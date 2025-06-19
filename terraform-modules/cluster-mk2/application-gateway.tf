@@ -232,6 +232,13 @@ resource "azurerm_application_gateway" "appgw" {
     name = var.gateway.sku
     tier = var.gateway.sku
   }
+  dynamic "global" {
+    for_each = var.gateway.global_config != null ? [var.gateway.global_config] : []
+    content {
+      response_buffering_enabled = global.value.response_buffering_enabled
+      request_buffering_enabled  = global.value.request_buffering_enabled
+    }
+  }
   autoscale_configuration {
     min_capacity = 2
     max_capacity = 5

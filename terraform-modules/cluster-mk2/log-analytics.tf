@@ -51,10 +51,11 @@ resource "azurerm_log_analytics_saved_search" "events_of_service" {
   EOT
 }
 resource "azurerm_log_analytics_workspace_table" "basic_log_table" {
-  for_each     = toset(local.basic_log_tables)
-  workspace_id = azurerm_log_analytics_workspace.this.id
-  name         = each.value
-  plan         = "Basic"
+  for_each                = toset(local.basic_log_tables)
+  workspace_id            = azurerm_log_analytics_workspace.this.id
+  name                    = each.value
+  plan                    = "Basic"
+  total_retention_in_days = 30
 }
 resource "azurerm_monitor_diagnostic_setting" "main" {
   name                           = "aks-diagnostic-logs"

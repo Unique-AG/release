@@ -7,7 +7,7 @@ resource "tls_private_key" "this" {
 }
 module "virtual-machine" {
   source  = "Azure/virtual-machine/azurerm"
-  version = "1.2.0"
+  version = "2.0.0"
   name                            = module.context.full_name
   resource_group_name             = module.context.rg_app_main.name
   location                        = module.context.rg_app_main.location
@@ -118,6 +118,7 @@ resource "azurerm_monitor_data_collection_rule" "dcr" {
       facility_names = ["local3", "local7"]
       log_levels     = ["Info", "Notice", "Warning", "Error", "Critical", "Alert", "Emergency"]
       name           = "datasource-syslog"
+      streams        = ["Microsoft-Syslog"]
     }
   }
 }

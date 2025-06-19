@@ -21,16 +21,17 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:             "2025.24.1"
-      nextKnowledgeUpload:  "2025.24.1"
-      nextTheme:            "2025.24.1"
-      nextAdmin:            "2025.24.1"
-      nodeChat:             "2025.24.1"
-      nodeIngestion:        "2025.24.1"
-      nodeIngestionWorker:  "2025.24.1"
-      configurationBackend: "2025.24.1"
-      nodeScopeManagement:  "2025.24.1"
-      assistantsCore:       "2025.24.1"
+      nextChat:             "2025.24.2"
+      nextKnowledgeUpload:  "2025.24.2"
+      nextTheme:            "2025.24.2"
+      nextAdmin:            "2025.24.2"
+      nodeChat:             "2025.24.2"
+      nodeIngestion:        "2025.24.2"
+      nodeIngestionWorker:  "2025.24.2"
+      configurationBackend: "2025.24.2"
+      nodeScopeManagement:  "2025.24.2"
+      backendServiceSpeech: "2025.24.2"
+      assistantsCore:       "2025.24.2"
   nextChat:
     env:
       MAX_FILE_SIZE_IN_MB: 200
@@ -285,6 +286,22 @@ chat:
           - path:
               type: PathPrefix
               value: /scim
+  backendServiceSpeech:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 500m
+        memory: 512Mi
+    routes:
+      hostname: unset_default_value
+      pathPrefix: /speech
+      paths:
+        default:
+          enabled: true
+        probe:
+          enabled: true
   assistantsCore:
     env:
       GUNICORN_WORKERS: 2

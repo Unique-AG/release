@@ -55,9 +55,9 @@ module "vnet" {
       size = 28
     },
     {
-      name                                      = "TykRedis",
-      size                                      = 28
-      private_endpoint_network_policies_enabled = false
+      name                              = "TykRedis",
+      size                              = 28
+      private_endpoint_network_policies = "Disabled"
     },
     {
       name = "Postgres"
@@ -82,6 +82,11 @@ module "vnet" {
     {
       name = "Jumpbox"
       size = 28
+    },
+    {
+      name                              = "CognitiveServices",
+      size                              = 28
+      private_endpoint_network_policies = "Disabled"
     },
     {
       name              = "AksNodes"
@@ -155,6 +160,7 @@ module "cluster" {
     sku                         = "WAF_v2"
     mode                        = "Prevention"
     max_request_body_size_in_kb = 2000
+    global_config               = var.gateway_global_config
     waf = {
       custom_rules = [
         {
@@ -167,14 +173,16 @@ module "cluster" {
                 variable_name = "RequestUri"
               }]
               operator     = "BeginsWith"
-              match_values = ["/scope-management/scim"]
+              match_values = ["/scim"]
             }
           ]
         }
       ]
     }
   }
-  waf_policy_managed_rule_settings = []
+  speech_service_private_dns_zone_virtual_network_link_name = var.speech_service_private_dns_zone_virtual_network_link_name
+  speech_service_private_dns_zone_name                      = var.speech_service_private_dns_zone_name
+  virtual_network_id                                        = module.vnet.virtual_network_id
 }
 module "jumpbox" {
   source                     = "./modules/jumpbox"
@@ -226,6 +234,11 @@ module "workload_identities" {
       roles       = ["Cognitive Services User" /* Document Intelligence */]
     }
     assistants-core = {
+      keyvault_id = module.chat.keyvault_id
+      namespace   = "chat"
+      roles       = ["Cognitive Services User" /* Document Intelligence */]
+    }
+    backend-service-speech = {
       keyvault_id = module.chat.keyvault_id
       namespace   = "chat"
       roles       = ["Cognitive Services User" /* Document Intelligence */]
@@ -302,4 +315,23 @@ module "switzerlandnorth" {
   user_assigned_identity_ids = [
     module.workload_identities.user_assigned_identity_ids["node-chat"],
   ]
+}
+module "speech_service" {
+  source              = "github.com/unique-ag/terraform-modules.git//modules/azure-speech-service?depth=1&ref=azure-speech-service-1.0.1"
+  key_vault_id        = module.chat.keyvault_id
+  resource_group_name = module.context.rg_app_main.name
+  speech_service_name = "speech-service"
+  accounts = {
+    "switzerlandnorth-speech" = {
+      location              = "switzerlandnorth"
+      account_kind          = "SpeechServices"
+      account_sku_name      = "S0"
+      custom_subdomain_name = var.speech_service_custom_subdomain_name
+      private_endpoint = {
+        subnet_id           = module.vnet.subnets["CognitiveServices"].id
+        vnet_id             = module.vnet.virtual_network_id
+        private_dns_zone_id = module.cluster.speech_service_private_dns_zone_id
+      }
+    }
+  }
 }

@@ -471,6 +471,7 @@ releases:
           THEME_BACKEND_API_URL: https://api.{{ .Values.host }}/configuration
           KNOWLEDGE_UPLOAD_APP_URL: https://{{ .Values.host }}/knowledge-upload
           ADMIN_APP_URL: https://{{ .Values.host }}/admin
+          SPEECH_BACKEND_API_URL: wss://api.{{ .Values.host }}/speech/ws/v1/speech-to-text
           SELF_URL: https://{{ .Values.host }}/chat
           ZITADEL_CLIENT_ID: {{ .Values.zitadel.clientId | quote}}
           ZITADEL_ISSUER: https://id.{{ .Values.host }}
@@ -747,6 +748,35 @@ releases:
           attributes:
             resourceGroup: {{ .Values.chat._common.auditVolume.resourceGroup | fetchSecretValue | quote }}
             storageAccount: {{ .Values.chat._common.auditVolume.storageAccount | fetchSecretValue | quote }}
+  - name: backend-service-speech
+    chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
+    version: 4.1.2
+    namespace: chat
+    createNamespace: true
+    wait: false
+    values:
+      -
+        image:
+          repository: {{ .Values.chat._common.acr.url }}/backend-service-speech
+          tag: {{ .Values.chat._common.tenantReleaseOverrides.backendServiceSpeech | default .Values.chat._common.defaultReleases.backendServiceSpeech | quote }}
+        replicaCount: {{ .Values.chat.backendServiceSpeech | get "replicaCount" 2 }}
+        imagePullSecrets:
+          - name: image-pull-secret
+        env:
+          LOG_LEVEL: info
+        envSecrets:
+          SPEECH_PRIVATE_ENDPOINT_HOST: {{ .Values.chat.backendServiceSpeech.secrets.SPEECH_PRIVATE_ENDPOINT_HOST | fetchSecretValue | quote }}
+        routes:
+          {{- $routes := .Values.chat.backendServiceSpeech.routes | deepCopy }}
+          {{- $_ := set $routes "hostname" (printf "api.%s" .Values.host) }}
+          {{ $routes | toYaml | nindent 10 }}
+        resources:
+          {{ .Values.chat.backendServiceSpeech.resources | toYaml | nindent 10 }}
+        serviceAccount:
+          enabled: true
+          workloadIdentity:
+            clientId: {{ .Values.chat.backendServiceSpeech.secrets.WORKLOAD_IDENTITY_CLIENT_ID | fetchSecretValue | quote }}
+            enabled: true
   - name: assistants-core
     chart: oci://ghcr.io/unique-ag/helm-charts/ai-service
     version: 1.2.7

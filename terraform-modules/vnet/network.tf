@@ -21,7 +21,7 @@ resource "azurerm_subnet" "this" {
   resource_group_name               = module.context.rg_app_net.name
   virtual_network_name              = azurerm_virtual_network.this.name
   address_prefixes                  = [local.actual_cirds[each.value.index]]
-  private_endpoint_network_policies = each.value.private_endpoint_network_policies_enabled == false ? "Disabled" : "Enabled"
+  private_endpoint_network_policies = each.value.private_endpoint_network_policies
   service_endpoints                 = each.value.service_endpoints
   dynamic "delegation" {
     for_each = each.value.delegations

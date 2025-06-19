@@ -23,6 +23,7 @@ chat:
       nodeIngestionWorker:
       configurationBackend:
       nodeScopeManagement:
+      backendServiceSpeech:
       assistantsCore:
   nextTheme:
     env:
@@ -63,6 +64,10 @@ chat:
       SCOPE_MANAGEMENT_ENCRYPTION_KEY_1: ref+azurekeyvault://your-vault-name/scope-management-encryption-key-1
       SCOPE_MANAGEMENT_ENCRYPTION_KEY_2: ref+azurekeyvault://your-vault-name/scope-management-encryption-key-2
       ZITADEL_PAT: ref+azurekeyvault://your-vault-name/manual-zitadel-scope-mgmt-pat
+  backendServiceSpeech:
+    secrets:
+      WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-backend-service-speech
+      SPEECH_PRIVATE_ENDPOINT_HOST: ref+azurekeyvault://your-vault-name/switzerlandnorth-speech-fqdn
   assistantsCore:
     env:
       BING_API_ENDPOINT: ref+azurekeyvault://your-vault-name/websearch-api-url

@@ -13,3 +13,7 @@ output "log_analytics_workspace_id" {
 output "key_vault_secrets_provider" {
   value = try(azurerm_kubernetes_cluster.this.key_vault_secrets_provider[0], null)
 }
+output "speech_service_private_dns_zone_id" {
+  description = "ID of the speech service private DNS zone"
+  value       = azurerm_private_dns_zone.speech_service_private_dns_zone.id
+}
