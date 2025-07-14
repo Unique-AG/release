@@ -399,6 +399,7 @@ releases:
         imagePullSecrets:
           - name: image-pull-secret
         env:
+          APP_REPOSITORY_BACKEND_API_URL: https://api.{{ .Values.host }}/apps
           CHAT_APP_URL: https://{{ .Values.host }}/chat
           CHAT_BACKEND_API_URL: https://api.{{ .Values.host }}/chat
           INGESTION_BACKEND_API_URL: https://api.{{ .Values.host }}/ingestion
@@ -418,7 +419,8 @@ releases:
           STATIC_TAB_NAME: {{ .Values.chat.nextTheme.env.STATIC_TAB_NAME | quote }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
           FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411 | quote }}
-          FEATURE_FLAG_PERMISSION_PROPAGATION_KB_UN_11168: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_PERMISSION_PROPAGATION_KB_UN_11168 | quote }}
+          FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416 | quote }}
+          FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608 | quote }}
         resources:
           {{ .Values.chat.nextKnowledgeUpload.resources | toYaml | nindent 10 }}
         securityContext:
@@ -464,6 +466,7 @@ releases:
         resources:
           {{ .Values.chat.nextChat.resources | toYaml | nindent 10 }}
         env:
+          APP_REPOSITORY_BACKEND_API_URL: https://api.{{ .Values.host }}/apps
           CHAT_APP_URL: https://{{ .Values.host }}/chat
           CHAT_BACKEND_API_URL: https://api.{{ .Values.host }}/chat
           INGESTION_BACKEND_API_URL: https://api.{{ .Values.host }}/ingestion
@@ -491,6 +494,7 @@ releases:
           FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411 | quote }}
           FEATURE_FLAG_ENABLE_CHAT_HISTORY_UN_5803: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_CHAT_HISTORY_UN_5803 | quote }}
           FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270 | quote }}
+          FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: {{ .Values.chat.nextChat.env.FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416 | quote }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
         routes:
@@ -540,6 +544,7 @@ releases:
           ZITADEL_ORG_ID: {{ .Values.zitadel.orgId | quote }}
           ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote}}
           ADMIN_APP_URL: https://{{ .Values.host }}/admin
+          APP_REPOSITORY_BACKEND_API_URL: https://api.{{ .Values.host }}/apps
           CHAT_BACKEND_API_URL: https://api.{{ .Values.host }}/chat
           CHAT_APP_URL: https://{{ .Values.host }}/chat
           KNOWLEDGE_UPLOAD_APP_URL: https://{{ .Values.host }}/knowledge-upload
@@ -547,6 +552,7 @@ releases:
           MAX_HEAP_MB: {{ .Values.chat.nextTheme.env.MAX_HEAP_MB }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
           FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: {{ .Values.chat.nextTheme.env.FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411 | quote }}
+          FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: {{ .Values.chat.nextTheme.env.FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416 | quote }}
         securityContext: null # FIXME should be set but we did not want to change it
         routes:
           {{- $routes := .Values.chat.nextTheme.routes | deepCopy }}
@@ -608,6 +614,7 @@ releases:
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
           INGESTION_BACKEND_API_URL: https://api.{{ .Values.host }}/ingestion
           FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: {{ .Values.chat.nextAdmin.env.FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411 | quote }}
+          FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: {{ .Values.chat.nextAdmin.env.FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416 | quote }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
         routes:
@@ -704,6 +711,7 @@ releases:
           CHAT_API_URL: http://node-chat.chat.svc.cluster.local:8093
           ENABLE_CLIENT_INSIGHT_SHIPPER: {{ .Values.chat.nodeScopeManagement.env | get "ENABLE_CLIENT_INSIGHT_SHIPPER" false }}
           UNIQUE_INSTALLATION_ID: {{ .Values.host }}
+          FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: {{ .Values.chat.nodeScopeManagement.env.FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608 | quote }}
         envSecrets:
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/scope-management"
           ZITADEL_PAT: {{ .Values.chat.nodeScopeManagement.secrets.ZITADEL_PAT | fetchSecretValue | quote }}
