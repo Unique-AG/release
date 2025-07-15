@@ -60,6 +60,9 @@ chat:
       scim:
         hostnames:
           - <your-hostname> # backend hostname e.g.: api.your-hostname.com or gateway.your-hostname.com
+      membership-sync:
+        hostnames:
+          - <your-hostname> # backend hostname e.g.: api.your-hostname.com or gateway.your-hostname.com
     secrets:
       SCOPE_MANAGEMENT_ENCRYPTION_KEY_1: ref+azurekeyvault://your-vault-name/scope-management-encryption-key-1
       SCOPE_MANAGEMENT_ENCRYPTION_KEY_2: ref+azurekeyvault://your-vault-name/scope-management-encryption-key-2

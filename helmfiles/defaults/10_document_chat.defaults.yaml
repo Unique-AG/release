@@ -19,29 +19,25 @@ chat:
         appgw.ingress.kubernetes.io/request-timeout: "120" # 120 is our sane cap, anyone wanting more than this must provide evidence that their implementation is cleanly engineered
         cert-manager.io/cluster-issuer: letsencrypt
     env:
-      CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
+      CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:             "2025.26.2"
-      nextKnowledgeUpload:  "2025.26.2"
-      nextTheme:            "2025.26.2"
-      nextAdmin:            "2025.26.2"
-      nodeChat:             "2025.26.2"
-      nodeIngestion:        "2025.26.2"
-      nodeIngestionWorker:  "2025.26.2"
-      configurationBackend: "2025.26.2"
-      nodeScopeManagement:  "2025.26.2"
-      backendServiceSpeech: "2025.26.2"
-      assistantsCore:       "2025.26.2"
+      nextChat:             "2025.28"
+      nextKnowledgeUpload:  "2025.28"
+      nextTheme:            "2025.28"
+      nextAdmin:            "2025.28"
+      nodeChat:             "2025.28"
+      nodeIngestion:        "2025.28"
+      nodeIngestionWorker:  "2025.28"
+      configurationBackend: "2025.28"
+      nodeScopeManagement:  "2025.28"
+      backendServiceSpeech: "2025.28"
+      assistantsCore:       "2025.28"
   nextChat:
     env:
       MAX_FILE_SIZE_IN_MB: 200
       MAX_HEAP_MB: 400
       FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: "true"
-      FEATURE_FLAG_IN_DOCUMENT_TRANSLATOR_UN_8405: "true"
       FILE_TYPES_DOCUMENT_TRANSLATOR: "docx,xlsx,pptx"
-      FEATURE_FLAG_ENABLE_LATEX_UN_8603: "true"
-      FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: "true"
-      FEATURE_FLAG_ENABLE_CHAT_HISTORY_UN_5803: "true"
       FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270: "false"
       FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "true"
     resources:
@@ -66,7 +62,6 @@ chat:
   nextKnowledgeUpload:
     env:
       MAX_HEAP_MB: 350
-      FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: "true"
       FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "true"
       FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: "true"
     resources:
@@ -88,7 +83,6 @@ chat:
   nextTheme:
     env:
       MAX_HEAP_MB: 200
-      FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: "true"
       FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "true"
     resources:
       requests:
@@ -109,7 +103,6 @@ chat:
   nextAdmin:
     env:
       MAX_HEAP_MB: 350
-      FEATURE_FLAG_ENABLE_NOTIFICATION_BANNER_UN_9411: "true"
       FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "true"
     resources:
       requests:
@@ -291,6 +284,21 @@ chat:
           - path:
               type: PathPrefix
               value: /scim
+      membership-sync:
+        enabled: true
+        annotations:
+          konghq.com/plugins: unique-route-metrics
+        parentRefs:
+          - name: kong
+            namespace: system
+            group: gateway.networking.k8s.io
+            kind: Gateway
+        hostnames:
+          - unset_default_value
+        matches:
+          - path:
+              type: PathPrefix
+              value: /membership-sync
   backendServiceSpeech:
     resources:
       limits:
