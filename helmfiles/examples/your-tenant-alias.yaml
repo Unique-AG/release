@@ -74,10 +74,13 @@ chat:
   assistantsCore:
     env:
       BING_API_ENDPOINT: ref+azurekeyvault://your-vault-name/websearch-api-url
+      SIX_API_ACTIVATED_COMPANIES: '["<company_id>"]'
     envSecrets:
       BING_SEARCH_V7_SUBSCRIPTION_KEY: ref+azurekeyvault://your-vault-name/websearch-subscription-key
       AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT_DEFINITIONS: ref+azurekeyvault://your-vault-name/azure-document-intelligence-endpoint-definitions
       WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-assistants-core
+      GOOGLE_SEARCH_API_KEY: ref+azurekeyvault://your-vault-name/manual-google-search-api-key
+      SIX_API_CREDS: ref+azurekeyvault://your-vault-name/manual-six-api-creds
 rabbitMQ:
   username: ref+azurekeyvault://your-vault-name/rabbitmq-username # ! can't be changed without deleting the PVC+PV
   password: ref+azurekeyvault://your-vault-name/rabbitmq-password # ! can't be changed without deleting the PVC+PV

@@ -8,30 +8,20 @@ chat:
       runAsUser: 1000
       seccompProfile:
         type: RuntimeDefault
-    ingressDefaults:
-      enabled: true
-      tls:
-        enabled: true
-      className: azure-application-gateway
-      annotations:
-        appgw.ingress.kubernetes.io/ssl-redirect: "true"
-        appgw.ingress.kubernetes.io/rewrite-rule-set: security-headers
-        appgw.ingress.kubernetes.io/request-timeout: "120" # 120 is our sane cap, anyone wanting more than this must provide evidence that their implementation is cleanly engineered
-        cert-manager.io/cluster-issuer: letsencrypt
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:             "2025.28"
-      nextKnowledgeUpload:  "2025.28"
-      nextTheme:            "2025.28"
-      nextAdmin:            "2025.28"
-      nodeChat:             "2025.28"
-      nodeIngestion:        "2025.28"
-      nodeIngestionWorker:  "2025.28"
-      configurationBackend: "2025.28"
-      nodeScopeManagement:  "2025.28"
-      backendServiceSpeech: "2025.28"
-      assistantsCore:       "2025.28"
+      nextChat:             "2025.30"
+      nextKnowledgeUpload:  "2025.30"
+      nextTheme:            "2025.30"
+      nextAdmin:            "2025.30"
+      nodeChat:             "2025.30"
+      nodeIngestion:        "2025.30"
+      nodeIngestionWorker:  "2025.30"
+      configurationBackend: "2025.30"
+      nodeScopeManagement:  "2025.30"
+      backendServiceSpeech: "2025.30"
+      assistantsCore:       "2025.30"
   nextChat:
     env:
       MAX_FILE_SIZE_IN_MB: 200
@@ -40,6 +30,7 @@ chat:
       FILE_TYPES_DOCUMENT_TRANSLATOR: "docx,xlsx,pptx"
       FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270: "false"
       FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "true"
+      FEATURE_FLAG_ENABLE_ADVANCED_FORMATTING_UN_9758: "true"
     resources:
       requests:
         cpu: 300m
@@ -300,6 +291,10 @@ chat:
               type: PathPrefix
               value: /membership-sync
   backendServiceSpeech:
+    env:
+      # see here for supported languages:
+      # https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-support?tabs=stt
+      SPEECH_SUPPORTED_LANGUAGES: "en-US, it-IT, fr-FR, de-DE"
     resources:
       limits:
         cpu: 500m
@@ -323,6 +318,8 @@ chat:
       AZURE_DOCUMENT_INTELLIGENCE_LOCATION: switzerlandnorth
       AZURE_DOCUMENT_INTELLIGENCE_API_VERSION: 2023-07-31
       ENABLED_MIME_TYPES_DOCUMENT_TRANSLATION: '["DOCX", "MSEXCEL", "EXCEL", "PPT", "MSPPT"]'
+      GOOGLE_SEARCH_API_ENDPOINT: https://customsearch.googleapis.com/customsearch/v1
+      GOOGLE_SEARCH_ENGINE_ID: <your-search-engine-id>
     resources:
       requests:
         cpu: 500m
@@ -348,8 +345,8 @@ qdrant:
 zitadel:
   replicaCount: 2
   versions:
-    chart: 8.1.0
-    image: v2.63.9
+    chart: 8.13.1
+    image: v2.71.13
   resources:
     requests:
       cpu: 1

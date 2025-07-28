@@ -13,6 +13,8 @@ variable "keyvault_secret_placeholders" {
     "manual-app-repository-encryption-key",
     "manual-slack-webhook-url",
     "manual-github-app-private-key",
+    "manual-google-search-api-key",
+    "manual-six-api-creds",
     "manual-confluence-connector-service-user-client-id",
     "manual-confluence-connector-service-user-client-secret",
     "manual-confluence-connector-username",

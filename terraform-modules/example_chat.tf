@@ -111,16 +111,6 @@ module "vnet" {
     },
   ]
 }
-module "monitor" {
-  source  = "./modules/az-monitor"
-  context = module.context
-  action_group_list = {
-    "slack-platform" = {
-      severity        = "p0"
-      email_addresses = []
-    },
-  }
-}
 module "cluster" {
   source                        = "./modules/cluster-mk2"
   context                       = module.context
@@ -149,13 +139,6 @@ module "cluster" {
     "node-theme",
     "configuration-backend",
   ]
-  monitor_action_group_ids = {
-    p0 = module.monitor.monitor_action_group_ids.slack-platform
-    p1 = module.monitor.monitor_action_group_ids.slack-platform
-    p2 = module.monitor.monitor_action_group_ids.slack-platform
-    p3 = module.monitor.monitor_action_group_ids.slack-platform
-    p4 = module.monitor.monitor_action_group_ids.slack-platform
-  }
   gateway = {
     sku                         = "WAF_v2"
     mode                        = "Prevention"
@@ -293,9 +276,6 @@ module "tyk" {
   subnet_redis               = module.vnet.subnets["TykRedis"]
   keyvault_access_principals = [module.jumpbox.vm_identity]
   virtual_network_id         = module.vnet.virtual_network_id
-  monitor_action_group_ids = {
-    p0 = module.monitor.monitor_action_group_ids.slack-platform
-  }
 }
 module "document-ingelligence-switzerlandnorth" {
   source           = "./modules/az-document-intelligence"
