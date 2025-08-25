@@ -145,7 +145,7 @@ variable "sdk_deployment_service_principal_object_ids" {
 variable "storage_account_key_list_operator_service_role_id" {
   description = "The role UUID for the role that allows listing keys in a storage account. For Unique these roles are provisioned at Tenant Root Level + 1 Management Group."
   type        = string
-  default     = "81a9662b-bebf-436f-a333-f67b29880f12" 
+  default     = "81a9662b-bebf-436f-a333-f67b29880f12"
 }
 variable "sdk_deployment_logs_destination_azure_subscription_id" {
   description = "The UUID of the subscription where the logs will be stored. It is used by the App Repository to look for the logs in the right place."

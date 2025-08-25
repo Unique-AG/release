@@ -93,7 +93,7 @@ locals {
           {
             match_variables = [{ variable_name = "RequestHeaders", selector = "host" }]
             operator        = "Contains"
-            match_values    = ["kubernetes.default.svc", "github.com/Unique-AG/monorepo"]
+            match_values    = ["kubernetes.default.svc"]
           }
         ]
       }
@@ -108,13 +108,14 @@ resource "azurerm_public_ip" "appgw" {
   allocation_method   = "Static"
   sku                 = "Standard"
   zones               = ["1", "2", "3"]
-  tags = module.context.tags
+  tags                = module.context.tags
 }
 resource "azurerm_web_application_firewall_policy" "wafpolicy" {
   count               = var.gateway.sku == "WAF_v2" ? 1 : 0
   name                = "${module.context.full_name}-waf-policy"
   resource_group_name = module.context.rg_app_main.name
   location            = module.context.rg_app_main.location
+  tags                = module.context.tags
   policy_settings {
     enabled                     = true
     mode                        = var.gateway.mode
@@ -227,7 +228,7 @@ resource "azurerm_application_gateway" "appgw" {
   name                = "${module.context.full_name}${local.sku_suffix}"
   location            = module.context.rg_app_main.location
   resource_group_name = module.context.rg_app_main.name
-  enable_http2 = true
+  enable_http2        = true
   sku {
     name = var.gateway.sku
     tier = var.gateway.sku
@@ -286,8 +287,14 @@ resource "azurerm_application_gateway" "appgw" {
     rule_type                  = "Basic"
   }
   ssl_policy {
-    policy_name = "AppGwSslPolicy20220101"
-    policy_type = "Predefined"
+    policy_type          = "CustomV2"
+    min_protocol_version = "TLSv1_2"
+    cipher_suites = [
+      "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+      "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+      "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+      "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+    ]
   }
   rewrite_rule_set {
     name = "security-headers"
@@ -333,7 +340,7 @@ resource "azurerm_application_gateway" "appgw" {
     }
   }
   firewall_policy_id = var.gateway.sku == "WAF_v2" ? azurerm_web_application_firewall_policy.wafpolicy[0].id : null
-  tags = module.context.tags
+  tags               = module.context.tags
   lifecycle {
     ignore_changes = [
       backend_http_settings,

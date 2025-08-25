@@ -173,6 +173,7 @@ releases:
         ## Pinning version as to recommendation
         # https://artifacthub.io/packages/helm/bitnami/rabbitmq#rolling-vs-immutable-tags
         image:
+          repository: {{ .Values.rabbitMQ.repository }} # legacy repository until move away from bitnami (UN-12358)
           tag: {{ .Values.rabbitMQ.versions.image }}
         global:
           security:

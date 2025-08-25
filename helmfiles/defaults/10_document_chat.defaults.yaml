@@ -11,17 +11,17 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:             "2025.30"
-      nextKnowledgeUpload:  "2025.30"
-      nextTheme:            "2025.30"
-      nextAdmin:            "2025.30"
-      nodeChat:             "2025.30"
-      nodeIngestion:        "2025.30"
-      nodeIngestionWorker:  "2025.30"
-      configurationBackend: "2025.30"
-      nodeScopeManagement:  "2025.30"
-      backendServiceSpeech: "2025.30"
-      assistantsCore:       "2025.30"
+      nextChat:             "2025.34.2"
+      nextKnowledgeUpload:  "2025.34.2"
+      nextTheme:            "2025.34.2"
+      nextAdmin:            "2025.34.2"
+      nodeChat:             "2025.34.2"
+      nodeIngestion:        "2025.34.2"
+      nodeIngestionWorker:  "2025.34.2"
+      configurationBackend: "2025.34.2"
+      nodeScopeManagement:  "2025.34.2"
+      backendServiceSpeech: "2025.34.2"
+      assistantsCore:       "2025.34.2"
   nextChat:
     env:
       MAX_FILE_SIZE_IN_MB: 200
@@ -31,6 +31,7 @@ chat:
       FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270: "false"
       FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "true"
       FEATURE_FLAG_ENABLE_ADVANCED_FORMATTING_UN_9758: "true"
+      FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: "false" # enable spaces 2.0, BETA feature
     resources:
       requests:
         cpu: 300m
@@ -95,6 +96,8 @@ chat:
     env:
       MAX_HEAP_MB: 350
       FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "true"
+      FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # experimental MCP feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: "false" # enable spaces 2.0, BETA feature
     resources:
       requests:
         cpu: 300m
@@ -148,6 +151,10 @@ chat:
       ENABLE_DOWNLOAD_UPLOAD_FILES_AS_STREAM: "true"
       ENABLE_UPLOAD_CHAT_INTERACTIONS_AS_STREAM: "true"
       ENABLE_ANALYTICS_CHAT_DETAILED_INTERACTIONS_PRISMA_CURSOR: "true"
+      ASSISTANT_CORE_API_URL: http://assistants-core.chat.svc.cluster.local:8081/core
+      CHAT_LLM_INITIAL_REQUEST_TIMEOUT: 20000
+      FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # experimental MCP feature, only enable for DEV/TEST
+      CACHE_REDIS_DB: 3
     resources:
       requests:
         cpu: 500m
@@ -354,10 +361,23 @@ zitadel:
     limits:
       cpu: 1
       memory: 1500Mi
-eventBasedAutoscaling:
+keda:
   nodeIngestionWorker:
     minReplicaCount: 0
     maxReplicaCount: 6
+    # Set cron to null to disable cron-based scaling, or configure with values to enable
+    cron: null
+    # Example cron configuration:
+    # cron:
+    #   timezone: Europe/Zurich
+    #   start: 0 8 * * 1-5
+    #   end: 0 19 * * 1-5
+    #   desiredReplicas: "1"
   nodeIngestionWorkerChat:
     minReplicaCount: 0
     maxReplicaCount: 6
+    cron:
+      timezone: Europe/Zurich
+      start: 0 8 * * 1-5
+      end: 0 19 * * 1-5
+      desiredReplicas: "1" # scale up more according to your needs

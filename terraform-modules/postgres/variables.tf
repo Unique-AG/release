@@ -14,6 +14,11 @@ variable "flex_sku" {
   description = "SKU for the Azure FlexiblePostgreSQL server"
   default     = "GP_Standard_D2ds_v5"
 }
+variable "max_connections" {
+  type        = string
+  description = "Max connection count."
+  default     = 200
+}
 variable "flex_storage_mb" {
   type        = number
   description = "Storage from the Azure FlexiblePostgreSQL server in MB"

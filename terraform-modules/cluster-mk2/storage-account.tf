@@ -1,17 +1,17 @@
 resource "azurerm_storage_account" "this" {
-  name                = module.context.full_name_no_dashes_truncated
-  location            = module.context.rg_app_sec.location
-  resource_group_name = module.context.rg_app_sec.name
+  name                             = module.context.full_name_no_dashes_truncated
+  location                         = module.context.rg_app_sec.location
+  resource_group_name              = module.context.rg_app_sec.name
   account_tier                     = "Premium"
   account_kind                     = "BlockBlobStorage"
   account_replication_type         = "LRS"
   min_tls_version                  = "TLS1_2"
   allow_nested_items_to_be_public  = false
   cross_tenant_replication_enabled = false
-  https_traffic_only_enabled = true
-  nfsv3_enabled              = true
-  is_hns_enabled             = true
-  tags                       = module.context.tags
+  https_traffic_only_enabled       = true
+  nfsv3_enabled                    = true
+  is_hns_enabled                   = true
+  tags                             = module.context.tags
   lifecycle {
     ignore_changes = [
       customer_managed_key

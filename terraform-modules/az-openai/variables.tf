@@ -21,7 +21,7 @@ variable "deployments" {
     model_version   = string
     sku_name        = string
     sku_capacity    = number
-    rai_policy_name = optional(string, "Default")
+    rai_policy_name = optional(string, null)
   }))
   default  = {}
   nullable = false

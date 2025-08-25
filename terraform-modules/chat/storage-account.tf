@@ -1,7 +1,7 @@
 resource "azurerm_storage_account" "document-chat" {
-  name                = module.context.full_name_no_dashes_truncated
-  location            = module.context.rg_app_sec.location
-  resource_group_name = module.context.rg_app_sec.name
+  name                            = module.context.full_name_no_dashes_truncated
+  location                        = module.context.rg_app_sec.location
+  resource_group_name             = module.context.rg_app_sec.name
   account_tier                    = "Standard"
   account_replication_type        = "LRS"
   allow_nested_items_to_be_public = false
@@ -107,6 +107,7 @@ resource "azurerm_data_protection_backup_vault" "vault" {
   redundancy                 = var.storage_account_backup_redundancy
   retention_duration_in_days = var.storage_account_backup_retention_days
   soft_delete                = var.storage_account_backup_soft_delete ? "On" : "Off"
+  tags                       = local.tags
   identity {
     type = "SystemAssigned"
   }
@@ -130,5 +131,5 @@ resource "azurerm_data_protection_backup_instance_blob_storage" "instance" {
   vault_id           = azurerm_data_protection_backup_vault.vault[0].id
   storage_account_id = azurerm_storage_account.document-chat.id
   backup_policy_id   = azurerm_data_protection_backup_policy_blob_storage.policy[0].id
-  depends_on = [azurerm_role_assignment.role[0]]
+  depends_on         = [azurerm_role_assignment.role[0]]
 }

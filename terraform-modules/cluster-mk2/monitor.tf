@@ -11,7 +11,7 @@ resource "azurerm_monitor_metric_alert" "appgw_5xx" {
     metric_name      = "ResponseStatus"
     aggregation      = "Total"
     operator         = "GreaterThan"
-    threshold        = 8
+    threshold        = var.appgw_5xx_alert_threshold
     dimension {
       name     = "HttpStatusGroup"
       operator = "StartsWith"

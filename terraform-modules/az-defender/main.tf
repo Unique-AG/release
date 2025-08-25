@@ -66,10 +66,10 @@ resource "azurerm_security_center_subscription_pricing" "cwp_opensourcerelationa
   tier          = "Standard"
 }
 resource "azapi_resource" "security_contact" {
-  type      = "Microsoft.Security/securityContacts@2023-12-01-preview"
-  name      = "default"
-  parent_id = "/subscriptions/${module.context.subscription_id}"
-  location  = "westeurope"
+  type                      = "Microsoft.Security/securityContacts@2023-12-01-preview"
+  name                      = "default"
+  parent_id                 = "/subscriptions/${module.context.subscription_id}"
+  location                  = "westeurope"
   schema_validation_enabled = false
   body = {
     properties = {

@@ -58,7 +58,7 @@ releases:
           periodSeconds: {{ .Values.qdrant | get "probes.startup.periodSeconds" 15 }}
   - name: node-ingestion
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 4.3.1
+    version: 4.6.2
     namespace: chat
     createNamespace: true
     wait: false
@@ -154,7 +154,7 @@ releases:
               name: node-ingestion-expired-content-deletion
   - name: node-ingestion-worker
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 4.3.1
+    version: 4.6.2
     namespace: chat
     createNamespace: true
     wait: false
@@ -209,20 +209,27 @@ releases:
           attributes:
             resourceGroup: {{ .Values.chat._common.auditVolume.resourceGroup | fetchSecretValue | quote }}
             storageAccount: {{ .Values.chat._common.auditVolume.storageAccount | fetchSecretValue | quote }}
-        eventBasedAutoscaling:
+        keda:
           enabled: true
-          minReplicaCount: {{ .Values.eventBasedAutoscaling.nodeIngestionWorker | get "minReplicaCount" 0 }}
-          maxReplicaCount: {{ .Values.eventBasedAutoscaling.nodeIngestionWorker | get "maxReplicaCount" 6 }}
-          cron: {{- if hasKey .Values.eventBasedAutoscaling.nodeIngestionWorker "cron" }}
-            {{ toYaml .Values.eventBasedAutoscaling.nodeIngestionWorker.cron | nindent 12 }}
-          {{- else }} null
-          {{- end }}
-          rabbitmq:
-            queueName: unique.node.ingestion.queue
+          minReplicaCount: {{ .Values.keda.nodeIngestionWorker | get "minReplicaCount" 0 }}
+          maxReplicaCount: {{ .Values.keda.nodeIngestionWorker | get "maxReplicaCount" 6 }}
+          scalers:
+            - type: rabbitmq
+              metadata:
+                protocol: amqp
+                queueName: unique.node.ingestion.queue
+                mode: QueueLength
+                value: "1"
+                hostFromEnv: AMQP_URL
+            {{- if .Values.keda.nodeIngestionWorker.cron }}
+            - type: cron
+              metadata:
+                {{- toYaml .Values.keda.nodeIngestionWorker.cron | nindent 16 }}
+            {{- end }}
         terminationGracePeriodSeconds: 900 # 15min
   - name: node-ingestion-worker-chat
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 4.3.1
+    version: 4.6.2
     namespace: chat
     createNamespace: true
     wait: false
@@ -277,20 +284,27 @@ releases:
           attributes:
             resourceGroup: {{ .Values.chat._common.auditVolume.resourceGroup | fetchSecretValue | quote }}
             storageAccount: {{ .Values.chat._common.auditVolume.storageAccount | fetchSecretValue | quote }}
-        eventBasedAutoscaling:
+        keda:
           enabled: true
-          minReplicaCount: {{ .Values.eventBasedAutoscaling.nodeIngestionWorkerChat | get "minReplicaCount" 0 }}
-          maxReplicaCount: {{ .Values.eventBasedAutoscaling.nodeIngestionWorkerChat | get "maxReplicaCount" 6 }}
-          cron: {{- if hasKey .Values.eventBasedAutoscaling.nodeIngestionWorkerChat "cron" }}
-            {{ toYaml .Values.eventBasedAutoscaling.nodeIngestionWorkerChat.cron | nindent 12 }}
-          {{- else }} null
-          {{- end }}
-          rabbitmq:
-            queueName: unique.node.ingestion.chat_queue
+          minReplicaCount: {{ .Values.keda.nodeIngestionWorkerChat | get "minReplicaCount" 0 }}
+          maxReplicaCount: {{ .Values.keda.nodeIngestionWorkerChat | get "maxReplicaCount" 6 }}
+          scalers:
+            - type: rabbitmq
+              metadata:
+                protocol: amqp
+                queueName: unique.node.ingestion.chat_queue
+                mode: QueueLength
+                value: "1"
+                hostFromEnv: AMQP_URL
+            {{- if .Values.keda.nodeIngestionWorkerChat.cron }}
+            - type: cron
+              metadata:
+                {{- toYaml .Values.keda.nodeIngestionWorkerChat.cron | nindent 16 }}
+            {{- end }}
         terminationGracePeriodSeconds: 900 # 15min
   - name: node-chat
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 4.3.1
+    version: 4.6.2
     namespace: chat
     createNamespace: true
     wait: false
@@ -335,6 +349,12 @@ releases:
           ENABLE_DOWNLOAD_UPLOAD_FILES_AS_STREAM: {{ .Values.chat.nodeChat.env | get "ENABLE_DOWNLOAD_UPLOAD_FILES_AS_STREAM" true }}
           ENABLE_UPLOAD_CHAT_INTERACTIONS_AS_STREAM: {{ .Values.chat.nodeChat.env | get "ENABLE_UPLOAD_CHAT_INTERACTIONS_AS_STREAM" true }}
           ENABLE_ANALYTICS_CHAT_DETAILED_INTERACTIONS_PRISMA_CURSOR: {{ .Values.chat.nodeChat.env | get "ENABLE_ANALYTICS_CHAT_DETAILED_INTERACTIONS_PRISMA_CURSOR" true }}
+          ASSISTANT_CORE_API_URL: {{ .Values.chat.nodeChat.env | get "ASSISTANT_CORE_API_URL" "http://assistants-core.chat.svc.cluster.local:8081/core" }}
+          CHAT_LLM_INITIAL_REQUEST_TIMEOUT: {{ .Values.chat.nodeChat.env | get "CHAT_LLM_INITIAL_REQUEST_TIMEOUT" 20000 }}
+          FEATURE_FLAG_ENABLE_MCP_UN_11963: {{ .Values.chat.nodeChat.env | get "FEATURE_FLAG_ENABLE_MCP_UN_11963" false }}
+          CACHE_REDIS_DB: {{ .Values.chat.nodeChat.env | get "CACHE_REDIS_DB" 3 }}
+          CHAT_FRONTEND_URL: https://{{ .Values.host }}/chat
+          ADMIN_FRONTEND_URL: https://{{ .Values.host }}/admin
         envSecrets:
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/chat"
           PUBSUB_REDIS_PASSWORD: {{ .Values.tyk.redis.password | fetchSecretValue | quote }}
@@ -384,7 +404,7 @@ releases:
               name: redaction-job
   - name: next-knowledge-upload
     chart: oci://ghcr.io/unique-ag/helm-charts/web-app
-    version: 4.1.2
+    version: 4.3.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -441,7 +461,7 @@ releases:
             initialDelaySeconds: 5
   - name: next-chat
     chart: oci://ghcr.io/unique-ag/helm-charts/web-app
-    version: 4.1.2
+    version: 4.3.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -484,6 +504,7 @@ releases:
           FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270 | quote }}
           FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: {{ .Values.chat.nextChat.env.FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416 | quote }}
           FEATURE_FLAG_ENABLE_ADVANCED_FORMATTING_UN_9758: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_ADVANCED_FORMATTING_UN_9758 | quote }}
+          FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203 | quote }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
         routes:
@@ -503,7 +524,7 @@ releases:
             initialDelaySeconds: 5
   - name: next-theme
     chart: oci://ghcr.io/unique-ag/helm-charts/web-app
-    version: 4.1.2
+    version: 4.3.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -552,7 +573,7 @@ releases:
             initialDelaySeconds: 5
   - name: next-admin
     chart: oci://ghcr.io/unique-ag/helm-charts/web-app
-    version: 4.1.2
+    version: 4.3.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -588,6 +609,8 @@ releases:
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
           INGESTION_BACKEND_API_URL: https://api.{{ .Values.host }}/ingestion
           FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: {{ .Values.chat.nextAdmin.env.FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416 | quote }}
+          FEATURE_FLAG_ENABLE_MCP_UN_11963: {{ .Values.chat.nextAdmin.env.FEATURE_FLAG_ENABLE_MCP_UN_11963 | quote }}
+          FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: {{ .Values.chat.nextAdmin.env.FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203 | quote }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
         routes:
@@ -607,7 +630,7 @@ releases:
             initialDelaySeconds: 5
   - name: configuration-backend
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 4.3.1
+    version: 4.6.2
     namespace: chat
     createNamespace: true
     wait: false
@@ -650,7 +673,7 @@ releases:
             storageAccount: {{ .Values.chat._common.auditVolume.storageAccount | fetchSecretValue | quote }}
   - name: node-scope-management
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 4.3.1
+    version: 4.6.2
     namespace: chat
     createNamespace: true
     wait: false
@@ -724,7 +747,7 @@ releases:
             storageAccount: {{ .Values.chat._common.auditVolume.storageAccount | fetchSecretValue | quote }}
   - name: backend-service-speech
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 4.3.1
+    version: 4.6.2
     namespace: chat
     createNamespace: true
     wait: false

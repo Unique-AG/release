@@ -248,6 +248,36 @@ variable "gateway" {
             }
           },
           {
+            match_variable          = "RequestArgNames",
+            selector                = "variables.input.text,variables.text,variables.input.modules.upsert.create.configuration.systemPromptSearch"
+            selector_match_operator = "EqualsAny"
+            excluded_rule_set = {
+              type            = "OWASP"
+              version         = "3.2"
+              rule_group_name = "REQUEST-920-PROTOCOL-ENFORCEMENT"
+            }
+          },
+          {
+            match_variable          = "RequestArgNames",
+            selector                = "variables.input.text,variables.text,variables.input.modules.upsert.create.configuration.systemPromptSearch"
+            selector_match_operator = "EqualsAny"
+            excluded_rule_set = {
+              type            = "OWASP"
+              version         = "3.2"
+              rule_group_name = "REQUEST-921-PROTOCOL-ATTACK"
+            }
+          },
+          {
+            match_variable          = "RequestArgNames",
+            selector                = "variables.input.text,variables.text,variables.input.modules.upsert.create.configuration.systemPromptSearch"
+            selector_match_operator = "EqualsAny"
+            excluded_rule_set = {
+              type            = "OWASP"
+              version         = "3.2"
+              rule_group_name = "REQUEST-930-APPLICATION-ATTACK-LFI"
+            }
+          },
+          {
             match_variable          = "RequestCookieNames",
             selector                = "__Secure-next-auth.session-token"
             selector_match_operator = "EqualsAny"
@@ -261,7 +291,7 @@ variable "gateway" {
       )
     }), {})
   })
-  default = {} 
+  default = {}
   validation {
     condition     = var.gateway.sku == "Standard_v2" || var.gateway.sku == "WAF_v2"
     error_message = "gateway.sku must be either Standard_v2 or WAF_v2"
@@ -401,4 +431,19 @@ variable "speech_service_private_dns_zone_name" {
 variable "virtual_network_id" {
   type        = string
   description = "ID of the virtual network"
+}
+variable "image_cleaner_interval_hours" {
+  type        = number
+  description = "Interval in hours for the image cleaner"
+  default     = 48
+}
+variable "auto_scaler_scale_down_unneeded" {
+  type        = string
+  description = "Scale down unneeded nodes after this amount of time"
+  default     = "5m"
+}
+variable "appgw_5xx_alert_threshold" {
+  type        = number
+  description = "Threshold for the appgw 5xx alert"
+  default     = 8
 }

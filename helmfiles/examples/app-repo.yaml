@@ -19,7 +19,7 @@ releases:
           password: {{ .Values.appRepo._common.acr.password | fetchSecretValue | quote }}
   - name: node-app-repository
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 3.3.0
+    version: 4.6.2
     namespace: apps
     createNamespace: true
     wait: false
@@ -74,7 +74,7 @@ releases:
             storageAccount: {{ .Values.chat._common.auditVolume.storageAccount | fetchSecretValue | quote }}
   - name: node-webhook-scheduler
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 3.3.0
+    version: 4.6.2
     namespace: apps
     createNamespace: true
     wait: false
@@ -102,7 +102,7 @@ releases:
           enabled: false
   - name: node-webhook-worker
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 3.3.0
+    version: 4.6.2
     namespace: apps
     createNamespace: true
     wait: false
@@ -130,7 +130,7 @@ releases:
           enabled: false
   - name: typescript-service-event-socket
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 3.3.0
+    version: 4.6.2
     namespace: apps
     createNamespace: true
     wait: false
@@ -160,7 +160,7 @@ releases:
           {{ .Values.appRepo.typescriptServiceEventSocket.resources | toYaml | nindent 10 }}
   - name: client-insights-exporter
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 3.3.0
+    version: 4.6.2
     namespace: apps
     createNamespace: true
     wait: false
@@ -187,7 +187,7 @@ releases:
         deployment:
           enabled: false
         cronJob:
-          enabled: {{ .Values.appRepo.clientInsightsExporter.cronJob.enabled | quote }}
+          enabled: {{ .Values.appRepo.clientInsightsExporter.cronJob.enabled }}
           name: client-insights-exporter
           suspend: false
           schedule: "0 0 * * *"

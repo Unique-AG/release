@@ -1,6 +1,6 @@
 locals {
   default_parameters = {
-    max_connections    = 200
+    max_connections    = var.max_connections
     "azure.extensions" = "PG_TRGM"
     enable_seqscan     = "off"
   }
@@ -56,8 +56,8 @@ resource "azurerm_postgresql_flexible_server" "this" {
   private_dns_zone_id           = azurerm_private_dns_zone.this.id
   public_network_access_enabled = false
   backup_retention_days         = var.flex_pg_backup_retention_days
-  sku_name   = var.flex_sku
-  storage_mb = var.flex_storage_mb
+  sku_name                      = var.flex_sku
+  storage_mb                    = var.flex_storage_mb
   customer_managed_key {
     key_vault_key_id                  = azurerm_key_vault_key.hsm.id
     primary_user_assigned_identity_id = azurerm_user_assigned_identity.this.id
@@ -95,13 +95,13 @@ resource "azurerm_key_vault_secret" "password" {
   key_vault_id = azurerm_key_vault.this.id
 }
 resource "azurerm_postgresql_flexible_server_configuration" "parameters" {
-  for_each = merge(local.default_parameters, var.parameters)
+  for_each  = merge(local.default_parameters, var.parameters)
   server_id = azurerm_postgresql_flexible_server.this.id
   name      = each.key
   value     = each.value
 }
 resource "azurerm_monitor_diagnostic_setting" "pglog" {
-  count = var.log_analytics_workspace_id != null ? 1 : 0
+  count                      = var.log_analytics_workspace_id != null ? 1 : 0
   name                       = module.context.full_name
   target_resource_id         = azurerm_postgresql_flexible_server.this.id
   log_analytics_workspace_id = var.log_analytics_workspace_id

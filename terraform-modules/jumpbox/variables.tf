@@ -27,3 +27,8 @@ variable "cloud_init_scripts_version" {
   type    = string
   default = ""
 }
+variable "shutdown_schedule_enabled" {
+  type        = bool
+  description = "Enable the shutdown schedule"
+  default     = true
+}

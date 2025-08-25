@@ -1,19 +1,18 @@
 locals {
-  base_subnet   = "10.118.0.0/16"
-  project       = "client"
-  project_child = "moduleName"
-  environment   = "sb"
+  base_subnet   = var.base_subnet
+  project       = var.project_internal_name
+  project_child = var.company_identifier
+  environment   = var.stage_alias
   locations = {
     deployment = var.location_deployment
     monitor    = var.location_monitor
     openai     = var.location_openai
   }
-  base_domain         = "sb-client.unique.app"
-  management_group_id = "uqe-sb"
+  base_domain = var.base_domain
 }
 module "context" {
-  source = "./modules/context"
-  namespace   = "uq"
+  source      = "./modules/context"
+  namespace   = var.application_name
   project     = local.project
   environment = local.environment
   rg_app_main = {
@@ -41,9 +40,12 @@ module "context" {
     name     = data.azurerm_resource_group.app_audit.name
     location = data.azurerm_resource_group.app_audit.location
   }
-  tags = {
-    ManagedBy = "Terraform"
-  }
+  tags = merge(
+    {
+      ManagedBy = "Terraform"
+    },
+    local.tags
+  )
 }
 module "vnet" {
   source      = "./modules/vnet"
@@ -111,16 +113,29 @@ module "vnet" {
     },
   ]
 }
+module "monitor" {
+  source  = "./modules/az-monitor"
+  context = module.context
+  action_group_list = {
+    "default_alert_group" = {
+      severity        = "p0"
+      email_addresses = var.p0_email_addresses
+    },
+  }
+}
 module "cluster" {
-  source                        = "./modules/cluster-mk2"
-  context                       = module.context
-  subnet_nodes                  = module.vnet.subnets["AksNodes"]
-  subnet_pods                   = module.vnet.subnets["AksPods"]
-  subnet_appgw                  = module.vnet.subnets["AppGW"]
-  storage_retention_period_days = 1865
-  keyvault_access_principals    = [module.jumpbox.vm_identity]
-  kubernetes_default_node_size = var.kubernetes_default_node_size
-  kubernetes_version           = var.kubernetes_version
+  source                          = "./modules/cluster-mk2"
+  context                         = module.context
+  subnet_nodes                    = module.vnet.subnets["AksNodes"]
+  subnet_pods                     = module.vnet.subnets["AksPods"]
+  subnet_appgw                    = module.vnet.subnets["AppGW"]
+  storage_retention_period_days   = 1865
+  keyvault_access_principals      = [module.jumpbox.vm_identity]
+  kubernetes_default_node_size    = var.kubernetes_default_node_size
+  kubernetes_version              = var.kubernetes_version
+  image_cleaner_interval_hours    = var.image_cleaner_interval_hours
+  auto_scaler_scale_down_unneeded = var.auto_scaler_scale_down_unneeded
+  appgw_5xx_alert_threshold       = var.appgw_5xx_alert_threshold
   domain_config = {
     name        = local.base_domain
     sub_domains = ["api", "id"]
@@ -139,9 +154,16 @@ module "cluster" {
     "node-theme",
     "configuration-backend",
   ]
+  monitor_action_group_ids = {
+    p0 = module.monitor.monitor_action_group_ids.default_alert_group
+    p1 = module.monitor.monitor_action_group_ids.default_alert_group
+    p2 = module.monitor.monitor_action_group_ids.default_alert_group
+    p3 = module.monitor.monitor_action_group_ids.default_alert_group
+    p4 = module.monitor.monitor_action_group_ids.default_alert_group
+  }
   gateway = {
     sku                         = "WAF_v2"
-    mode                        = "Prevention"
+    mode                        = var.waf_mode
     max_request_body_size_in_kb = 2000
     global_config               = var.gateway_global_config
     waf = {
@@ -157,6 +179,20 @@ module "cluster" {
               }]
               operator     = "BeginsWith"
               match_values = ["/scim"]
+            }
+          ]
+        },
+        {
+          name     = "AllowMemberSyncEndpoint"
+          action   = "Allow"
+          priority = 97
+          match_conditions = [
+            {
+              match_variables = [{
+                variable_name = "RequestUri"
+              }]
+              operator     = "BeginsWith"
+              match_values = ["/membership-sync"]
             }
           ]
         }
@@ -175,12 +211,15 @@ module "jumpbox" {
   bastion_subnet             = module.vnet.subnets["AzureBastionSubnet"]
   log_analytics_workspace_id = module.cluster.log_analytics_workspace_id
   cloud_init_scripts_version = "2024-04"
+  shutdown_schedule_enabled  = var.shutdown_schedule_enabled
 }
 module "postgres" {
-  source  = "./modules/postgres"
-  name    = local.project_child
-  context = module.context
-  flex_storage_mb = 131072
+  source                     = "./modules/postgres"
+  name                       = local.project_child
+  context                    = module.context
+  flex_storage_mb            = 131072
+  flex_sku                   = var.flex_sku
+  max_connections            = var.max_connections
   virtual_network_id         = module.vnet.virtual_network_id
   delegated_subnet_id        = module.vnet.subnets["Postgres"].id
   keyvault_access_principals = [module.jumpbox.vm_identity]
@@ -189,7 +228,6 @@ module "workload_identities" {
   source              = "./modules/az-workload-identity"
   context             = module.context
   aks_oidc_issuer_url = module.cluster.aks_oidc_issuer_url
-  management_group_id = local.management_group_id
   identities = {
     cert-manager = {
       keyvault_id = module.chat.keyvault_id
@@ -224,7 +262,7 @@ module "workload_identities" {
     backend-service-speech = {
       keyvault_id = module.chat.keyvault_id
       namespace   = "chat"
-      roles       = ["Cognitive Services User" /* Document Intelligence */]
+      roles       = ["Cognitive Services User" /* Speech Service */]
     }
   }
 }
@@ -241,15 +279,15 @@ module "chat" {
     {
       allowed_origins    = ["https://${local.base_domain}"]
       allowed_methods    = ["OPTIONS", "PUT", "GET"]
-      allowed_headers    = ["*"] 
-      exposed_headers    = ["*"] 
+      allowed_headers    = ["*"]
+      exposed_headers    = ["*"]
       max_age_in_seconds = 3600
     },
     {
       allowed_origins    = ["https://*.${local.base_domain}"]
       allowed_methods    = ["OPTIONS", "PUT", "GET"]
-      allowed_headers    = ["*"] 
-      exposed_headers    = ["*"] 
+      allowed_headers    = ["*"]
+      exposed_headers    = ["*"]
       max_age_in_seconds = 3600
     },
   ]
@@ -276,6 +314,9 @@ module "tyk" {
   subnet_redis               = module.vnet.subnets["TykRedis"]
   keyvault_access_principals = [module.jumpbox.vm_identity]
   virtual_network_id         = module.vnet.virtual_network_id
+  monitor_action_group_ids = {
+    p0 = module.monitor.monitor_action_group_ids.default_alert_group
+  }
 }
 module "document-ingelligence-switzerlandnorth" {
   source           = "./modules/az-document-intelligence"
@@ -297,19 +338,22 @@ module "switzerlandnorth" {
   ]
 }
 module "speech_service" {
-  source              = "github.com/unique-ag/terraform-modules.git//modules/azure-speech-service?depth=1&ref=azure-speech-service-1.0.1"
+  source              = "github.com/unique-ag/terraform-modules.git//modules/azure-speech-service?depth=1&ref=azure-speech-service-4.0.1"
   key_vault_id        = module.chat.keyvault_id
   resource_group_name = module.context.rg_app_main.name
   speech_service_name = "speech-service"
+  tags                = module.context.tags
   accounts = {
     "switzerlandnorth-speech" = {
-      location              = "switzerlandnorth"
-      account_kind          = "SpeechServices"
-      account_sku_name      = "S0"
-      custom_subdomain_name = var.speech_service_custom_subdomain_name
+      location                      = "switzerlandnorth"
+      account_kind                  = "SpeechServices"
+      account_sku_name              = "S0"
+      custom_subdomain_name         = var.speech_service_custom_subdomain_name
+      public_network_access_enabled = var.speech_service_public_network_access_enabled
       private_endpoint = {
         subnet_id           = module.vnet.subnets["CognitiveServices"].id
         vnet_id             = module.vnet.virtual_network_id
+        vnet_location       = module.context.rg_app_net.location
         private_dns_zone_id = module.cluster.speech_service_private_dns_zone_id
       }
     }

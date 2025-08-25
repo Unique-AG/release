@@ -127,7 +127,7 @@ EOF
 EOF
   }
   rule {
-    enabled = true
+    enabled    = true
     record     = "instance:node_vmstat_pgmajfault:rate5m"
     expression = <<EOF
 rate(node_vmstat_pgmajfault{job="node"}[5m])
