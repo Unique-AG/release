@@ -440,6 +440,7 @@ releases:
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
           FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416 | quote }}
           FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608 | quote }}
+          FEATURE_FLAG_ENABLE_MCP_UN_11963: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_ENABLE_MCP_UN_11963 | quote }}
         resources:
           {{ .Values.chat.nextKnowledgeUpload.resources | toYaml | nindent 10 }}
         securityContext:
@@ -505,6 +506,7 @@ releases:
           FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: {{ .Values.chat.nextChat.env.FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416 | quote }}
           FEATURE_FLAG_ENABLE_ADVANCED_FORMATTING_UN_9758: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_ADVANCED_FORMATTING_UN_9758 | quote }}
           FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203 | quote }}
+          FEATURE_FLAG_ENABLE_MCP_UN_11963: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_MCP_UN_11963 | quote }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
         routes:
@@ -555,6 +557,7 @@ releases:
           MAX_HEAP_MB: {{ .Values.chat.nextTheme.env.MAX_HEAP_MB }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
           FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: {{ .Values.chat.nextTheme.env.FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416 | quote }}
+          FEATURE_FLAG_ENABLE_MCP_UN_11963: {{ .Values.chat.nextTheme.env.FEATURE_FLAG_ENABLE_MCP_UN_11963 | quote }}
         securityContext: null # FIXME should be set but we did not want to change it
         routes:
           {{- $routes := .Values.chat.nextTheme.routes | deepCopy }}
