@@ -9,7 +9,7 @@ environments:
 releases:
   - name: confluence-connector
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 4.6.2
+    version: 6.1.0
     namespace: apps
     createNamespace: true
     wait: false
@@ -21,8 +21,6 @@ releases:
         replicaCount: {{ .Values.confluenceConnector | get "replicaCount" 1 }}
         imagePullSecrets:
           - name: image-pull-secret
-        tyk:
-          enabled: false
         service:
           enabled: false
         env:

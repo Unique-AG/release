@@ -44,7 +44,7 @@ resource "azurerm_cognitive_deployment" "models" {
   name                   = each.value.name
   cognitive_account_id   = azurerm_cognitive_account.this.id
   rai_policy_name        = coalesce(each.value.rai_policy_name, azapi_resource.this.name)
-  version_upgrade_option = "NoAutoUpgrade"
+  version_upgrade_option = each.value.version_upgrade_option
   sku {
     name     = each.value.sku_name
     capacity = each.value.sku_capacity

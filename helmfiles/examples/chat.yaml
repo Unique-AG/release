@@ -58,7 +58,7 @@ releases:
           periodSeconds: {{ .Values.qdrant | get "probes.startup.periodSeconds" 15 }}
   - name: node-ingestion
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 4.6.2
+    version: 6.1.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -154,7 +154,7 @@ releases:
               name: node-ingestion-expired-content-deletion
   - name: node-ingestion-worker
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 4.6.2
+    version: 6.1.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -213,8 +213,9 @@ releases:
           enabled: true
           minReplicaCount: {{ .Values.keda.nodeIngestionWorker | get "minReplicaCount" 0 }}
           maxReplicaCount: {{ .Values.keda.nodeIngestionWorker | get "maxReplicaCount" 6 }}
-          scalers:
-            - type: rabbitmq
+          triggers:
+            rabbit:
+              type: rabbitmq
               metadata:
                 protocol: amqp
                 queueName: unique.node.ingestion.queue
@@ -222,14 +223,15 @@ releases:
                 value: "1"
                 hostFromEnv: AMQP_URL
             {{- if .Values.keda.nodeIngestionWorker.cron }}
-            - type: cron
+            cron:
+              type: cron
               metadata:
                 {{- toYaml .Values.keda.nodeIngestionWorker.cron | nindent 16 }}
             {{- end }}
-        terminationGracePeriodSeconds: 900 # 15min
+        terminationGracePeriodSeconds: 3600 # 60mins
   - name: node-ingestion-worker-chat
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 4.6.2
+    version: 6.1.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -288,8 +290,9 @@ releases:
           enabled: true
           minReplicaCount: {{ .Values.keda.nodeIngestionWorkerChat | get "minReplicaCount" 0 }}
           maxReplicaCount: {{ .Values.keda.nodeIngestionWorkerChat | get "maxReplicaCount" 6 }}
-          scalers:
-            - type: rabbitmq
+          triggers:
+            rabbit:
+              type: rabbitmq
               metadata:
                 protocol: amqp
                 queueName: unique.node.ingestion.chat_queue
@@ -297,14 +300,15 @@ releases:
                 value: "1"
                 hostFromEnv: AMQP_URL
             {{- if .Values.keda.nodeIngestionWorkerChat.cron }}
-            - type: cron
+            cron:
+              type: cron
               metadata:
                 {{- toYaml .Values.keda.nodeIngestionWorkerChat.cron | nindent 16 }}
             {{- end }}
-        terminationGracePeriodSeconds: 900 # 15min
+        terminationGracePeriodSeconds: 3600 # 60mins
   - name: node-chat
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 4.6.2
+    version: 6.1.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -317,6 +321,10 @@ releases:
         imagePullSecrets:
           - name: image-pull-secret
         service:
+          annotations:
+            konghq.com/read-timeout: "600000" # 10 minutes
+            konghq.com/write-timeout: "600000" # 10 minutes
+            konghq.com/connect-timeout: "600000" # 10 minutes
           port: 8093
         serviceAccount:
           enabled: true
@@ -404,7 +412,7 @@ releases:
               name: redaction-job
   - name: next-knowledge-upload
     chart: oci://ghcr.io/unique-ag/helm-charts/web-app
-    version: 4.3.0
+    version: 4.4.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -462,7 +470,7 @@ releases:
             initialDelaySeconds: 5
   - name: next-chat
     chart: oci://ghcr.io/unique-ag/helm-charts/web-app
-    version: 4.3.0
+    version: 4.4.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -526,7 +534,7 @@ releases:
             initialDelaySeconds: 5
   - name: next-theme
     chart: oci://ghcr.io/unique-ag/helm-charts/web-app
-    version: 4.3.0
+    version: 4.4.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -576,7 +584,7 @@ releases:
             initialDelaySeconds: 5
   - name: next-admin
     chart: oci://ghcr.io/unique-ag/helm-charts/web-app
-    version: 4.3.0
+    version: 4.4.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -633,7 +641,7 @@ releases:
             initialDelaySeconds: 5
   - name: configuration-backend
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 4.6.2
+    version: 6.1.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -676,7 +684,7 @@ releases:
             storageAccount: {{ .Values.chat._common.auditVolume.storageAccount | fetchSecretValue | quote }}
   - name: node-scope-management
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 4.6.2
+    version: 6.1.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -750,7 +758,7 @@ releases:
             storageAccount: {{ .Values.chat._common.auditVolume.storageAccount | fetchSecretValue | quote }}
   - name: backend-service-speech
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 4.6.2
+    version: 6.1.0
     namespace: chat
     createNamespace: true
     wait: false

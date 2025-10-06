@@ -17,12 +17,28 @@ releases:
     createNamespace: true
     namespace: system
     chart: jetstack/cert-manager
-    version: 1.12.2
+    version: 1.18.2
     wait: false
     values:
-      - global:
+      - cainjector:
+          resources:
+            limits:
+              cpu: 100m
+              memory: 400Mi
+            requests:
+              cpu: 100m
+              memory: 400Mi
+        config:
+          apiVersion: controller.config.cert-manager.io/v1alpha1
+          enableGatewayAPI: true
+          kind: ControllerConfiguration
+        global:
+          leaderElection:
+            namespace: system
           priorityClassName: system-cluster-critical
         installCRDs: true
+        podLabels:
+          azure.workload.identity/use: "true"
         resources:
           limits:
               cpu: 50m
@@ -30,6 +46,9 @@ releases:
           requests:
               cpu: 50m
               memory: 128Mi
+        serviceAccount:
+          labels:
+            azure.workload.identity/use: "true"
         webhook:
           resources:
             limits:
@@ -38,14 +57,21 @@ releases:
             requests:
               cpu: 50m
               memory: 128Mi
-        cainjector:
-          resources:
-            limits:
-              cpu: 100m
-              memory: 400Mi
-            requests:
-              cpu: 100m
-              memory: 400Mi
+            validatingWebhookConfiguration:
+              namespaceSelector:
+                matchExpressions:
+                  - key: cert-manager.io/disable-validation
+                    operator: NotIn
+                    values:
+                      - "true"
+                  - key: control-plane
+                    operator: NotIn
+                    values:
+                      - "true"
+                  - key: kubernetes.azure.com/managedby
+                    operator: NotIn
+                    values:
+                      - aks
   - name: clusterissuer
     needs: 
       - cert-manager

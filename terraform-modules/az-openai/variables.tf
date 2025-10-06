@@ -16,12 +16,13 @@ variable "custom_subdomain_name" {
 }
 variable "deployments" {
   type = map(object({
-    name            = string
-    model_name      = string
-    model_version   = string
-    sku_name        = string
-    sku_capacity    = number
-    rai_policy_name = optional(string, null)
+    name                   = string
+    model_name             = string
+    model_version          = string
+    sku_name               = string
+    sku_capacity           = number
+    rai_policy_name        = optional(string, null)
+    version_upgrade_option = optional(string, "NoAutoUpgrade")
   }))
   default  = {}
   nullable = false
