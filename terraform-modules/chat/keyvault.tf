@@ -68,16 +68,6 @@ resource "azurerm_key_vault_secret" "azure_document_intelligence_endpoint_defini
   value        = jsonencode(var.azure_document_intelligence_endpoint_definitions)
   key_vault_id = azurerm_key_vault.document-chat.id
 }
-resource "azurerm_key_vault_secret" "azure_websearch_api_url" {
-  name         = "websearch-api-url"
-  value        = jsondecode(azurerm_resource_group_template_deployment.argtd_bing_search_v7.output_content).endpoint.value
-  key_vault_id = azurerm_key_vault.document-chat.id
-}
-resource "azurerm_key_vault_secret" "azure_websearch_subscription_key" {
-  name         = "websearch-subscription-key"
-  value        = jsondecode(azurerm_resource_group_template_deployment.argtd_bing_search_v7.output_content).accessKeys.value.key1
-  key_vault_id = azurerm_key_vault.document-chat.id
-}
 locals {
   database_keyvault_id_enabled = var.database_keyvault_id != null ? true : false
 }

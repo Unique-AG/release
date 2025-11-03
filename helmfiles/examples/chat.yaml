@@ -809,7 +809,6 @@ releases:
           API_BASE: http://node-chat.chat.svc.cluster.local:8093/public
           GUNICORN_WORKERS: {{ .Values.chat.assistantsCore.env.GUNICORN_WORKERS }}
           GUNICORN_THREADS: {{ .Values.chat.assistantsCore.env.GUNICORN_THREADS }}
-          BING_API_ENDPOINT: {{ .Values.chat.assistantsCore.env.BING_API_ENDPOINT | fetchSecretValue | quote }}
           AZURE_DOCUMENT_INTELLIGENCE_LOCATION: {{ .Values.chat.assistantsCore.env.AZURE_DOCUMENT_INTELLIGENCE_LOCATION | quote }}
           AZURE_DOCUMENT_INTELLIGENCE_API_VERSION: {{ .Values.chat.assistantsCore.env.AZURE_DOCUMENT_INTELLIGENCE_API_VERSION | quote }}
           ENABLED_MIME_TYPES_DOCUMENT_TRANSLATION: {{ .Values.chat.assistantsCore.env.ENABLED_MIME_TYPES_DOCUMENT_TRANSLATION | quote }}
@@ -818,7 +817,6 @@ releases:
           GOOGLE_SEARCH_ENGINE_ID: {{ .Values.chat.assistantsCore.env.GOOGLE_SEARCH_ENGINE_ID | quote }}
           SIX_API_ACTIVATED_COMPANIES: {{ .Values.chat.assistantsCore.env.SIX_API_ACTIVATED_COMPANIES | quote }}
         envSecrets:
-          BING_SEARCH_V7_SUBSCRIPTION_KEY: {{ .Values.chat.assistantsCore.envSecrets.BING_SEARCH_V7_SUBSCRIPTION_KEY | fetchSecretValue | quote }}
           AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT_DEFINITIONS: {{ .Values.chat.assistantsCore.envSecrets.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT_DEFINITIONS | fetchSecretValue | quote }}
           GOOGLE_SEARCH_API_KEY: {{ .Values.chat.assistantsCore.envSecrets.GOOGLE_SEARCH_API_KEY | fetchSecretValue | quote }}
           SIX_API_CREDS: {{ .Values.chat.assistantsCore.envSecrets.SIX_API_CREDS | fetchSecretValue | quote }}

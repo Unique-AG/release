@@ -35,7 +35,6 @@ releases:
           ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote }}
           TEST_MODE: {{ .Values.confluenceConnector.env.TEST_MODE }}
           DEBUG_MODE: {{ .Values.confluenceConnector.env.DEBUG_MODE }}
-          SCOPE_ID: {{ .Values.confluenceConnector.env.SCOPE_ID }}
         envSecrets:
           ZITADEL_CLIENT_ID: {{ .Values.confluenceConnector.secrets.ZITADEL_CLIENT_ID | fetchSecretValue | quote }}
           ZITADEL_CLIENT_SECRET: {{ .Values.confluenceConnector.secrets.ZITADEL_CLIENT_SECRET | fetchSecretValue | quote }}

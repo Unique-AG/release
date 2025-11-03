@@ -11,17 +11,17 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:             "2025.40"
-      nextKnowledgeUpload:  "2025.40"
-      nextTheme:            "2025.40"
-      nextAdmin:            "2025.40"
-      nodeChat:             "2025.40"
-      nodeIngestion:        "2025.40"
-      nodeIngestionWorker:  "2025.40"
-      configurationBackend: "2025.40"
-      nodeScopeManagement:  "2025.40"
-      backendServiceSpeech: "2025.40"
-      assistantsCore:       "2025.40"
+      nextChat:             "2025.44"
+      nextKnowledgeUpload:  "2025.44"
+      nextTheme:            "2025.44"
+      nextAdmin:            "2025.44"
+      nodeChat:             "2025.44"
+      nodeIngestion:        "2025.44"
+      nodeIngestionWorker:  "2025.44"
+      configurationBackend: "2025.44"
+      nodeScopeManagement:  "2025.44"
+      backendServiceSpeech: "2025.44"
+      assistantsCore:       "2025.44"
   nextChat:
     env:
       MAX_FILE_SIZE_IN_MB: 200
@@ -147,7 +147,7 @@ chat:
         {"name": "UniqueAi", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/unique_ai"},
         {"name": "KycReviewAgent", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/kyc_review_agent"}
         ]
-      ENABLE_CLIENT_INSIGHT_SHIPPER: "false"
+      ENABLE_CLIENT_INSIGHT_SHIPPER: "true"
       MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER: "30"
       FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: "true"
       APP_REPOSITORY_URL: http://node-app-repository.apps.svc.cluster.local:8088
@@ -252,7 +252,7 @@ chat:
   nodeScopeManagement:
     env:
       MAX_HEAP_MB: 750
-      ENABLE_CLIENT_INSIGHT_SHIPPER: "false"
+      ENABLE_CLIENT_INSIGHT_SHIPPER: "true"
       FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: "true"
     resources:
       requests:

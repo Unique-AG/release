@@ -9,11 +9,11 @@ appRepo:
       seccompProfile:
         type: RuntimeDefault
     defaultReleases:
-      nodeAppRepository:            "2025.40"
-      nodeWebhookWorker:            "2025.40"
-      nodeWebhookScheduler:         "2025.40"
-      typescriptServiceEventSocket: "2025.40"
-      clientInsightsExporter:       "2025.40"
+      nodeAppRepository:            "2025.44"
+      nodeWebhookWorker:            "2025.44"
+      nodeWebhookScheduler:         "2025.44"
+      typescriptServiceEventSocket: "2025.44"
+      clientInsightsExporter:       "2025.44"
   nodeAppRepository:
     env:
       MAX_HEAP_MB: 750
@@ -31,10 +31,6 @@ appRepo:
           enabled: true
         probe:
           enabled: true
-    secrets:
-      AZURE_SUBSCRIPTION_ID: # must be provided empty so template does not fail
-      AZURE_RESOURCE_GROUP: # must be provided empty so template does not fail
-      APP_LOGS_STORAGE_ACCOUNT: # must be provided empty so template does not fail
     serviceAccount:
       enabled: false
       workloadIdentity:

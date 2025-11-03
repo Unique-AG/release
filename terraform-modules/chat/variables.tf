@@ -157,11 +157,6 @@ variable "sdk_deployment_logs_destination_azure_resource_group_name" {
   type        = string
   default     = ""
 }
-variable "bing_search_v7_sku_name" {
-  description = "The SKU to use for the Bing Web Search resources."
-  default     = "S2"
-  type        = string
-}
 variable "scope_management_encryption_key_1_version" {
   description = "To rotate this SCOPE MANAGEMENT encryption key increase the version."
   default     = "1"

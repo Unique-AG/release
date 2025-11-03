@@ -87,10 +87,8 @@ chat:
       SPEECH_PRIVATE_ENDPOINT_HOST: ref+azurekeyvault://your-vault-name/switzerlandnorth-speech-fqdn
   assistantsCore:
     env:
-      BING_API_ENDPOINT: ref+azurekeyvault://your-vault-name/websearch-api-url
       SIX_API_ACTIVATED_COMPANIES: '["<company_id>"]'
     envSecrets:
-      BING_SEARCH_V7_SUBSCRIPTION_KEY: ref+azurekeyvault://your-vault-name/websearch-subscription-key
       AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT_DEFINITIONS: ref+azurekeyvault://your-vault-name/azure-document-intelligence-endpoint-definitions
       WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-assistants-core
       GOOGLE_SEARCH_API_KEY: ref+azurekeyvault://your-vault-name/manual-google-search-api-key
@@ -190,17 +188,9 @@ appRepo:
   nodeAppRepository:
     secrets:
       ENCRYPTION_KEY: ref+azurekeyvault://your-vault-name/manual-app-repository-encryption-key
-      AZURE_SUBSCRIPTION_ID: ref+azurekeyvault://your-vault-name/azure-subscription-id
-      AZURE_RESOURCE_GROUP: ref+azurekeyvault://your-vault-name/azure-resource-group-name
-      APP_LOGS_STORAGE_ACCOUNT: ref+azurekeyvault://your-vault-name/blob-endpoint
-    serviceAccount:
-      workloadIdentity:
-        clientId: ref+azurekeyvault://your-vault-name/wid-client-id-logs-reader
 confluenceConnector:
   tenantReleaseOverrides:
     confluenceConnector:
-  env:
-    SCOPE_ID: "" # optional, if not set a scope is automatically created for every Confluence Space
   secrets:
     ZITADEL_CLIENT_ID: ref+azurekeyvault://your-vault-name/manual-confluence-connector-service-user-client-id
     ZITADEL_CLIENT_SECRET: ref+azurekeyvault://your-vault-name/manual-confluence-connector-service-user-client-secret

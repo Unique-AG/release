@@ -43,9 +43,6 @@ releases:
           DATABASE_URL: "postgresql://{{ .Values.appRepo._common.database.username | fetchSecretValue }}:{{ .Values.appRepo._common.database.password | fetchSecretValue }}@{{ .Values.appRepo._common.database.host | fetchSecretValue }}/app-repository"
           ENCRYPTION_KEY: {{ .Values.appRepo.nodeAppRepository.secrets.ENCRYPTION_KEY | fetchSecretValue | quote }}
           AMQP_URL: amqp://{{ .Values.rabbitMQ.username | fetchSecretValue }}:{{ .Values.rabbitMQ.password | fetchSecretValue }}@rabbitmq-headless.system.svc.cluster.local:5672/%2f
-          AZURE_SUBSCRIPTION_ID: {{ default "" .Values.appRepo.nodeAppRepository.secrets.AZURE_SUBSCRIPTION_ID | fetchSecretValue | quote }}
-          AZURE_RESOURCE_GROUP: {{ default "" .Values.appRepo.nodeAppRepository.secrets.AZURE_RESOURCE_GROUP | fetchSecretValue | quote }}
-          APP_LOGS_STORAGE_ACCOUNT: {{ default "" .Values.appRepo.nodeAppRepository.secrets.APP_LOGS_STORAGE_ACCOUNT | fetchSecretValue | quote }}
         securityContext:
           {{ .Values.appRepo._common.securityContext | toYaml | nindent 10 }}
         routes:
@@ -59,11 +56,6 @@ releases:
             enabled: true
             command: |
               cd /home/node/app/services/node-app-repository/prisma; npx prisma migrate deploy;
-        serviceAccount:
-          enabled: true
-          workloadIdentity:
-            enabled: true
-            clientId: {{ default "" .Values.appRepo.nodeAppRepository.serviceAccount.workloadIdentity.clientId | fetchSecretValue | quote }}
         probes:
           enabled: false
         auditVolume:
