@@ -1,5 +1,5 @@
 resource "azurerm_monitor_action_group" "this" {
-  for_each = length(var.action_group_list) > 0 ? var.action_group_list : {}
+  for_each            = length(var.action_group_list) > 0 ? var.action_group_list : {}
   name                = "${each.value.severity}-${module.context.full_name}-${each.key}"
   resource_group_name = module.context.rg_app_main.name
   short_name          = lower(substr("${each.value.severity}-${substr(each.key, 0, 8)}", 0, 12))
