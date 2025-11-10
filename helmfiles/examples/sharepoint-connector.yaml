@@ -1,5 +1,5 @@
 environments:
-  sb-camastral:
+  your-tenant-alias:
     values:
       - ../defaults/60_sharepoint_connector.defaults.yaml
       - ./your-tenant-alias.yaml
