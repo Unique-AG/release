@@ -4,7 +4,7 @@ resource "azuread_application" "this" {
   privacy_statement_url   = "https://www.unique.ch/privacy"
   terms_of_service_url    = "https://www.unique.ch/terms"
   group_membership_claims = var.group_membership_claims
-  owners                  = var.owner_user_object_ids
+  owners = var.owner_user_object_ids
   web {
     homepage_url = "https://www.unique.ch"
     implicit_grant {

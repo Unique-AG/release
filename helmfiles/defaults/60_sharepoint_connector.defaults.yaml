@@ -1,0 +1,10 @@
+sharepointConnector:
+  connectorConfig:
+    sharepoint:
+      baseUrl: <your-sharepoint-base-url>
+      siteIds:
+        - <your-sharepoint-site-1-id>
+        - <your-sharepoint-site-2-id>
+      syncColumnName: <your-sharepoint-sync-column-name>
+    unique:
+      rootScopeName: "<your-sharepoint-root-scope-name>"

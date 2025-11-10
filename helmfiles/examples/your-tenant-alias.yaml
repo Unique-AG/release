@@ -197,3 +197,26 @@ confluenceConnector:
     CONFLUENCE_USERNAME: ref+azurekeyvault://your-vault-name/manual-confluence-connector-username
     CONFLUENCE_PASSWORD: ref+azurekeyvault://your-vault-name/manual-confluence-connector-password
     CONFLUENCE_PAT: ref+azurekeyvault://your-vault-name/manual-confluence-connector-pat
+sharepointConnector:
+  secrets:
+    UNIQUE_ZITADEL_CLIENT_SECRET: ref+azurekeyvault://your-vault-name/manual-spc-zitadel-client-secret 
+    KEY_PEM: ref+azurekeyvault://your-vault-name/manual-spc-certificate-private-key 
+  connector:
+    serviceAccount:
+      workloadIdentity:
+        clientId: <app-registration-client-id>
+  connectorConfig:
+    sharepoint:
+      auth:
+        clientId: <your-app-registration-client-id>
+        tenantId: <your-tenant-id>
+        thumbprintSha1: <your-certificate-thumbprint-sha1>
+    unique:
+      rootScopeName: "<your-knowledge-base-root-scope-name>"
+      httpExtraHeaders:
+        x-client-id: <your-zitadel-service-user-client-id>
+        x-company-id: "<your-zitadel-company-id>"
+        x-user-id: "<your-zitadel-service-user-id>"
+      zitadel:
+        clientId: <your-zitadel-service-user-client-id>
+        projectId: "<your-zitadel-project-id>"

@@ -1,0 +1,65 @@
+environments:
+  sb-camastral:
+    values:
+      - ../defaults/60_sharepoint_connector.defaults.yaml
+      - ./your-tenant-alias.yaml
+---
+repositories:
+  - name: bedag
+    url: https://bedag.github.io/helm-charts
+  - name: sharepoint-connector
+    url: git+https://github.com/Unique-AG/connectors@services/sharepoint-connector/deploy/helm-charts?ref=sharepoint-connector@v2.0.0-alpha.11&depupdate=1
+releases:
+  - name: sharepoint-connector-secret
+    chart: bedag/raw
+    namespace: apps
+    createNamespace: true
+    wait: false
+    values:
+      - resources:
+          - apiVersion: v1
+            kind: Secret
+            metadata:
+              name: sharepoint-connector-secret
+              namespace: apps
+            type: Opaque
+            data:
+              UNIQUE_ZITADEL_CLIENT_SECRET: {{ .Values.sharepointConnector.secrets.UNIQUE_ZITADEL_CLIENT_SECRET | fetchSecretValue | b64enc | quote }}
+              key.pem: {{ .Values.sharepointConnector.secrets.KEY_PEM | fetchSecretValue | b64enc | quote }}
+  - name: sharepoint-connector
+    chart: sharepoint-connector/sharepoint-connector
+    version: 2.0.0-alpha.11
+    namespace: apps
+    createNamespace: true
+    wait: false
+    values:
+      -
+        connector:
+          serviceAccount:
+            enabled: true
+            workloadIdentity:
+              enabled: true
+              clientId: {{ .Values.sharepointConnector.connector.serviceAccount.workloadIdentity.clientId }}
+        connectorConfig:
+          sharepoint:
+            baseUrl: {{ .Values.sharepointConnector.connectorConfig.sharepoint.baseUrl }}
+            siteIds: {{ .Values.sharepointConnector.connectorConfig.sharepoint.siteIds }}
+            syncColumnName: {{ .Values.sharepointConnector.connectorConfig.sharepoint.syncColumnName }}
+            auth:
+              clientId: {{ .Values.sharepointConnector.connectorConfig.sharepoint.auth.clientId }}
+              tenantId: {{ .Values.sharepointConnector.connectorConfig.sharepoint.auth.tenantId }}
+              thumbprintSha1: {{ .Values.sharepointConnector.connectorConfig.sharepoint.auth.thumbprintSha1 }}
+          unique:
+            fileDiffUrl: http://node-ingestion.chat:8091/v1/content/file-diff
+            ingestionGraphqlUrl: http://node-ingestion.chat:8091/graphql
+            rootScopeName: {{ .Values.sharepointConnector.connectorConfig.unique.rootScopeName }}
+            httpExtraHeaders:
+              x-client-id: {{ index .Values.sharepointConnector.connectorConfig.unique.httpExtraHeaders "x-client-id" | quote }}
+              x-company-id: {{ index .Values.sharepointConnector.connectorConfig.unique.httpExtraHeaders "x-company-id" | quote }}
+              x-user-id: {{ index .Values.sharepointConnector.connectorConfig.unique.httpExtraHeaders "x-user-id" | quote }}
+            zitadel:
+              clientId: {{ .Values.sharepointConnector.connectorConfig.unique.zitadel.clientId | quote }}
+              oauthTokenUrl: http://zitadel.system:8080/oauth/v2/token
+              projectId: {{ .Values.sharepointConnector.connectorConfig.unique.zitadel.projectId | quote }}
+              httpExtraHeaders:
+                x-zitadel-instance-host: "id.{{ .Values.host }}"
