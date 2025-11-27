@@ -1,5 +1,5 @@
 environments:
-  your-tenant-alias:
+  sb-camastral:
     values:
       - ../defaults/60_sharepoint_connector.defaults.yaml
       - ./your-tenant-alias.yaml
@@ -43,7 +43,8 @@ releases:
         connectorConfig:
           sharepoint:
             baseUrl: {{ .Values.sharepointConnector.connectorConfig.sharepoint.baseUrl }}
-            siteIds: {{ .Values.sharepointConnector.connectorConfig.sharepoint.siteIds }}
+            siteIds:
+              {{ .Values.sharepointConnector.connectorConfig.sharepoint.siteIds | toYaml | nindent 14 }}
             syncColumnName: {{ .Values.sharepointConnector.connectorConfig.sharepoint.syncColumnName }}
             auth:
               clientId: {{ .Values.sharepointConnector.connectorConfig.sharepoint.auth.clientId }}

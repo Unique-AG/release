@@ -359,7 +359,11 @@ releases:
           ENABLE_ANALYTICS_CHAT_DETAILED_INTERACTIONS_PRISMA_CURSOR: {{ .Values.chat.nodeChat.env | get "ENABLE_ANALYTICS_CHAT_DETAILED_INTERACTIONS_PRISMA_CURSOR" true }}
           ASSISTANT_CORE_API_URL: {{ .Values.chat.nodeChat.env | get "ASSISTANT_CORE_API_URL" "http://assistants-core.chat.svc.cluster.local:8081/core" }}
           CHAT_LLM_INITIAL_REQUEST_TIMEOUT: {{ .Values.chat.nodeChat.env | get "CHAT_LLM_INITIAL_REQUEST_TIMEOUT" 20000 }}
+          FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: {{ .Values.chat.nodeChat.env | get "FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099" false }}
           FEATURE_FLAG_ENABLE_MCP_UN_11963: {{ .Values.chat.nodeChat.env | get "FEATURE_FLAG_ENABLE_MCP_UN_11963" false }}
+          MCP_POLICY_MODE: {{ .Values.chat.nodeChat.env | get "MCP_POLICY_MODE" "UNRESTRICTED" }}
+          MCP_ALLOWED_ENDPOINTS: {{ .Values.chat.nodeChat.env | get "MCP_ALLOWED_ENDPOINTS" "*" | quote }}
+          MCP_DENIED_ENDPOINTS: {{ .Values.chat.nodeChat.env | get "MCP_DENIED_ENDPOINTS" "" | quote }}
           CACHE_REDIS_DB: {{ .Values.chat.nodeChat.env | get "CACHE_REDIS_DB" 3 }}
           CHAT_FRONTEND_URL: https://{{ .Values.host }}/chat
           ADMIN_FRONTEND_URL: https://{{ .Values.host }}/admin
@@ -448,6 +452,7 @@ releases:
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
           FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416 | quote }}
           FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608 | quote }}
+          FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099 | quote }}
           FEATURE_FLAG_ENABLE_MCP_UN_11963: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_ENABLE_MCP_UN_11963 | quote }}
         resources:
           {{ .Values.chat.nextKnowledgeUpload.resources | toYaml | nindent 10 }}
@@ -514,6 +519,7 @@ releases:
           FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: {{ .Values.chat.nextChat.env.FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416 | quote }}
           FEATURE_FLAG_ENABLE_ADVANCED_FORMATTING_UN_9758: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_ADVANCED_FORMATTING_UN_9758 | quote }}
           FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203 | quote }}
+          FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099 | quote }}
           FEATURE_FLAG_ENABLE_MCP_UN_11963: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_MCP_UN_11963 | quote }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
@@ -565,6 +571,7 @@ releases:
           MAX_HEAP_MB: {{ .Values.chat.nextTheme.env.MAX_HEAP_MB }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
           FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: {{ .Values.chat.nextTheme.env.FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416 | quote }}
+          FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: {{ .Values.chat.nextTheme.env.FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099 | quote }}
           FEATURE_FLAG_ENABLE_MCP_UN_11963: {{ .Values.chat.nextTheme.env.FEATURE_FLAG_ENABLE_MCP_UN_11963 | quote }}
         securityContext: null # FIXME should be set but we did not want to change it
         routes:
@@ -620,6 +627,7 @@ releases:
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
           INGESTION_BACKEND_API_URL: https://api.{{ .Values.host }}/ingestion
           FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: {{ .Values.chat.nextAdmin.env.FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416 | quote }}
+          FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: {{ .Values.chat.nextAdmin.env.FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099 | quote }}
           FEATURE_FLAG_ENABLE_MCP_UN_11963: {{ .Values.chat.nextAdmin.env.FEATURE_FLAG_ENABLE_MCP_UN_11963 | quote }}
           FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: {{ .Values.chat.nextAdmin.env.FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203 | quote }}
         securityContext:

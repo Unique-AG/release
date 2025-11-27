@@ -11,17 +11,17 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:             "2025.44"
-      nextKnowledgeUpload:  "2025.44"
-      nextTheme:            "2025.44"
-      nextAdmin:            "2025.44"
-      nodeChat:             "2025.44"
-      nodeIngestion:        "2025.44"
-      nodeIngestionWorker:  "2025.44"
-      configurationBackend: "2025.44"
-      nodeScopeManagement:  "2025.44"
-      backendServiceSpeech: "2025.44"
-      assistantsCore:       "2025.44"
+      nextChat:             "2025.48.1"
+      nextKnowledgeUpload:  "2025.48.1"
+      nextTheme:            "2025.48.1"
+      nextAdmin:            "2025.48.1"
+      nodeChat:             "2025.48.1"
+      nodeIngestion:        "2025.48.1"
+      nodeIngestionWorker:  "2025.48.1"
+      configurationBackend: "2025.48.1"
+      nodeScopeManagement:  "2025.48.1"
+      backendServiceSpeech: "2025.48.1"
+      assistantsCore:       "2025.48.1"
   nextChat:
     env:
       MAX_FILE_SIZE_IN_MB: 200
@@ -31,8 +31,9 @@ chat:
       FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270: "false"
       FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "true"
       FEATURE_FLAG_ENABLE_ADVANCED_FORMATTING_UN_9758: "true"
-      FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: "false" # enable spaces 2.0, BETA feature
-      FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # experimental MCP feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: "false" # enable spaces 2.0
+      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "false" # BETA MCP admin feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # BETA MCP feature, only enable for DEV/TEST
     resources:
       requests:
         cpu: 300m
@@ -57,7 +58,8 @@ chat:
       MAX_HEAP_MB: 350
       FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "true"
       FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: "true"
-      FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # experimental MCP feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "false" # BETA MCP admin feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # BETA MCP feature, only enable for DEV/TEST
     resources:
       requests:
         cpu: 300m
@@ -78,7 +80,8 @@ chat:
     env:
       MAX_HEAP_MB: 200
       FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "true"
-      FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # experimental MCP feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "false" # BETA MCP admin feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # BETA MCP feature, only enable for DEV/TEST
     resources:
       requests:
         cpu: 100m
@@ -99,8 +102,9 @@ chat:
     env:
       MAX_HEAP_MB: 350
       FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "true"
-      FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # experimental MCP feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: "false" # enable spaces 2.0, BETA feature
+      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "false" # BETA MCP admin feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # BETA MCP feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: "false" # enable spaces 2.0
     resources:
       requests:
         cpu: 300m
@@ -156,7 +160,11 @@ chat:
       ENABLE_ANALYTICS_CHAT_DETAILED_INTERACTIONS_PRISMA_CURSOR: "true"
       ASSISTANT_CORE_API_URL: http://assistants-core.chat.svc.cluster.local:8081/core
       CHAT_LLM_INITIAL_REQUEST_TIMEOUT: 20000
-      FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # experimental MCP feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "false" # BETA MCP admin feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # BETA MCP feature, only enable for DEV/TEST
+      MCP_POLICY_MODE: "UNRESTRICTED" # STRICT | PATTERN | UNRESTRICTED
+      MCP_ALLOWED_ENDPOINTS: "*" # Examples: *.unique.app, mcp.*.com
+      MCP_DENIED_ENDPOINTS: ""
       CACHE_REDIS_DB: 3
     resources:
       requests:
@@ -338,9 +346,16 @@ chat:
         cpu: 500m
         memory: 4Gi
 qdrant:
+  # This upgrade requires recreation of the Statefulset.
+  #
+  # This can be done without any disruption by:
+  # kubectl delete statefulset qdrant-zrs -n chat --cascade=orphan
+  # 
+  # Afterwards re-sync the Statefulset by running:
+  # helmfile -e <environment> -f chat.yaml --selector name=qdrant-zrs
   chart:
-    version: 0.7.3
-  imageTag: v1.8.4
+    version: 1.15.5
+  imageTag: v1.15.1
   resources:
     requests:
       cpu: 100m
