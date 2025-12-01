@@ -168,6 +168,10 @@ releases:
           - name: image-pull-secret
         service:
           port: 8093
+        routes:
+          paths:
+            default:
+              enabled: false
         serviceAccount:
           enabled: true
           workloadIdentity:
@@ -245,6 +249,10 @@ releases:
           - name: image-pull-secret
         service:
           port: 8093
+        routes:
+          paths:
+            default:
+              enabled: false
         serviceAccount:
           enabled: true
           workloadIdentity:

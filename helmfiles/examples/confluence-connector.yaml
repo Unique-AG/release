@@ -23,6 +23,10 @@ releases:
           - name: image-pull-secret
         service:
           enabled: false
+        routes:
+          paths:
+            default:
+              enabled: false
         env:
           PORT: 8080
           CONFLUENCE_TOKENS_PER_MINUTE: {{ .Values.confluenceConnector.env.CONFLUENCE_TOKENS_PER_MINUTE }}

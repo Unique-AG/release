@@ -8,7 +8,7 @@ repositories:
   - name: bedag
     url: https://bedag.github.io/helm-charts
   - name: sharepoint-connector
-    url: git+https://github.com/Unique-AG/connectors@services/sharepoint-connector/deploy/helm-charts?ref=sharepoint-connector@v2.0.0-alpha.11&depupdate=1
+    url: git+https://github.com/Unique-AG/connectors@services/sharepoint-connector/deploy/helm-charts?ref=sharepoint-connector@v2.0.0-beta.2&depupdate=1
 releases:
   - name: sharepoint-connector-secret
     chart: bedag/raw
@@ -28,7 +28,7 @@ releases:
               key.pem: {{ .Values.sharepointConnector.secrets.KEY_PEM | fetchSecretValue | b64enc | quote }}
   - name: sharepoint-connector
     chart: sharepoint-connector/sharepoint-connector
-    version: 2.0.0-alpha.11
+    version: 2.0.0-beta.2
     namespace: apps
     createNamespace: true
     wait: false
@@ -51,16 +51,30 @@ releases:
               tenantId: {{ .Values.sharepointConnector.connectorConfig.sharepoint.auth.tenantId }}
               thumbprintSha1: {{ .Values.sharepointConnector.connectorConfig.sharepoint.auth.thumbprintSha1 }}
           unique:
-            fileDiffUrl: http://node-ingestion.chat:8091/v1/content/file-diff
-            ingestionGraphqlUrl: http://node-ingestion.chat:8091/graphql
-            rootScopeName: {{ .Values.sharepointConnector.connectorConfig.unique.rootScopeName }}
-            httpExtraHeaders:
-              x-client-id: {{ index .Values.sharepointConnector.connectorConfig.unique.httpExtraHeaders "x-client-id" | quote }}
-              x-company-id: {{ index .Values.sharepointConnector.connectorConfig.unique.httpExtraHeaders "x-company-id" | quote }}
-              x-user-id: {{ index .Values.sharepointConnector.connectorConfig.unique.httpExtraHeaders "x-user-id" | quote }}
+            ingestionServiceBaseUrl: http://node-ingestion.chat.svc.cluster.local:8091/graphql
+            scopeManagementServiceBaseUrl: http://node-scope-management.chat.svc.cluster.local:8094/graphql
+            scopeId: {{ .Values.sharepointConnector.connectorConfig.unique.scopeId }}
+            # -- Maximum number of files to ingest per site in a single run.
+            # If the number of new + updated files for a site exceeds this limit, the sync for that site will fail.
+            maxIngestedFiles: 1000
+            # -- Whether to store content internally in Unique or not. Required for reference document preview feature.
+            # possible values: enabled, disabled
+            storeInternally: enabled
+            # -- Object containing extra HTTP headers for Unique API requests (GraphQL and REST)
+            # Required when authMode is cluster_local. Must contain x-company-id and x-user-id headers.
+            # example: {"x-company-id": "1234567890", "x-user-id": "1234567890"}
+            serviceExtraHeaders:
+              x-company-id: {{ index .Values.sharepointConnector.connectorConfig.unique.serviceExtraHeaders "x-company-id" | quote }}
+              x-user-id: {{ index .Values.sharepointConnector.connectorConfig.unique.serviceExtraHeaders "x-user-id" | quote }}
             zitadel:
               clientId: {{ .Values.sharepointConnector.connectorConfig.unique.zitadel.clientId | quote }}
-              oauthTokenUrl: http://zitadel.system:8080/oauth/v2/token
+              oauthTokenUrl: http://zitadel.system.svc.cluster.local:8080/oauth/v2/token
               projectId: {{ .Values.sharepointConnector.connectorConfig.unique.zitadel.projectId | quote }}
-              httpExtraHeaders:
-                x-zitadel-instance-host: "id.{{ .Values.host }}"
+          processing:
+            # -- mode of synchronization from SharePoint to Unique.
+            # Possible values:
+            # - content_only: sync only the content,
+            # - content_and_permissions: sync both content and permissions,
+            syncMode: content_and_permissions
+            # -- cron expression for the scheduled SharePoint scan interval default: every 15 minutes
+            scanIntervalCron: {{ .Values.sharepointConnector.connectorConfig.processing.scanIntervalCron | quote }}

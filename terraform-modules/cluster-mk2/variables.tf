@@ -8,12 +8,12 @@ variable "azure_prometheus_grafana_monitor" {
   type = object({
     enabled                = bool
     azure_monitor_location = string
-    grafana_major_version  = optional(number, 10)
+    grafana_major_version  = optional(number, 11)
   })
   default = {
     enabled                = false
     azure_monitor_location = "westeurope"
-    grafana_major_version  = 10
+    grafana_major_version  = 11
   }
 }
 variable "kubernetes_default_node_count_min" {

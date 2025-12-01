@@ -217,11 +217,14 @@ sharepointConnector:
         tenantId: <your-tenant-id>
         thumbprintSha1: <your-certificate-thumbprint-sha1>
     unique:
-      rootScopeName: "<your-knowledge-base-root-scope-name>"
-      httpExtraHeaders:
-        x-client-id: <your-zitadel-service-user-client-id>
+      # -- Scope ID to be used as root for ingestion.
+      # example: scope_bu4gokr0atzj0kfiuaaaaaaa
+      scopeId: "<your-knowledge-base-root-scope-id>"
+      serviceExtraHeaders:
         x-company-id: "<your-zitadel-company-id>"
         x-user-id: "<your-zitadel-service-user-id>"
       zitadel:
         clientId: <your-zitadel-service-user-client-id>
         projectId: "<your-zitadel-project-id>"
+    processing:
+      scanIntervalCron: "*/15 * * * *"
