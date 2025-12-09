@@ -48,13 +48,16 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/component: server
 {{- end }}
 
+{{- define "backendService.serviceLabels" -}}
+{{- include "backendService.labels" . }}
+{{ with .Values.service.extraLabels }}
+{{- toYaml . }}
+{{- end }}
+{{- end }}
+
 {{/* These labels are shared between all components (or shared resources) and have no component awareness */}}
 {{- define "backendService.mutableLabels" -}}
 {{- include "backendService.immutableLabels" . }}
-helm.sh/chart: {{ include "backendService.chart" . }}
-{{- if .Values.image.tag }}
-app.kubernetes.io/version: {{ .Values.image.tag | quote }}
-{{- end }}
 {{- end }}
 
 {{/* These labels identify all resources that belong to our main deployment, called "server" */}}
@@ -74,3 +77,40 @@ app.kubernetes.io/component: cron-job
 app.kubernetes.io/component: hooks-db-migration
 {{- end }}
 
+{{/* Helper to get the prefix */}}
+{{- define "backendService.routePrefix" -}}
+{{- if .Values.routes.pathPrefix -}}
+{{- .Values.routes.pathPrefix -}}
+{{- else -}}
+/{{- include "backendService.fullname" . -}}
+{{- end -}}
+{{- end -}}
+
+{{/* Helper to get the service port */}}
+{{- define "backendService.servicePort" -}}
+{{- if .Values.service.port -}}
+{{- .Values.service.port -}}
+{{- else if .Values.ports.service -}}
+{{- .Values.ports.service -}}
+{{- else -}}
+80
+{{- end -}}
+{{- end -}}
+
+{{/* Helper to get the application port */}}
+{{- define "backendService.applicationPort" -}}
+{{- if .Values.ports.application -}}
+{{- .Values.ports.application -}}
+{{- else -}}
+8080
+{{- end -}}
+{{- end -}}
+
+{{/* Helper to get the image tag - uses image.tag if specified, otherwise falls back to Chart.AppVersion */}}
+{{- define "backendService.imageTag" -}}
+{{- if .Values.image.tag -}}
+{{- .Values.image.tag -}}
+{{- else -}}
+{{- .Chart.AppVersion -}}
+{{- end -}}
+{{- end -}}

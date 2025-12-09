@@ -20,6 +20,11 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
+        {{- if .Values.podLabels }}
+          {{- with .Values.podLabels }}
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+        {{- end }}
         {{- include "backendService.labelsHooksDbMigrations" . | nindent 8 }}
         {{- if .Values.secretProvider }}
         aadpodidbinding: {{ default "keyvault" (.Values.secretProvider).aadPodIdBinding }}
@@ -47,7 +52,7 @@ spec:
           volumeMounts:
           {{- range .volumeMounts }}
             - name: {{ .name}}
-              mountPath: {{ .mountPath }}   
+              mountPath: {{ .mountPath }}
               readOnly: {{ .readOnly | default false }}
           {{- end }}
           {{- end }}
@@ -55,14 +60,21 @@ spec:
       {{- end }}
       containers:
         - name: {{ default "db-migration" .Values.hooks.migration.name | quote }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.image.repository }}:{{ include "backendService.imageTag" . }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
             - /bin/sh
             - -c
             - {{ .Values.hooks.migration.command | quote }}
+          {{- if hasKey .Values.hooks.migration "resources" }}
+          {{- with .Values.hooks.migration.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- else if .Values.resources }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          {{- end }}
           volumeMounts:
           {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
@@ -82,7 +94,7 @@ spec:
               mountPath: {{ .mountPathJob | default .mountPath }}
               readOnly: {{ .readOnly | default false }}
           {{- end }}
-          {{- end }}   
+          {{- end }}
           {{- end }}
           {{- end }}
           securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
@@ -156,7 +168,7 @@ spec:
         - name: {{ .name }}
           emptyDir: {}
       {{- end }}
-      {{- end }}   
+      {{- end }}
       {{- end }}
       {{- end }}
       {{- if .Values.secretProvider }}

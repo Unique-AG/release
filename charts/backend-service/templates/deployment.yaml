@@ -6,17 +6,18 @@ metadata:
   name: {{ $fullName }}
   labels:
     {{- include "backendService.labels" . | nindent 4 }}
-    {{- if .Values.deployment.metadata}}
-    {{- toYaml .Values.deployment.metadata.labels | nindent 4 }}
+    {{- with .Values.deployment.metadata.labels }}
+    {{- toYaml . | nindent 4 }}
     {{- end }}
-
-  {{- if .Values.deployment.metadata }}
+    helm.sh/chart: {{ include "backendService.chart" . }}
+    app.kubernetes.io/version: {{ include "backendService.imageTag" . | quote }}
+  {{- with .Values.deployment.metadata.annotations }}
   annotations:
-    {{- toYaml .Values.deployment.metadata.annotations | nindent 4 }}
+  {{- toYaml . | nindent 4 }}
   {{- end }}
-
 spec:
-  {{- if not (or .Values.autoscaling.enabled .Values.eventBasedAutoscaling.enabled) }}
+  revisionHistoryLimit: {{ .Values.deployment.revisionHistoryLimit }}
+  {{- if not (or .Values.autoscaling.enabled .Values.keda.enabled) }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
@@ -31,14 +32,21 @@ spec:
   template:
     metadata:
       annotations:
-      {{- with .Values.podAnnotations }}
-        {{- toYaml . | nindent 8 }}
+      {{- if .Values.podAnnotations }}
+        {{- with .Values.podAnnotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
       {{- end }}
-        checksum/deployment-env: {{ include (print $.Chart.Name "/templates/deployment-env.yaml") . | sha256sum | trunc 8 | quote }}
+        checksum/deployment-env: {{ include (print $.Template.BasePath "/deployment-env.yaml") . | sha256sum | trunc 8 | quote }}
         {{- if .Values.envSecrets }}
-        checksum/secrets: {{ include (print $.Chart.Name "/templates/secrets.yaml") . | sha256sum | trunc 8 | quote }}
+        checksum/secrets: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum | trunc 8 | quote }}
         {{- end }}
       labels:
+      {{- if .Values.podLabels }}
+        {{- with .Values.podLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- end }}
         app.kubernetes.io/component: server
         {{- include "backendService.labels" . | nindent 8 }}
         {{- if and (.Values.secretProvider) (not .Values.secretProvider.useVMManagedIdentity) }}
@@ -55,7 +63,7 @@ spec:
       serviceAccountName: {{ include "backendService.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-        
+
       {{- if .Values.deployment.initContainers }}
       initContainers:
       {{- range .Values.deployment.initContainers }}
@@ -75,12 +83,21 @@ spec:
       {{- end }}
       containers:
         - name: {{ $fullName }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.image.repository }}:{{ include "backendService.imageTag" . }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: {{ include "backendService.applicationPort" $ }}
               protocol: TCP
+            {{- if .Values.ports.metrics }}
+            - name: metrics
+              containerPort: {{ .Values.ports.metrics }}
+              protocol: TCP
+            {{- end }}
+          {{- if .Values.lifecycle }}
+          lifecycle:
+            {{- toYaml .Values.lifecycle | nindent 12 }}
+          {{- end }}
           {{- if .Values.probes.enabled }}
           {{- if .Values.probes.liveness }}
           livenessProbe:
@@ -162,7 +179,7 @@ spec:
               mountPath: {{ .mountPathDeployment | default .mountPath }}
               readOnly: {{ .readOnly | default false }}
           {{- end }}
-          {{- end }}   
+          {{- end }}
           {{- end }}
           {{- end }}
           {{- if .Values.secretProvider }}
@@ -203,7 +220,7 @@ spec:
         - name: {{ .name }}
           emptyDir: {}
       {{- end }}
-      {{- end }}   
+      {{- end }}
       {{- end }}
       {{- end }}
       {{- if .Values.secretProvider }}

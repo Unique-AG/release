@@ -6,10 +6,9 @@ metadata:
   labels:
     {{- include "backendService.labels" . | nindent 4 }}
 data:
-  VERSION: "{{ .Values.image.tag }}"
-  {{- if .Values.service.enabled }}
-  PORT: "{{ .Values.service.port }}"
-  {{- end }}
   {{- range $key, $value := .Values.env }}
   {{ $key }}: {{ $value | quote }}
   {{- end }}
+  {{/* Static values are added last so that they override the dynamic values (avoids regression and breaking changes) */}}
+  VERSION: "{{ include "backendService.imageTag" . }}"
+  PORT: {{ include "backendService.applicationPort" $ | quote }}

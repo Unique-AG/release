@@ -1,0 +1,60 @@
+{{- if .Values.keda.enabled }}
+{{- if and .Values.keda.enabled .Values.autoscaling.enabled }}
+{{- fail "You cannot set both `.Values.keda.enabled` and `.Values.autoscaling.enabled` at the same time." }}
+{{- end }}
+{{- if .Capabilities.APIVersions.Has "keda.sh/v1alpha1" }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "backendService.fullname" . }}
+  labels:
+    {{- include "backendService.labels" . | nindent 4 }}
+  annotations:
+    autoscaling.keda.sh/paused: {{ .Values.keda.paused | default "false" | quote }}
+    {{- with .Values.keda.extraAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  scaleTargetRef:
+    name: {{ include "backendService.fullname" . }}
+  {{- if hasKey .Values.keda "pollingInterval" }}
+  pollingInterval: {{ .Values.keda.pollingInterval }}
+  {{- end }}
+  {{- if hasKey .Values.keda "cooldownPeriod" }}
+  cooldownPeriod: {{ .Values.keda.cooldownPeriod }}
+  {{- end }}
+  {{- if hasKey .Values.keda "idleReplicaCount" }}
+  idleReplicaCount: {{ .Values.keda.idleReplicaCount }}
+  {{- end }}
+  {{- if hasKey .Values.keda "minReplicaCount" }}
+  minReplicaCount: {{ .Values.keda.minReplicaCount }}
+  {{- else }}
+  minReplicaCount: 1
+  {{- end }}
+  {{- if hasKey .Values.keda "maxReplicaCount" }}
+  maxReplicaCount: {{ .Values.keda.maxReplicaCount }}
+  {{- else }}
+  maxReplicaCount: 4
+  {{- end }}
+  # fallback and advanced are for now defaulting/omitted
+  triggers:
+  {{- if not .Values.keda.triggers }}
+  {{- fail "You must specify at least one trigger in .Values.keda.triggers" }}
+  {{- end }}
+  {{- if eq (len .Values.keda.triggers) 0 }}
+  {{- fail "You must specify at least one trigger in .Values.keda.triggers" }}
+  {{- end }}
+  {{- $hasValidTriggers := false }}
+  {{- range $name, $trigger := .Values.keda.triggers }}
+  {{- if not (empty $trigger) }}
+  {{- $hasValidTriggers = true }}
+  - {{ toYaml $trigger | nindent 4  | trim }}
+  {{- end }}
+  {{- end }}
+  {{- if not $hasValidTriggers }}
+  {{- fail "You must specify at least one valid (non-null) trigger in .Values.keda.triggers" }}
+  {{- end }}
+{{- else }}
+{{- fail "You can't use keda without CRDs installed. Install CRDs first."}}
+{{- end }}
+{{- end }}
