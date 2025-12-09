@@ -34,6 +34,7 @@ chat:
     env:
       FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "true" # BETA MCP admin feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_MCP_UN_11963: "true" # BETA MCP feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "true" # Experimental feature, only enable for DEV/TEST
   nextAdmin:
     env:
       FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "true" # BETA MCP admin feature, only enable for DEV/TEST
@@ -65,6 +66,7 @@ chat:
       INGESTION_ENCRYPTION_KEY: ref+azurekeyvault://your-vault-name/ingestion-encryption-key
     env:
       ZITADEL_ROOT_ORG_ID: a-zitadel-id
+      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "true" # Experimental feature, only enable for DEV/TEST
   nodeIngestionWorker:
     secrets:
       WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-node-ingestion-worker
@@ -75,6 +77,7 @@ chat:
   nodeScopeManagement:
     env:
       ZITADEL_ROOT_ORG_ID: a-zitadel-id
+      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "true" # Experimental feature, only enable for DEV/TEST
     extraRoutes:
       scim:
         hostnames:

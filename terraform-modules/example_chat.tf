@@ -360,6 +360,6 @@ module "speech_service" {
   }
 }
 module "sharepoint-connector-secrets" {
-  source       = "github.com/unique-ag/connectors.git//services/sharepoint-connector/deploy/terraform/azure/sharepoint-connector-secrets?depth=1&ref=sharepoint-connector%40v2.0.0-beta.2"
+  source       = "github.com/unique-ag/connectors.git//services/sharepoint-connector/deploy/terraform/azure/sharepoint-connector-secrets?depth=1&ref=sharepoint-connector%40v2.0.0-beta.6"
   key_vault_id = module.automation.keyvault_id
 }

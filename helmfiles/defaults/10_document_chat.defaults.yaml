@@ -60,6 +60,7 @@ chat:
       FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: "true"
       FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "false" # BETA MCP admin feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # BETA MCP feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "false" # Experimental feature, only enable for DEV/TEST
     resources:
       requests:
         cpu: 300m
@@ -197,6 +198,7 @@ chat:
       RERANKER_CONFIGURATION: '[{"deploymentName": "crossencoder_reranker", "apiUrl": "http://assistants-reranker.chat.svc.cluster.local:8081/reranker/rerank"}]'
       MAX_REQUEST_BODY_SIZE: '30mb'
       PDF_READ_MODE: DOC_INTELLIGENCE_DEFAULT # Uses MDI for ingestion. Unique recommends this as default if MDI is available.
+      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "false" # Experimental feature, only enable for DEV/TEST
     resources:
       requests:
         cpu: 200m
@@ -262,6 +264,7 @@ chat:
       MAX_HEAP_MB: 750
       ENABLE_CLIENT_INSIGHT_SHIPPER: "true"
       FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: "true"
+      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "false" # Experimental feature, only enable for DEV/TEST
     resources:
       requests:
         cpu: 500m

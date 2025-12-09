@@ -8,7 +8,7 @@ repositories:
   - name: bedag
     url: https://bedag.github.io/helm-charts
   - name: sharepoint-connector
-    url: git+https://github.com/Unique-AG/connectors@services/sharepoint-connector/deploy/helm-charts?ref=sharepoint-connector@v2.0.0-beta.2&depupdate=1
+    url: git+https://github.com/Unique-AG/connectors@services/sharepoint-connector/deploy/helm-charts?ref=sharepoint-connector@v2.0.0-beta.6&depupdate=1
 releases:
   - name: sharepoint-connector-secret
     chart: bedag/raw
@@ -28,7 +28,7 @@ releases:
               key.pem: {{ .Values.sharepointConnector.secrets.KEY_PEM | fetchSecretValue | b64enc | quote }}
   - name: sharepoint-connector
     chart: sharepoint-connector/sharepoint-connector
-    version: 2.0.0-beta.2
+    version: 2.0.0-beta.6
     namespace: apps
     createNamespace: true
     wait: false
@@ -51,8 +51,8 @@ releases:
               tenantId: {{ .Values.sharepointConnector.connectorConfig.sharepoint.auth.tenantId }}
               thumbprintSha1: {{ .Values.sharepointConnector.connectorConfig.sharepoint.auth.thumbprintSha1 }}
           unique:
-            ingestionServiceBaseUrl: http://node-ingestion.chat.svc.cluster.local:8091/graphql
-            scopeManagementServiceBaseUrl: http://node-scope-management.chat.svc.cluster.local:8094/graphql
+            ingestionServiceBaseUrl: http://node-ingestion.chat.svc.cluster.local:8091
+            scopeManagementServiceBaseUrl: http://node-scope-management.chat.svc.cluster.local:8094
             scopeId: {{ .Values.sharepointConnector.connectorConfig.unique.scopeId }}
             # -- Maximum number of files to ingest per site in a single run.
             # If the number of new + updated files for a site exceeds this limit, the sync for that site will fail.

@@ -103,6 +103,7 @@ releases:
           USE_NEW_FTS_QUERY_APPROACH: {{ .Values.chat.nodeIngestion.env | get "USE_NEW_FTS_QUERY_APPROACH" "true" }}
           MAX_REQUEST_BODY_SIZE: {{ .Values.chat.nodeIngestion.env | get "MAX_REQUEST_BODY_SIZE" "30mb" }}
           PDF_READ_MODE: {{ .Values.chat.nodeIngestion.env.PDF_READ_MODE | quote }}
+          FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: {{ .Values.chat.nodeIngestion.env.FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660 | quote }}
         envSecrets:
           AZURE_OPENAI_API_ENDPOINT: {{ .Values.chat.nodeIngestion.secrets.AZURE_OPENAI_API_ENDPOINT | fetchSecretValue | quote }}
           AMQP_URL: {{ .Values.rabbitMQ.url | fetchSecretValue | quote }}
@@ -152,6 +153,19 @@ releases:
             restartPolicy: Never
             containers:
               name: node-ingestion-expired-content-deletion
+        extraCronJobs:
+          node-ingestion-file-access-rebuild:
+            schedule: "* * 31 2 *"
+            restartPolicy: OnFailure
+            env:
+              RUNNING_MODE: file-access-rebuild
+            resources:
+              requests:
+                cpu: 200m
+                memory: 2Gi
+              limits:
+                cpu: 200m
+                memory: 2Gi
   - name: node-ingestion-worker
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
     version: 6.1.0
@@ -462,6 +476,7 @@ releases:
           FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608 | quote }}
           FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099 | quote }}
           FEATURE_FLAG_ENABLE_MCP_UN_11963: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_ENABLE_MCP_UN_11963 | quote }}
+          FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660 | quote }}
         resources:
           {{ .Values.chat.nextKnowledgeUpload.resources | toYaml | nindent 10 }}
         securityContext:
@@ -728,6 +743,7 @@ releases:
           ENABLE_CLIENT_INSIGHT_SHIPPER: {{ .Values.chat.nodeScopeManagement.env | get "ENABLE_CLIENT_INSIGHT_SHIPPER" false }}
           UNIQUE_INSTALLATION_ID: {{ .Values.host }}
           FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: {{ .Values.chat.nodeScopeManagement.env.FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608 | quote }}
+          FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: {{ .Values.chat.nodeScopeManagement.env.FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660 | quote }}
         envSecrets:
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/scope-management"
           ZITADEL_PAT: {{ .Values.chat.nodeScopeManagement.secrets.ZITADEL_PAT | fetchSecretValue | quote }}
