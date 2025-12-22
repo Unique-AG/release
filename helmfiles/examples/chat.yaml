@@ -57,8 +57,7 @@ releases:
           failureThreshold: 30 # we allow such a long startup time in case qdrant needs to rebuild its WAL table
           periodSeconds: {{ .Values.qdrant | get "probes.startup.periodSeconds" 15 }}
   - name: node-ingestion
-    chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
-    version: 6.1.0
+    chart: ../../charts/backend-service
     namespace: chat
     createNamespace: true
     wait: false
