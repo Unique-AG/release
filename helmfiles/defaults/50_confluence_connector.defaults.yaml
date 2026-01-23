@@ -1,11 +1,12 @@
 confluenceConnector:
   defaultReleases:
-    confluenceConnector: "2025.48.1"
+    confluenceConnector: "2026.04.0"
   replicaCount: 1
   env:
     CONFLUENCE_TOKENS_PER_MINUTE: 250
     CONFLUENCE_URL: https://your-confluence-url
     INGEST_SINGLE_LABEL: ai-ingest
     INGEST_ALL_LABEL: ai-ingest-all
-    TEST_MODE: true # if enabled, only dry run is performed
-    DEBUG_MODE: false
+    TEST_MODE: false
+    NODE_TLS_REJECT_UNAUTHORIZED: 0
+    DEBUG_MODE: true

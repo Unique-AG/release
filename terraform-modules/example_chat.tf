@@ -338,7 +338,7 @@ module "switzerlandnorth" {
   ]
 }
 module "speech_service" {
-  source              = "github.com/unique-ag/terraform-modules.git//modules/azure-speech-service?depth=1&ref=azure-speech-service-4.0.1"
+  source              = "github.com/unique-ag/terraform-modules.git//modules/azure-speech-service?depth=1&ref=azure-speech-service@4.1.0"
   key_vault_id        = module.chat.keyvault_id
   resource_group_name = module.context.rg_app_main.name
   speech_service_name = "speech-service"

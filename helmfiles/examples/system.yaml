@@ -12,6 +12,8 @@ repositories:
     url: https://bedag.github.io/helm-charts
   - name: bitnami
     url: https://charts.bitnami.com/bitnami
+  - name: elastic
+    url: https://helm.elastic.co
 releases:
   - name: cert-manager
     createNamespace: true
@@ -289,3 +291,20 @@ releases:
           reclaimPolicy: Delete
           allowVolumeExpansion: true
           volumeBindingMode: WaitForFirstConsumer
+  - name: eck-operator
+    createNamespace: true
+    namespace: system
+    chart: elastic/eck-operator
+    version: 3.2.0
+    wait: false
+    values:
+      - managedNamespaces:
+          - system
+          - chat
+        resources:
+          limits:
+            cpu: 1
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 150Mi

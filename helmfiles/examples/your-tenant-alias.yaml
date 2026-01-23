@@ -27,30 +27,31 @@ chat:
       assistantsCore:
   nextChat:
     env:
-      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "true" # BETA MCP admin feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_MCP_UN_11963: "true" # BETA MCP feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: "true" # enable spaces 2.0
+      FEATURE_FLAG_ENABLE_MCP_UN_11963: "true" # experimental MCP feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "true" # experimental MCP admin feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: "true" # enable spaces 2.0, BETA feature
   nextKnowledgeUpload:
     env:
-      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "true" # BETA MCP admin feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_MCP_UN_11963: "true" # BETA MCP feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "true" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MCP_UN_11963: "true" # experimental MCP feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "true" # experimental MCP admin feature, only enable for DEV/TEST
+      FEATURE_FLAG_CONFIGURE_FILE_METADATA_UN_10908: "true" # enable file metadata configuration, BETA feature
+      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "false" # experimental file-based access feature, only enable for DEV/TEST
   nextAdmin:
     env:
-      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "true" # BETA MCP admin feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_MCP_UN_11963: "true" # BETA MCP feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: "true" # enable spaces 2.0
+      FEATURE_FLAG_ENABLE_MCP_UN_11963: "true" # experimental MCP feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "true" # experimental MCP admin feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: "true" # enable spaces 2.0, BETA feature
   nextTheme:
     env:
       STATIC_THEME_COLORS: {"color-primary-cta": "#D63384", "color-primary-variant": "#B2447A", "color-secondary": "#042834", "color-secondary-variant": "#03212B", "color-background": "#F7F7F7", "color-background-variant": "#EBEBED", "color-surface": "#FFFFFF", "color-control": "#D8D8D8", "color-info": "#0A96E6", "color-success-light": "#A0C855", "color-success-dark": "#3D9E3F", "color-error-light": "#F65D67", "color-error-dark": "#DC3545", "color-attention": "#FFC65C", "color-attention-variant": "#19AADA", "color-on-primary": "#FFFFFF", "color-on-secondary": "#FFFFFF", "color-on-background-main": "#02161D", "color-on-background-dimmed": "#1F505F", "color-on-surface": "#02161D", "color-on-control-main": "#02161D", "color-on-control-dimmed": "#9C9C9C", "color-on-info": "#FFFFFF", "color-on-success-light": "#FFFFFF", "color-on-success-dark": "#FFFFFF", "color-on-error-light": "#FFFFFF", "color-on-error-dark": "#FFFFFF", "color-on-attention": "#02161D", "color-on-attention-variant": "#FFFFFF"}
       STATIC_BACKGROUND_COLOR: F7F7F7
       STATIC_TAB_NAME: "YOUR_TAB_NAME"
-      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "true" # BETA MCP admin feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_MCP_UN_11963: "true" # BETA MCP feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MCP_UN_11963: "true" # experimental MCP feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "true" # experimental MCP admin feature, only enable for DEV/TEST
   nodeChat:
     env:
-      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "true" # BETA MCP admin feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_MCP_UN_11963: "true" # BETA MCP feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MCP_UN_11963: "true" # experimental MCP feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "true" # experimental MCP admin feature, only enable for DEV/TEST
     secrets:
       WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-node-chat
       AZURE_OPENAI_API_ENDPOINTS_JSON: ref+azurekeyvault://your-vault-name/azure-openai-endpoints-json
@@ -65,19 +66,21 @@ chat:
       WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-node-ingestion
       INGESTION_ENCRYPTION_KEY: ref+azurekeyvault://your-vault-name/ingestion-encryption-key
     env:
-      ZITADEL_ROOT_ORG_ID: a-zitadel-id
-      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "true" # Experimental feature, only enable for DEV/TEST
+      ZITADEL_ROOT_ORG_ID: "<your-zitadel-root-org-id>"
+      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "false" # experimental file-based access feature, only enable for DEV/TEST
   nodeIngestionWorker:
     secrets:
       WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-node-ingestion-worker
       AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS: ref+azurekeyvault://your-vault-name/azure-document-intelligence-endpoints
+    env:
+      CONVERT_OFFICE_FILES_TO_PDF: "true"
   nodeIngestionWorkerChat:
     secrets:
       WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-node-ingestion-worker-chat
   nodeScopeManagement:
     env:
-      ZITADEL_ROOT_ORG_ID: a-zitadel-id
-      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "true" # Experimental feature, only enable for DEV/TEST
+      ZITADEL_ROOT_ORG_ID: "<your-zitadel-root-org-id>"
+      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "false" # experimental file-based access feature, only enable for DEV/TEST
     extraRoutes:
       scim:
         hostnames:
@@ -139,14 +142,10 @@ rabbitMQ:
         "priority": 1
       }
     ]
-reranker:
-  _common:
-    tenantReleaseOverrides:
-      assistantsReranker:
 zitadel:
-  orgId: a-zitadel-id
-  projectId: a-zitadel-id
-  clientId: a-zitadel-id@unique_apps
+  orgId: "<your-zitadel-root-org-id>"
+  projectId: "<your-zitadel-project-id>"
+  clientId: "<your-zitadel-client-id>"
   hostName: id.tenantzone.unique.app # sub_domain created via TF
   mainKey: ref+azurekeyvault://your-vault-name/zitadel-main-key # ! can't be changed without deleting the PVC+PV
   database:
@@ -199,6 +198,8 @@ appRepo:
 confluenceConnector:
   tenantReleaseOverrides:
     confluenceConnector:
+  env:
+    UNIQUE_SCOPE_ID: "" # optional, if not set a scope is automatically created for every Confluence Space
   secrets:
     ZITADEL_CLIENT_ID: ref+azurekeyvault://your-vault-name/manual-confluence-connector-service-user-client-id
     ZITADEL_CLIENT_SECRET: ref+azurekeyvault://your-vault-name/manual-confluence-connector-service-user-client-secret
@@ -231,3 +232,7 @@ sharepointConnector:
         projectId: "<your-zitadel-project-id>"
     processing:
       scanIntervalCron: "*/15 * * * *"
+elasticsearch:
+  ingestion:
+    nodeSets:
+      count: 3 # In production, run cluster with 3 nodes, can be set to 1 for development envs

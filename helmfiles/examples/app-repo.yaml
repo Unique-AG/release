@@ -39,6 +39,7 @@ releases:
           MAX_HEAP_MB: {{ .Values.appRepo.nodeAppRepository.env.MAX_HEAP_MB }}
           ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote }}
           CORS_ALLOWED_ORIGINS: https://{{ .Values.host }}
+          PG_DATABASE_SSL_MODE: "verify"
         envSecrets:
           DATABASE_URL: "postgresql://{{ .Values.appRepo._common.database.username | fetchSecretValue }}:{{ .Values.appRepo._common.database.password | fetchSecretValue }}@{{ .Values.appRepo._common.database.host | fetchSecretValue }}/app-repository"
           ENCRYPTION_KEY: {{ .Values.appRepo.nodeAppRepository.secrets.ENCRYPTION_KEY | fetchSecretValue | quote }}
@@ -55,7 +56,7 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /home/node/app/services/node-app-repository/prisma; npx prisma migrate deploy;
+              cd /home/node/app/services/node-app-repository/prisma; npx prisma migrate deploy --config ../prisma.config.ts;
         probes:
           enabled: false
         auditVolume:

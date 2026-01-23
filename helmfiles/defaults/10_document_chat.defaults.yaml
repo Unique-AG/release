@@ -11,27 +11,27 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:             "2025.48.1"
-      nextKnowledgeUpload:  "2025.48.1"
-      nextTheme:            "2025.48.1"
-      nextAdmin:            "2025.48.1"
-      nodeChat:             "2025.48.1"
-      nodeIngestion:        "2025.48.1"
-      nodeIngestionWorker:  "2025.48.1"
-      configurationBackend: "2025.48.1"
-      nodeScopeManagement:  "2025.48.1"
-      backendServiceSpeech: "2025.48.1"
-      assistantsCore:       "2025.48.1"
+      nextChat:             "2026.04.0"
+      nextKnowledgeUpload:  "2026.04.0"
+      nextTheme:            "2026.04.0"
+      nextAdmin:            "2026.04.0"
+      nodeChat:             "2026.04.0"
+      nodeIngestion:        "2026.04.0"
+      nodeIngestionWorker:  "2026.04.0"
+      configurationBackend: "2026.04.0"
+      nodeScopeManagement:  "2026.04.0"
+      backendServiceSpeech: "2026.04.0"
+      assistantsCore:       "2026.04.0"
   nextChat:
     env:
-      MAX_FILE_SIZE_IN_MB: 200
+      MAX_FILE_SIZE_IN_MB: 512
       MAX_HEAP_MB: 400
       FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: "true"
       FILE_TYPES_DOCUMENT_TRANSLATOR: "docx,xlsx,pptx"
       FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270: "false"
-      FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "true"
+      FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "false"
       FEATURE_FLAG_ENABLE_ADVANCED_FORMATTING_UN_9758: "true"
-      FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: "false" # enable spaces 2.0
+      FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: "true" # enable spaces 2.0, BETA feature
       FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "false" # BETA MCP admin feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # BETA MCP feature, only enable for DEV/TEST
     resources:
@@ -55,19 +55,19 @@ chat:
       type: Recreate
   nextKnowledgeUpload:
     env:
-      MAX_HEAP_MB: 350
-      FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "true"
-      FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: "true"
+      MAX_HEAP_MB: 400
+      FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "false"
+      FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: "false"
       FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "false" # BETA MCP admin feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # BETA MCP feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "false" # Experimental feature, only enable for DEV/TEST
     resources:
       requests:
         cpu: 300m
-        memory: 450Mi
+        memory: 500Mi
       limits:
         cpu: 300m
-        memory: 500Mi
+        memory: 550Mi
     replicaCount: 2
     routes:
       hostname: unset_default_value
@@ -79,17 +79,17 @@ chat:
       type: Recreate
   nextTheme:
     env:
-      MAX_HEAP_MB: 200
-      FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "true"
+      MAX_HEAP_MB: 400
+      FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "false"
       FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "false" # BETA MCP admin feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # BETA MCP feature, only enable for DEV/TEST
     resources:
       requests:
-        cpu: 100m
-        memory: 300Mi
+        cpu: 300m
+        memory: 500Mi
       limits:
-        cpu: 100m
-        memory: 350Mi
+        cpu: 300m
+        memory: 550Mi
     replicaCount: 2
     routes:
       hostname: unset_default_value
@@ -101,18 +101,18 @@ chat:
       type: Recreate
   nextAdmin:
     env:
-      MAX_HEAP_MB: 350
-      FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "true"
+      MAX_HEAP_MB: 400
+      FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "false"
       FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "false" # BETA MCP admin feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # BETA MCP feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: "false" # enable spaces 2.0
+      FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: "true" # enable spaces 2.0, BETA feature
     resources:
       requests:
         cpu: 300m
-        memory: 450Mi
+        memory: 500Mi
       limits:
         cpu: 300m
-        memory: 500Mi
+        memory: 550Mi
     replicaCount: 2
     routes:
       hostname: unset_default_value
@@ -125,7 +125,7 @@ chat:
   nodeChat:
     env:
       PUBSUB_BACKEND: redis
-      MAX_HEAP_MB: 450
+      MAX_HEAP_MB: 4625
       BENCHMARKS_PER_MINUTE_PER_PROCESS: 1
       AMQP_BENCHMARK_PREFETCH: 1
       INTERNAL_MODULES_CONFIG: >- 
@@ -169,11 +169,11 @@ chat:
       CACHE_REDIS_DB: 3
     resources:
       requests:
-        cpu: 500m
-        memory: 950Mi
+        cpu: 2
+        memory: 4750Mi
       limits:
-        cpu: 500m
-        memory: 1000Mi
+        cpu: 6
+        memory: 7.5Gi
     routes:
       hostname: unset_default_value
       pathPrefix: /chat
@@ -191,21 +191,22 @@ chat:
       TRUSTED_DOMAINS: '["*.blob.core.windows.net"]'
       USE_SCOPE_MANAGEMENT: "true"
       ZITADEL_ROOT_ORG_ID: ""
-      MAX_HEAP_MB: 550
+      MAX_HEAP_MB: 1536
       ENABLE_MALWARE_SCAN: "true"
       REPLICATION_FACTOR: 2
-      FILE_RETENTION_IN_DAYS: 0
-      RERANKER_CONFIGURATION: '[{"deploymentName": "crossencoder_reranker", "apiUrl": "http://assistants-reranker.chat.svc.cluster.local:8081/reranker/rerank"}]'
+      FILE_RETENTION_IN_DAYS: 7
       MAX_REQUEST_BODY_SIZE: '30mb'
       PDF_READ_MODE: DOC_INTELLIGENCE_DEFAULT # Uses MDI for ingestion. Unique recommends this as default if MDI is available.
-      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "false" # experimental file-based access feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_SEARCH_ADAPTER_ELASTICSEARCH_UN_9883: "true" 
+      FEATURE_FLAG_ENABLE_ELASTICSEARCH_INDEXING: "true"
     resources:
       requests:
-        cpu: 200m
-        memory: 650Mi
+        cpu: 2
+        memory: 2048Mi
       limits:
-        cpu: 200m
-        memory: 700Mi
+        cpu: 4
+        memory: 2560Mi
     routes:
       hostname: unset_default_value
       pathPrefix: /ingestion
@@ -218,39 +219,42 @@ chat:
           enabled: true
   nodeIngestionWorker:
     env:
-      MAX_HEAP_MB: 850
+      MAX_HEAP_MB: 3800
+      NUMBER_OF_PDF_PAGES_IN_PARALLEL: 25
       CONVERT_OFFICE_FILES_TO_PDF: "true"
+      THREAD_TASK_TIMEOUT_MS: "3600000"
       FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444: "true"
       FEATURE_FLAG_ENABLE_LANDSCAPED_PDF_PAGE_BASED_CHUNKING_UN_10606: "true"
       CUSTOM_API_DEFINITIONS: >-
         [ 
-        {"identifier": "Unique Text Extraction API", "url": "http://assistants-core.chat.svc.cluster.local:8081/core/text-extractions"} 
+        {"identifier": "Unique Text Extraction API", "url": "http://assistants-core.chat.svc.cluster.local:8081/core/text-extractions"}, 
+        {"identifier": "Unique Text and Image Extraction API", "url": "http://assistants-core.chat.svc.cluster.local:8081/core/text-and-image-extractions"}
         ]
     resources:
       requests:
-        cpu: 1
-        memory: 1Gi
+        cpu: 2
+        memory: 4Gi
       limits:
-        cpu: 1
-        memory: 1050Mi
+        cpu: 4
+        memory: 5Gi
   nodeIngestionWorkerChat:
     resources:
       requests:
-        cpu: 1.5
-        memory: 1Gi
+        cpu: 2
+        memory: 4Gi
       limits:
-        cpu: 1.5
-        memory: 1Gi
+        cpu: 4
+        memory: 5Gi
   configurationBackend:
     env:
-      MAX_HEAP_MB: 200
+      MAX_HEAP_MB: 384
     resources:
       requests:
-        cpu: 100m
-        memory: 300Mi
+        cpu: 500m
+        memory: 512Mi
       limits:
-        cpu: 100m
-        memory: 350Mi
+        cpu: 1
+        memory: 1024Mi
     routes:
       hostname: unset_default_value
       pathPrefix: /configuration
@@ -261,17 +265,18 @@ chat:
           enabled: true
   nodeScopeManagement:
     env:
-      MAX_HEAP_MB: 750
+      MAX_HEAP_MB: 1750
       ENABLE_CLIENT_INSIGHT_SHIPPER: "true"
-      FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: "true"
-      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "false" # Experimental feature, only enable for DEV/TEST
+      SCOPE_MANAGEMENT_IDP_ROLE_MANAGEMENT: "GRANT_AND_REVOKE"
+      FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: "false"
+      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "false" # experimental file-based access feature, only enable for DEV/TEST
     resources:
       requests:
-        cpu: 500m
-        memory: 850Mi
-      limits:
         cpu: 1
-        memory: 900Mi
+        memory: 1850Mi
+      limits:
+        cpu: 2
+        memory: 2Gi
     routes:
       hostname: unset_default_value
       pathPrefix: /scope-management
@@ -315,7 +320,7 @@ chat:
     env:
       # see here for supported languages:
       # https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-support?tabs=stt
-      SPEECH_SUPPORTED_LANGUAGES: "en-US, it-IT, fr-FR, de-DE"
+      SPEECH_SUPPORTED_LANGUAGES: "de-CH, en-US, es-ES, pl-PL"
     resources:
       limits:
         cpu: 500m
@@ -337,36 +342,31 @@ chat:
       GUNICORN_THREADS: 4
       AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT_DEFINITIONS: []
       AZURE_DOCUMENT_INTELLIGENCE_LOCATION: switzerlandnorth
-      AZURE_DOCUMENT_INTELLIGENCE_API_VERSION: 2023-07-31
+      AZURE_DOCUMENT_INTELLIGENCE_API_VERSION: 2024-11-30
+      TEXT_AND_IMAGE_EXTRACTOR_API_LOCATION: switzerlandnorth
+      TEXT_AND_IMAGE_EXTRACTOR_API_VERSION: 2024-11-30
       ENABLED_MIME_TYPES_DOCUMENT_TRANSLATION: '["DOCX", "MSEXCEL", "EXCEL", "PPT", "MSPPT"]'
       GOOGLE_SEARCH_API_ENDPOINT: https://customsearch.googleapis.com/customsearch/v1
-      GOOGLE_SEARCH_ENGINE_ID: <your-search-engine-id>
+      GOOGLE_SEARCH_ENGINE_ID: unset_default_value
     resources:
       requests:
-        cpu: 500m
-        memory: 2Gi
-      limits:
-        cpu: 500m
+        cpu: 1
         memory: 4Gi
+      limits:
+        cpu: 2
+        memory: 6Gi
 qdrant:
-  # This upgrade requires recreation of the Statefulset.
-  #
-  # This can be done without any disruption by:
-  # kubectl delete statefulset qdrant-zrs -n chat --cascade=orphan
-  # 
-  # Afterwards re-sync the Statefulset by running:
-  # helmfile -e <environment> -f chat.yaml --selector name=qdrant-zrs
   chart:
     version: 1.15.5
   imageTag: v1.15.1
   resources:
     requests:
-      cpu: 100m
-      memory: 3.6Gi
+      cpu: 200m
+      memory: 8Gi
     limits:
-      memory: 4Gi
+      memory: 8Gi
   persistence:
-    size: 10Gi
+    size: 100Gi
   probes:
     startup:
       periodSeconds: 30
@@ -384,21 +384,19 @@ zitadel:
       memory: 1500Mi
 keda:
   nodeIngestionWorker:
-    minReplicaCount: 0
+    minReplicaCount: 1
     maxReplicaCount: 6
     # Set cron to null to disable cron-based scaling, or configure with values to enable
     cron: null
-    # Example cron configuration:
-    # cron:
-    #   timezone: Europe/Zurich
-    #   start: 0 8 * * 1-5
-    #   end: 0 19 * * 1-5
-    #   desiredReplicas: "1"
   nodeIngestionWorkerChat:
-    minReplicaCount: 0
+    minReplicaCount: 1
     maxReplicaCount: 6
     cron:
       timezone: Europe/Zurich
-      start: 0 8 * * 1-5
+      start: 0 7 * * 1-5
       end: 0 19 * * 1-5
-      desiredReplicas: "1" # scale up more according to your needs
+      desiredReplicas: "2" # scale up more according to your need
+elasticsearch:
+  ingestion:
+    nodeSets:
+      count: 3  # In production, run cluster with 3 nodes, can be set to 1 for development envs

@@ -16,8 +16,8 @@ releases:
     values:
       -
         image:
-          repository: uniquecr.azurecr.io/confluence-connector
-          tag: {{ .Values.confluenceConnector.tenantReleaseOverrides.confluenceConnector | default .Values.confluenceConnector.defaultReleases.confluenceConnector }}
+          repository: {{ .Values.chat._common.acr.url }}/confluence-connector
+          tag: {{ (.Values.confluenceConnector.tenantReleaseOverrides.confluenceConnector | default .Values.confluenceConnector.defaultReleases.confluenceConnector) | quote }}
         replicaCount: {{ .Values.confluenceConnector | get "replicaCount" 1 }}
         imagePullSecrets:
           - name: image-pull-secret
@@ -39,6 +39,8 @@ releases:
           ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote }}
           TEST_MODE: {{ .Values.confluenceConnector.env.TEST_MODE }}
           DEBUG_MODE: {{ .Values.confluenceConnector.env.DEBUG_MODE }}
+          NODE_TLS_REJECT_UNAUTHORIZED : {{ .Values.confluenceConnector.env.NODE_TLS_REJECT_UNAUTHORIZED }}
+          UNIQUE_SCOPE_ID: {{ .Values.confluenceConnector.env.UNIQUE_SCOPE_ID }}
         envSecrets:
           ZITADEL_CLIENT_ID: {{ .Values.confluenceConnector.secrets.ZITADEL_CLIENT_ID | fetchSecretValue | quote }}
           ZITADEL_CLIENT_SECRET: {{ .Values.confluenceConnector.secrets.ZITADEL_CLIENT_SECRET | fetchSecretValue | quote }}

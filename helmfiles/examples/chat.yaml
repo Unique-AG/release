@@ -58,6 +58,7 @@ releases:
           periodSeconds: {{ .Values.qdrant | get "probes.startup.periodSeconds" 15 }}
   - name: node-ingestion
     chart: ../../charts/backend-service
+    version: 6.1.0
     namespace: chat
     createNamespace: true
     wait: false
@@ -96,13 +97,25 @@ releases:
           EMBEDDING_DIMENSION: {{ .Values.chat.nodeIngestion.env | get "EMBEDDING_DIMENSION" 1536 }}
           REPLICATION_FACTOR: {{ .Values.chat.nodeIngestion.env | get "REPLICATION_FACTOR" 1 }}
           INGESTION_UPLOAD_API_URL: https://api.{{ .Values.host }}/scoped/ingestion/upload
-          RERANKER_CONFIGURATION: {{ .Values.chat.nodeIngestion.env.RERANKER_CONFIGURATION | quote }}
           ADDITIONAL_INGESTION_QUEUES: '["chat_queue"]'
           UNIQUE_INSTALLATION_ID: {{ .Values.host }}
           USE_NEW_FTS_QUERY_APPROACH: {{ .Values.chat.nodeIngestion.env | get "USE_NEW_FTS_QUERY_APPROACH" "true" }}
           MAX_REQUEST_BODY_SIZE: {{ .Values.chat.nodeIngestion.env | get "MAX_REQUEST_BODY_SIZE" "30mb" }}
           PDF_READ_MODE: {{ .Values.chat.nodeIngestion.env.PDF_READ_MODE | quote }}
           FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: {{ .Values.chat.nodeIngestion.env.FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660 | quote }}
+          DATABASE_CONNECTION_POOL_LIMIT: {{ .Values.chat.nodeIngestion.env | get "DATABASE_CONNECTION_POOL_LIMIT" 10 | quote }}
+          ELASTICSEARCH_CA_BUNDLE: /etc/ssl/elastic/ca.crt
+          ELASTICSEARCH_URL: https://elasticsearch-ingestion-es-http.chat.svc:9200
+          ELASTICSEARCH_USERNAME: elastic
+          FEATURE_FLAG_ENABLE_SEARCH_ADAPTER_ELASTICSEARCH_UN_9883: {{ .Values.chat.nodeIngestion.env.FEATURE_FLAG_ENABLE_SEARCH_ADAPTER_ELASTICSEARCH_UN_9883 | quote }}
+          FEATURE_FLAG_ENABLE_ELASTICSEARCH_INDEXING: {{ .Values.chat.nodeIngestion.env.FEATURE_FLAG_ENABLE_ELASTICSEARCH_INDEXING | quote }}
+          PG_DATABASE_SSL_MODE: "verify"
+        envVars:
+          - name: ELASTICSEARCH_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: elasticsearch-ingestion-es-elastic-user
+                key: elastic
         envSecrets:
           AZURE_OPENAI_API_ENDPOINT: {{ .Values.chat.nodeIngestion.secrets.AZURE_OPENAI_API_ENDPOINT | fetchSecretValue | quote }}
           AMQP_URL: {{ .Values.rabbitMQ.url | fetchSecretValue | quote }}
@@ -119,6 +132,15 @@ releases:
           {{ $routes | toYaml | nindent 10 }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
+        volumeMounts:
+          - name: elastic-certs
+            mountPath: /etc/ssl/elastic/ca.crt
+            readOnly: true
+            subPath: ca.crt
+        volumes:
+          - name: elastic-certs
+            secret:
+              secretName: elasticsearch-ingestion-es-http-certs-public
         auditVolume:
           enabled: {{ .Values.chat._common.auditVolume.enabled }}
           mountPath: /audit
@@ -135,7 +157,7 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /home/node/app/services/node-ingestion/prisma; npx prisma migrate deploy;
+              cd /home/node/app/services/node-ingestion/prisma; npx prisma migrate deploy --config ../prisma.config.ts;
         cronJob:
           enabled: true
           name: expired-content-deletion
@@ -158,6 +180,18 @@ releases:
             restartPolicy: OnFailure
             env:
               RUNNING_MODE: file-access-rebuild
+            resources:
+              requests:
+                cpu: 200m
+                memory: 2Gi
+              limits:
+                cpu: 200m
+                memory: 2Gi
+          node-ingestion-elasticsearch-indexing:
+            schedule: "* * 31 2 *"
+            restartPolicy: OnFailure
+            env:
+              RUNNING_MODE: elasticsearch-indexing
             resources:
               requests:
                 cpu: 200m
@@ -200,6 +234,8 @@ releases:
           CONVERT_OFFICE_FILES_TO_PDF: {{ .Values.chat.nodeIngestionWorker.env.CONVERT_OFFICE_FILES_TO_PDF | quote }}
           EMBEDDING_BATCH_SIZE: {{ .Values.chat.nodeIngestionWorker.env | get "EMBEDDING_BATCH_SIZE" 16 }}
           INGESTION_QUEUE: 'queue'
+          NUMBER_OF_PDF_PAGES_IN_PARALLEL: {{ .Values.chat.nodeIngestionWorker.env | get "NUMBER_OF_PDF_PAGES_IN_PARALLEL" 3 }}
+          THREAD_TASK_TIMEOUT_MS: {{ .Values.chat.nodeIngestionWorker.env | get "THREAD_TASK_TIMEOUT_MS" "3600000" | quote}}
           CUSTOM_API_DEFINITIONS: {{ .Values.chat.nodeIngestionWorker.env.CUSTOM_API_DEFINITIONS | quote }}
           FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444: {{ .Values.chat.nodeIngestionWorker.env.FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444 | quote }}
           FEATURE_FLAG_ENABLE_LANDSCAPED_PDF_PAGE_BASED_CHUNKING_UN_10606: {{ .Values.chat.nodeIngestionWorker.env.FEATURE_FLAG_ENABLE_LANDSCAPED_PDF_PAGE_BASED_CHUNKING_UN_10606 | quote }}
@@ -245,7 +281,7 @@ releases:
               metadata:
                 {{- toYaml .Values.keda.nodeIngestionWorker.cron | nindent 16 }}
             {{- end }}
-        terminationGracePeriodSeconds: 3600 # 60mins
+        terminationGracePeriodSeconds: 3600 # 60 mins
   - name: node-ingestion-worker-chat
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
     version: 6.1.0
@@ -280,6 +316,8 @@ releases:
           CONVERT_OFFICE_FILES_TO_PDF: {{ .Values.chat.nodeIngestionWorker.env.CONVERT_OFFICE_FILES_TO_PDF | quote }}
           EMBEDDING_BATCH_SIZE: {{ .Values.chat.nodeIngestionWorker.env | get "EMBEDDING_BATCH_SIZE" 16 }}
           INGESTION_QUEUE: 'chat_queue'
+          NUMBER_OF_PDF_PAGES_IN_PARALLEL: {{ .Values.chat.nodeIngestionWorker.env | get "NUMBER_OF_PDF_PAGES_IN_PARALLEL" 3 }}
+          THREAD_TASK_TIMEOUT_MS: {{ .Values.chat.nodeIngestionWorker.env | get "THREAD_TASK_TIMEOUT_MS" "3600000" | quote}}
           CUSTOM_API_DEFINITIONS: {{ .Values.chat.nodeIngestionWorker.env.CUSTOM_API_DEFINITIONS | quote }}
           CHAT_API_URL: http://node-chat.chat.svc.cluster.local:8092
           FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444: {{ .Values.chat.nodeIngestionWorker.env.FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444 | quote }}
@@ -388,6 +426,8 @@ releases:
           CACHE_REDIS_DB: {{ .Values.chat.nodeChat.env | get "CACHE_REDIS_DB" 3 }}
           CHAT_FRONTEND_URL: https://{{ .Values.host }}/chat
           ADMIN_FRONTEND_URL: https://{{ .Values.host }}/admin
+          DATABASE_CONNECTION_POOL_LIMIT: {{ .Values.chat.nodeChat.env | get "DATABASE_CONNECTION_POOL_LIMIT" 10 | quote }}
+          PG_DATABASE_SSL_MODE: "verify"
         envSecrets:
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/chat"
           PUBSUB_REDIS_PASSWORD: {{ .Values.tyk.redis.password | fetchSecretValue | quote }}
@@ -411,14 +451,14 @@ releases:
         autoscaling:
           enabled: true
           minReplicas: {{ .Values.chat.nodeChat | get "replicaCount" 2 }}
-          maxReplicas: 6
+          maxReplicas: 8
           targetCPUUtilizationPercentage: 80
           targetMemoryUtilizationPercentage: 80
         hooks:
           migration:
             enabled: true
             command: |
-              cd /home/node/app/services/node-chat/prisma; npx prisma migrate deploy; cd /home/node/app/services/node-chat/dist; RUNNING_MODE=DATA_MIGRATION node /home/node/app/services/node-chat/dist/main.js;
+              cd /home/node/app/services/node-chat/prisma; npx prisma migrate deploy --config ../prisma.config.ts; cd /home/node/app/services/node-chat/dist; RUNNING_MODE=DATA_MIGRATION node /home/node/app/services/node-chat/dist/main.js;
         cronJob:
           enabled: true
           name: data-redaction-task
@@ -475,6 +515,7 @@ releases:
           FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608 | quote }}
           FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099 | quote }}
           FEATURE_FLAG_ENABLE_MCP_UN_11963: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_ENABLE_MCP_UN_11963 | quote }}
+          FEATURE_FLAG_CONFIGURE_FILE_METADATA_UN_10908: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_CONFIGURE_FILE_METADATA_UN_10908 | quote }}
           FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660 | quote }}
         resources:
           {{ .Values.chat.nextKnowledgeUpload.resources | toYaml | nindent 10 }}
@@ -691,6 +732,7 @@ releases:
           ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote}}
           CORS_ALLOWED_ORIGINS: https://{{ .Values.host }}
           MAX_HEAP_MB: {{ .Values.chat.configurationBackend.env.MAX_HEAP_MB }}
+          PG_DATABASE_SSL_MODE: "verify"
         envSecrets:
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/theme"
         securityContext:
@@ -705,7 +747,7 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /home/node/app/services/configuration-backend/prisma; npx prisma migrate deploy;
+              cd /home/node/app/services/configuration-backend/prisma; npx prisma migrate deploy --config ../prisma.config.ts;
         auditVolume:
           enabled: {{ .Values.chat._common.auditVolume.enabled }}
           mountPath: /audit
@@ -742,7 +784,10 @@ releases:
           ENABLE_CLIENT_INSIGHT_SHIPPER: {{ .Values.chat.nodeScopeManagement.env | get "ENABLE_CLIENT_INSIGHT_SHIPPER" false }}
           UNIQUE_INSTALLATION_ID: {{ .Values.host }}
           FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: {{ .Values.chat.nodeScopeManagement.env.FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608 | quote }}
+          SCOPE_MANAGEMENT_IDP_ROLE_MANAGEMENT: {{ .Values.chat.nodeScopeManagement.env.SCOPE_MANAGEMENT_IDP_ROLE_MANAGEMENT | quote }}
           FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: {{ .Values.chat.nodeScopeManagement.env.FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660 | quote }}
+          DATABASE_CONNECTION_POOL_LIMIT: {{ .Values.chat.nodeScopeManagement.env | get "DATABASE_CONNECTION_POOL_LIMIT" 10 | quote }}
+          PG_DATABASE_SSL_MODE: "verify"
         envSecrets:
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/scope-management"
           ZITADEL_PAT: {{ .Values.chat.nodeScopeManagement.secrets.ZITADEL_PAT | fetchSecretValue | quote }}
@@ -763,7 +808,7 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /home/node/app/services/node-scope-management/prisma; npx prisma migrate deploy; cd /home/node/app/services/node-scope-management/dist; RUNNING_MODE=DATA_MIGRATION  node /home/node/app/services/node-scope-management/dist/main.js;
+              cd /home/node/app/services/node-scope-management/prisma; npx prisma migrate deploy --config ../prisma.config.ts; cd /home/node/app/services/node-scope-management/dist; RUNNING_MODE=DATA_MIGRATION  node /home/node/app/services/node-scope-management/dist/main.js;
         cronJob:
           enabled: true
           name: user-sync
@@ -842,6 +887,8 @@ releases:
           GUNICORN_THREADS: {{ .Values.chat.assistantsCore.env.GUNICORN_THREADS }}
           AZURE_DOCUMENT_INTELLIGENCE_LOCATION: {{ .Values.chat.assistantsCore.env.AZURE_DOCUMENT_INTELLIGENCE_LOCATION | quote }}
           AZURE_DOCUMENT_INTELLIGENCE_API_VERSION: {{ .Values.chat.assistantsCore.env.AZURE_DOCUMENT_INTELLIGENCE_API_VERSION | quote }}
+          TEXT_AND_IMAGE_EXTRACTOR_API_LOCATION: {{ .Values.chat.assistantsCore.env.TEXT_AND_IMAGE_EXTRACTOR_API_LOCATION | quote }}
+          TEXT_AND_IMAGE_EXTRACTOR_API_VERSION: {{ .Values.chat.assistantsCore.env.TEXT_AND_IMAGE_EXTRACTOR_API_VERSION | quote }}
           ENABLED_MIME_TYPES_DOCUMENT_TRANSLATION: {{ .Values.chat.assistantsCore.env.ENABLED_MIME_TYPES_DOCUMENT_TRANSLATION | quote }}
           CRAWL4_AI_BASE_DIRECTORY: '/tmp'
           GOOGLE_SEARCH_API_ENDPOINT: {{ .Values.chat.assistantsCore.env.GOOGLE_SEARCH_API_ENDPOINT | quote }}
@@ -1210,3 +1257,43 @@ releases:
                 Human:
                   Username: root@cluster-iam.localhost
                   Password: "RootPassword1!" # must be changed on first login so not a problem
+  - name: es-ingestion
+    chart: bedag/raw
+    version: 2.0.0
+    namespace: chat
+    createNamespace: true
+    wait: false
+    values:
+      - resources:
+          - apiVersion: elasticsearch.k8s.elastic.co/v1
+            kind: Elasticsearch
+            metadata:
+              name: elasticsearch-ingestion
+            spec:
+              version: 9.0.2
+              nodeSets:
+                - name: default
+                  count: {{ .Values.elasticsearch.ingestion.nodeSets.count }}
+                  config:
+                    node.store.allow_mmap: false
+                  podTemplate:
+                    spec:
+                      containers:
+                        - name: elasticsearch
+                          resources:
+                            requests:
+                              memory: 4Gi
+                              cpu: 1
+                            limits:
+                              memory: 4Gi
+                              cpu: 1
+                  volumeClaimTemplates:
+                    - metadata:
+                        name: elasticsearch-data
+                      spec:
+                        accessModes:
+                          - ReadWriteOnce
+                        resources:
+                          requests:
+                            storage: 100Gi
+                        storageClassName: default-zrs
