@@ -1,0 +1,26 @@
+controller:
+  ingressController:
+    image:
+      tag: "3.4.4"
+    envFrom:
+      - configMapRef:
+          name: kong-controller-environment
+  proxy:
+    type: ClusterIP
+  deploymentAnnotations:
+    configmap.reloader.stakater.com/reload: "kong-controller-environment"
+  extraObjects:
+    - apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: kong-controller-environment
+      data:
+        CONTROLLER_LOG_LEVEL: info
+    - apiVersion: gateway.networking.k8s.io/v1
+      kind: GatewayClass
+      metadata:
+        name: kong
+        annotations:
+          konghq.com/gatewayclass-unmanaged: "true"
+      spec:
+        controllerName: konghq.com/kic-gateway-controller

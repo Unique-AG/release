@@ -1,0 +1,12 @@
+params:
+  zoneName: <your-zone-name>
+plain:
+  apiGateway:
+    subDomainName: <your-api-gateway-sub-domain>
+  kong:
+    appRepositoryUrl: http://node-app-repository.apps.svc:8088
+  clusterIssuer:
+    name: letsencrypt
+  zitadel:
+    subDomainName: <your-zitadel-sub-domain>
+    projectId: <your-zitadel-project-id>
