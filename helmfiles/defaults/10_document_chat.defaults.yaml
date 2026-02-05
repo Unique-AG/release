@@ -11,17 +11,17 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:             "2026.04.0"
-      nextKnowledgeUpload:  "2026.04.0"
-      nextTheme:            "2026.04.0"
-      nextAdmin:            "2026.04.0"
-      nodeChat:             "2026.04.0"
-      nodeIngestion:        "2026.04.0"
-      nodeIngestionWorker:  "2026.04.0"
-      configurationBackend: "2026.04.0"
-      nodeScopeManagement:  "2026.04.0"
-      backendServiceSpeech: "2026.04.0"
-      assistantsCore:       "2026.04.0"
+      nextChat:             "2026.04.4"
+      nextKnowledgeUpload:  "2026.04.4"
+      nextTheme:            "2026.04.4"
+      nextAdmin:            "2026.04.4"
+      nodeChat:             "2026.04.4"
+      nodeIngestion:        "2026.04.4"
+      nodeIngestionWorker:  "2026.04.4"
+      configurationBackend: "2026.04.4"
+      nodeScopeManagement:  "2026.04.4"
+      backendServiceSpeech: "2026.04.4"
+      assistantsCore:       "2026.04.4"
   nextChat:
     env:
       MAX_FILE_SIZE_IN_MB: 512
@@ -198,7 +198,7 @@ chat:
       MAX_REQUEST_BODY_SIZE: '30mb'
       PDF_READ_MODE: DOC_INTELLIGENCE_DEFAULT # Uses MDI for ingestion. Unique recommends this as default if MDI is available.
       FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "false" # experimental file-based access feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_SEARCH_ADAPTER_ELASTICSEARCH_UN_9883: "false" # enable after initial ES indexing is done
+      FEATURE_FLAG_ENABLE_SEARCH_ADAPTER_ELASTICSEARCH_UN_9883: "true" 
       FEATURE_FLAG_ENABLE_ELASTICSEARCH_INDEXING: "true"
     resources:
       requests:
