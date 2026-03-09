@@ -37,8 +37,8 @@ releases:
           AUDIT_LOG_DIR: /audit
           LOG_LEVEL: info
           MAX_HEAP_MB: {{ .Values.appRepo.nodeAppRepository.env.MAX_HEAP_MB }}
-          ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote }}
           CORS_ALLOWED_ORIGINS: https://{{ .Values.host }}
+          SCOPE_MANAGEMENT_API_URL: http://node-scope-management.chat.svc.cluster.local:8094
           PG_DATABASE_SSL_MODE: "verify"
         envSecrets:
           DATABASE_URL: "postgresql://{{ .Values.appRepo._common.database.username | fetchSecretValue }}:{{ .Values.appRepo._common.database.password | fetchSecretValue }}@{{ .Values.appRepo._common.database.host | fetchSecretValue }}/app-repository"
@@ -148,7 +148,6 @@ releases:
         env:
           LOG_LEVEL: info
           MAX_HEAP_MB: {{ .Values.appRepo.typescriptServiceEventSocket.env.MAX_HEAP_MB }}
-          ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote }}
         envSecrets:
           AMQP_URL: amqp://{{ .Values.rabbitMQ.username | fetchSecretValue }}:{{ .Values.rabbitMQ.password | fetchSecretValue }}@rabbitmq-headless.system.svc.cluster.local:5672/%2f
         securityContext:

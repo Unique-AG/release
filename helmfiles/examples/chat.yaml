@@ -82,7 +82,6 @@ releases:
           AZURE_OPENAI_API_DEPLOYMENT_NAME: {{ .Values.chat.nodeIngestion.env.AZURE_OPENAI_API_DEPLOYMENT_NAME | quote }}
           AZURE_OPENAI_API_VERSION: {{ .Values.chat.nodeIngestion.env.AZURE_OPENAI_API_VERSION | quote }}
           TRUSTED_DOMAINS: {{ .Values.chat.nodeIngestion.env.TRUSTED_DOMAINS | quote }}
-          ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote }}
           ZITADEL_ROOT_ORG_ID: {{ .Values.chat.nodeIngestion.env.ZITADEL_ROOT_ORG_ID | quote }}
           SCORE_THRESHOLD: "0"
           QDRANT_URL: http://qdrant-zrs-headless.chat.svc.cluster.local:6333
@@ -157,7 +156,7 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /home/node/app/services/node-ingestion/prisma; npx prisma migrate deploy --config ../prisma.config.ts;
+              cd /home/node/app/services/node-ingestion/prisma; npx prisma migrate deploy --config ../prisma.config.ts; cd /home/node/app/services/node-ingestion/dist; RUNNING_MODE=data-migration  node /home/node/app/services/node-ingestion/dist/main.js;
         cronJob:
           enabled: true
           name: expired-content-deletion
@@ -228,7 +227,6 @@ releases:
           LOG_LEVEL: info
           CHAT_API_URL: http://node-chat.chat.svc.cluster.local:8092
           INGESTION_API_URL: http://node-ingestion.chat.svc.cluster.local:8091
-          ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote}}
           AUDIT_LOG_DIR: /audit
           MAX_HEAP_MB: {{ .Values.chat.nodeIngestionWorker.env.MAX_HEAP_MB }}
           CONVERT_OFFICE_FILES_TO_PDF: {{ .Values.chat.nodeIngestionWorker.env.CONVERT_OFFICE_FILES_TO_PDF | quote }}
@@ -310,7 +308,6 @@ releases:
         env:
           LOG_LEVEL: info
           INGESTION_API_URL: http://node-ingestion.chat.svc.cluster.local:8091
-          ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote}}
           AUDIT_LOG_DIR: /audit
           MAX_HEAP_MB: {{ .Values.chat.nodeIngestionWorker.env.MAX_HEAP_MB }}
           CONVERT_OFFICE_FILES_TO_PDF: {{ .Values.chat.nodeIngestionWorker.env.CONVERT_OFFICE_FILES_TO_PDF | quote }}
@@ -381,9 +378,9 @@ releases:
           - name: image-pull-secret
         service:
           annotations:
-            konghq.com/read-timeout: "600000" # 10 minutes
-            konghq.com/write-timeout: "600000" # 10 minutes
-            konghq.com/connect-timeout: "600000" # 10 minutes
+            konghq.com/read-timeout: "3600000" # 1 hour
+            konghq.com/write-timeout: "3600000" # 1 hour
+            konghq.com/connect-timeout: "3600000" # 1 hour
           port: 8093
         serviceAccount:
           enabled: true
@@ -396,7 +393,6 @@ releases:
           INGESTION_API_URL: http://node-ingestion.chat.svc.cluster.local:8091
           SCOPE_MANAGEMENT_API_URL: http://node-scope-management.chat.svc.cluster.local:8094
           OPENAI_PROVIDER: azure
-          ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote}}
           PUBSUB_BACKEND: {{ .Values.chat.nodeChat.env.PUBSUB_BACKEND | quote }}
           PUBSUB_REDIS_HOST: {{ .Values.tyk.redis.host | fetchSecretValue | quote }}
           PUBSUB_REDIS_PORT: {{ .Values.tyk.redis.port | fetchSecretValue | quote }}
@@ -504,7 +500,6 @@ releases:
           ZITADEL_CLIENT_ID: {{ .Values.zitadel.clientId | quote}}
           ZITADEL_ISSUER: https://id.{{ .Values.host }}
           ZITADEL_ORG_ID: {{ .Values.zitadel.orgId | quote }}
-          ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote}}
           STATIC_THEME_COLORS: {{ .Values.chat.nextTheme.env.STATIC_THEME_COLORS | mustToJson | toString | quote }}
           MAX_HEAP_MB: {{ .Values.chat.nextKnowledgeUpload.env.MAX_HEAP_MB }}
           STATIC_BACKGROUND_COLOR:  >-
@@ -568,10 +563,9 @@ releases:
           ZITADEL_CLIENT_ID: {{ .Values.zitadel.clientId | quote}}
           ZITADEL_ISSUER: https://id.{{ .Values.host }}
           ZITADEL_ORG_ID: {{ .Values.zitadel.orgId | quote }}
-          ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote}}
           STATIC_THEME_COLORS: {{ .Values.chat.nextTheme.env.STATIC_THEME_COLORS | mustToJson | toString | quote }}
           STATIC_TAB_NAME: {{ .Values.chat.nextTheme.env.STATIC_TAB_NAME | quote }}
-          MAX_FILE_SIZE_IN_MB: {{ .Values.chat.nextChat.env | get "MAX_FILE_SIZE_IN_MB" 100 }}
+          MAX_FILE_SIZE_IN_MB: {{ .Values.chat.nextChat.env | get "MAX_FILE_SIZE_IN_MB" 512 }}
           MAX_HEAP_MB: {{ .Values.chat.nextChat.env | get "MAX_HEAP_MB" 400 }}
           STATIC_BACKGROUND_COLOR:  >-
             {{ "#" }}{{ .Values.chat.nextTheme.env.STATIC_BACKGROUND_COLOR }}
@@ -624,7 +618,6 @@ releases:
           ZITADEL_CLIENT_ID: {{ .Values.zitadel.clientId | quote}}
           ZITADEL_ISSUER: https://id.{{ .Values.host }}
           ZITADEL_ORG_ID: {{ .Values.zitadel.orgId | quote }}
-          ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote}}
           ADMIN_APP_URL: https://{{ .Values.host }}/admin
           APP_REPOSITORY_BACKEND_API_URL: https://api.{{ .Values.host }}/apps
           CHAT_BACKEND_API_URL: https://api.{{ .Values.host }}/chat
@@ -633,6 +626,7 @@ releases:
           THEME_BACKEND_API_URL: https://api.{{ .Values.host }}/configuration
           MAX_HEAP_MB: {{ .Values.chat.nextTheme.env.MAX_HEAP_MB }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
+          SCOPE_MANAGEMENT_BACKEND_API_URL: https://api.{{ .Values.host }}/scope-management
           FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: {{ .Values.chat.nextTheme.env.FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416 | quote }}
           FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: {{ .Values.chat.nextTheme.env.FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099 | quote }}
           FEATURE_FLAG_ENABLE_MCP_UN_11963: {{ .Values.chat.nextTheme.env.FEATURE_FLAG_ENABLE_MCP_UN_11963 | quote }}
@@ -681,7 +675,6 @@ releases:
           ZITADEL_CLIENT_ID: {{ .Values.zitadel.clientId | quote}}
           ZITADEL_ISSUER: https://id.{{ .Values.host }}
           ZITADEL_ORG_ID: {{ .Values.zitadel.orgId | quote }}
-          ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote}}
           MAX_HEAP_MB: {{ .Values.chat.nextAdmin.env.MAX_HEAP_MB }}
           STATIC_THEME_COLORS: {{ .Values.chat.nextTheme.env.STATIC_THEME_COLORS | mustToJson | toString | quote }}
           STATIC_BACKGROUND_COLOR:  >-
@@ -729,7 +722,6 @@ releases:
         env:
           AUDIT_LOG_DIR: /audit
           LOG_LEVEL: info
-          ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote}}
           CORS_ALLOWED_ORIGINS: https://{{ .Values.host }}
           MAX_HEAP_MB: {{ .Values.chat.configurationBackend.env.MAX_HEAP_MB }}
           PG_DATABASE_SSL_MODE: "verify"
