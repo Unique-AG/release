@@ -27,7 +27,7 @@ releases:
     createNamespace: true
     namespace: system
     chart: oci://ghcr.io/unique-ag/helm-charts/kong-plugins
-    version: 1.2.1
+    version: 2.1.0
     wait: false
     values:
       -
