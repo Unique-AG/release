@@ -447,3 +447,8 @@ variable "appgw_5xx_alert_threshold" {
   description = "Threshold for the appgw 5xx alert"
   default     = 8
 }
+variable "sentinel_log_analytics_workspace_id" {
+  description = "Resource ID of the Log Analytics Workspace used by Sentinel for audit log forwarding"
+  type        = string
+  default     = "/subscriptions/926bb92d-ce73-43e5-97eb-9965e0f0b238/resourceGroups/rg-infra-security-sentinel/providers/Microsoft.OperationalInsights/workspaces/law-infra-security-sentinel"
+}

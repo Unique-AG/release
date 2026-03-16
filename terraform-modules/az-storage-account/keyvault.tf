@@ -26,3 +26,11 @@ resource "azurerm_key_vault" "this" {
   sku_name                    = "premium"
   tags                        = module.context.tags
 }
+resource "azurerm_monitor_diagnostic_setting" "kv_audit" {
+  name                       = "audit-to-sentinel"
+  target_resource_id         = azurerm_key_vault.this.id
+  log_analytics_workspace_id = var.sentinel_log_analytics_workspace_id
+  enabled_log {
+    category = "AuditEvent"
+  }
+}

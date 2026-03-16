@@ -26,6 +26,14 @@ resource "azurerm_key_vault" "document-chat" {
   sku_name                    = "premium"
   tags                        = local.tags
 }
+resource "azurerm_monitor_diagnostic_setting" "kv_audit" {
+  name                       = "audit-to-sentinel"
+  target_resource_id         = azurerm_key_vault.document-chat.id
+  log_analytics_workspace_id = var.sentinel_log_analytics_workspace_id
+  enabled_log {
+    category = "AuditEvent"
+  }
+}
 resource "random_id" "ingestion_encryption_key" {
   byte_length = 32
   keepers = {
