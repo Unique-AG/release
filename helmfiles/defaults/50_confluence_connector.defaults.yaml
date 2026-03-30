@@ -1,6 +1,6 @@
 confluenceConnector:
   defaultReleases:
-    confluenceConnector: "2026.10.5"
+    confluenceConnector: "2026.10.9"
   replicaCount: 1
   env:
     CONFLUENCE_TOKENS_PER_MINUTE: 250

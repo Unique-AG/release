@@ -11,17 +11,17 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:             "2026.10.5"
-      nextKnowledgeUpload:  "2026.10.5"
-      nextTheme:            "2026.10.5"
-      nextAdmin:            "2026.10.5"
-      nodeChat:             "2026.10.5"
-      nodeIngestion:        "2026.10.5"
-      nodeIngestionWorker:  "2026.10.5"
-      configurationBackend: "2026.10.5"
-      nodeScopeManagement:  "2026.10.5"
-      backendServiceSpeech: "2026.10.5"
-      assistantsCore:       "2026.10.5"
+      nextChat:             "2026.10.9"
+      nextKnowledgeUpload:  "2026.10.9"
+      nextTheme:            "2026.10.9"
+      nextAdmin:            "2026.10.9"
+      nodeChat:             "2026.10.9"
+      nodeIngestion:        "2026.10.9"
+      nodeIngestionWorker:  "2026.10.9"
+      configurationBackend: "2026.10.9"
+      nodeScopeManagement:  "2026.10.9"
+      backendServiceSpeech: "2026.10.9"
+      assistantsCore:       "2026.10.9"
   nextChat:
     env:
       MAX_FILE_SIZE_IN_MB: 512
