@@ -1,6 +1,8 @@
 params:
   zoneName: <your-zone-name>
 plain:
+  reflector:
+    subDomainName: <your-reflector-sub-domain>
   apiGateway:
     subDomainName: <your-api-gateway-sub-domain>
   kong:
