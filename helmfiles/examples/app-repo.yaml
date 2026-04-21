@@ -39,6 +39,7 @@ releases:
           MAX_HEAP_MB: {{ .Values.appRepo.nodeAppRepository.env.MAX_HEAP_MB }}
           CORS_ALLOWED_ORIGINS: https://{{ .Values.host }}
           SCOPE_MANAGEMENT_API_URL: http://node-scope-management.chat.svc.cluster.local:8094
+          CONFIGURATION_BACKEND_URL: http://configuration-backend.chat.svc.cluster.local:8095
           PG_DATABASE_SSL_MODE: "verify"
         envSecrets:
           DATABASE_URL: "postgresql://{{ .Values.appRepo._common.database.username | fetchSecretValue }}:{{ .Values.appRepo._common.database.password | fetchSecretValue }}@{{ .Values.appRepo._common.database.host | fetchSecretValue }}/app-repository"
@@ -56,7 +57,7 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /home/node/app/services/node-app-repository/prisma; npx prisma migrate deploy --config ../prisma.config.ts;
+              cd /home/node/app/services/node-app-repository/prisma; pnpm exec prisma migrate deploy --config ../prisma.config.ts;
         probes:
           enabled: false
         auditVolume:
@@ -83,6 +84,7 @@ releases:
           LOG_LEVEL: info
           MAX_HEAP_MB: {{ .Values.appRepo.nodeWebhookScheduler.env.MAX_HEAP_MB }}
           APP_REPOSITORY_URL: http://node-app-repository.apps.svc.cluster.local:8088
+          CONFIGURATION_BACKEND_URL: http://configuration-backend.chat.svc.cluster.local:8095
         envSecrets:
           AMQP_URL: amqp://{{ .Values.rabbitMQ.username | fetchSecretValue }}:{{ .Values.rabbitMQ.password | fetchSecretValue }}@rabbitmq-headless.system.svc.cluster.local:5672/%2f
         securityContext:
@@ -115,6 +117,7 @@ releases:
           LOG_LEVEL: info
           MAX_HEAP_MB: {{ .Values.appRepo.nodeWebhookWorker.env.MAX_HEAP_MB }}
           APP_REPOSITORY_URL: http://node-app-repository.apps.svc.cluster.local:8088
+          CONFIGURATION_BACKEND_URL: http://configuration-backend.chat.svc.cluster.local:8095
         envSecrets:
           AMQP_URL: amqp://{{ .Values.rabbitMQ.username | fetchSecretValue }}:{{ .Values.rabbitMQ.password | fetchSecretValue }}@rabbitmq-headless.system.svc.cluster.local:5672/%2f
         securityContext:
@@ -148,6 +151,7 @@ releases:
         env:
           LOG_LEVEL: info
           MAX_HEAP_MB: {{ .Values.appRepo.typescriptServiceEventSocket.env.MAX_HEAP_MB }}
+          CONFIGURATION_BACKEND_URL: http://configuration-backend.chat.svc.cluster.local:8095
         envSecrets:
           AMQP_URL: amqp://{{ .Values.rabbitMQ.username | fetchSecretValue }}:{{ .Values.rabbitMQ.password | fetchSecretValue }}@rabbitmq-headless.system.svc.cluster.local:5672/%2f
         securityContext:
@@ -178,6 +182,7 @@ releases:
           DATA_SOURCE_URLS: http://node-scope-management.chat.svc.cluster.local:8094/insights;http://node-chat.chat.svc.cluster.local:8093/insights
           CLIENT_INSIGHT_SERVER_URL: https://gateway.unique.app/insights/client-insights
           UNIQUE_INSTALLATION_ID: {{ .Values.host }}
+          CONFIGURATION_BACKEND_URL: http://configuration-backend.chat.svc.cluster.local:8095
         securityContext:
           {{ .Values.appRepo._common.securityContext | toYaml | nindent 10 }}
         service:

@@ -25,33 +25,42 @@ chat:
       nodeScopeManagement:
       backendServiceSpeech:
       assistantsCore:
-  nextChat:
-    env:
-      FEATURE_FLAG_ENABLE_MCP_UN_11963: "true" # experimental MCP feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "true" # experimental MCP admin feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: "true" # enable spaces 2.0, BETA feature
-  nextKnowledgeUpload:
-    env:
-      FEATURE_FLAG_ENABLE_MCP_UN_11963: "true" # experimental MCP feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "true" # experimental MCP admin feature, only enable for DEV/TEST
-      FEATURE_FLAG_CONFIGURE_FILE_METADATA_UN_10908: "true" # enable file metadata configuration, BETA feature
-      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "false" # experimental file-based access feature, only enable for DEV/TEST
-  nextAdmin:
-    env:
-      FEATURE_FLAG_ENABLE_MCP_UN_11963: "true" # experimental MCP feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "true" # experimental MCP admin feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: "true" # enable spaces 2.0, BETA feature
+      reflector:
+      agenticIngestion:
   nextTheme:
     env:
       STATIC_THEME_COLORS: {"color-primary-cta": "#D63384", "color-primary-variant": "#B2447A", "color-secondary": "#042834", "color-secondary-variant": "#03212B", "color-background": "#F7F7F7", "color-background-variant": "#EBEBED", "color-surface": "#FFFFFF", "color-control": "#D8D8D8", "color-info": "#0A96E6", "color-success-light": "#A0C855", "color-success-dark": "#3D9E3F", "color-error-light": "#F65D67", "color-error-dark": "#DC3545", "color-attention": "#FFC65C", "color-attention-variant": "#19AADA", "color-on-primary": "#FFFFFF", "color-on-secondary": "#FFFFFF", "color-on-background-main": "#02161D", "color-on-background-dimmed": "#1F505F", "color-on-surface": "#02161D", "color-on-control-main": "#02161D", "color-on-control-dimmed": "#9C9C9C", "color-on-info": "#FFFFFF", "color-on-success-light": "#FFFFFF", "color-on-success-dark": "#FFFFFF", "color-on-error-light": "#FFFFFF", "color-on-error-dark": "#FFFFFF", "color-on-attention": "#02161D", "color-on-attention-variant": "#FFFFFF"}
       STATIC_BACKGROUND_COLOR: F7F7F7
       STATIC_TAB_NAME: "YOUR_TAB_NAME"
-      FEATURE_FLAG_ENABLE_MCP_UN_11963: "true" # experimental MCP feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "true" # experimental MCP admin feature, only enable for DEV/TEST
-  nodeChat:
+  configurationBackend:
     env:
       FEATURE_FLAG_ENABLE_MCP_UN_11963: "true" # experimental MCP feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "true" # experimental MCP admin feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MCP_TOOL_REFRESH_UN_19255: "true" # experimental MCP tool refresh button feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: "true" # enable spaces 2.0, BETA feature
+      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "false" # experimental file-based access feature, only enable for DEV/TEST
+      FEATURE_FLAG_CONFIGURE_FILE_METADATA_UN_10908: "true" # enable file metadata configuration, BETA feature
+      FEATURE_FLAG_ENABLE_HTML_RENDERING_UN_15131: "true" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_DEEP_RESEARCH_UN_12630: "true" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_THINKING_STEPS_UN_13848: "true" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_CODE_EXECUTION_UN_17498: "true" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_USE_OPENAI_V1_13819: "true" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_NEW_ANSWERS_UI_UN_14411: "true" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392: "true" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MOVE_FILE_UN_15517: "true" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MOVE_FOLDER_UN_16037: "true" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MAGIC_TABLE_UN_8472: "true"
+      FEATURE_FLAG_AGENTIC_TABLE_ERROR_BANNER_UN_11777: "true"
+      FEATURE_FLAG_AGENTIC_TABLE_CONTEXT_UN_14904: "true"
+      FEATURE_FLAG_AGENTIC_TABLE_SHEET_METADATA_UN_14904: "true"
+      FEATURE_FLAG_AGENTIC_TABLE_ROW_METADATA_UN_14904: "true"
+      FEATURE_FLAG_AGENTIC_TABLE_REFERENCE_SIDEBAR_COMPONENTS_UN_16483: "true"
+      FEATURE_FLAG_ENABLE_SUB_AGENTS_UN_13661: "true"
+      FEATURE_FLAG_ENABLE_END_USER_SPACE_UN_8855: "true"
+      FEATURE_FLAG_SET_PRIVATE_FOLDER_ACCESS_DEFAULT_UN_13988: "true"
+      FEATURE_FLAG_ENABLE_SESSION_TIMEOUT_UN_15656: "false" # Enables automatic session timeout after 30 minutes
+      FEATURE_FLAG_ENABLE_AGENTIC_METADATA_EXTRACTION_UN_15619: "true" # Experimental feature, only enable for DEV/TEST
+  nodeChat:
     secrets:
       WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-node-chat
       AZURE_OPENAI_API_ENDPOINTS_JSON: ref+azurekeyvault://your-vault-name/azure-openai-endpoints-json
@@ -67,7 +76,6 @@ chat:
       INGESTION_ENCRYPTION_KEY: ref+azurekeyvault://your-vault-name/ingestion-encryption-key
     env:
       ZITADEL_ROOT_ORG_ID: "<your-zitadel-root-org-id>"
-      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "false" # experimental file-based access feature, only enable for DEV/TEST
   nodeIngestionWorker:
     secrets:
       WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-node-ingestion-worker
@@ -80,7 +88,6 @@ chat:
   nodeScopeManagement:
     env:
       ZITADEL_ROOT_ORG_ID: "<your-zitadel-root-org-id>"
-      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "false" # experimental file-based access feature, only enable for DEV/TEST
     extraRoutes:
       scim:
         hostnames:
@@ -99,11 +106,16 @@ chat:
   assistantsCore:
     env:
       SIX_API_ACTIVATED_COMPANIES: '["<company_id>"]'
+      FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392: "true" # Experimental feature, only enable for DEV/TEST
     envSecrets:
       AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT_DEFINITIONS: ref+azurekeyvault://your-vault-name/azure-document-intelligence-endpoint-definitions
       WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-assistants-core
       GOOGLE_SEARCH_API_KEY: ref+azurekeyvault://your-vault-name/manual-google-search-api-key
       SIX_API_CREDS: ref+azurekeyvault://your-vault-name/manual-six-api-creds
+  agenticIngestion:
+    secrets:
+      WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-agentic-ingestion
+      MDI_ENDPOINT_DEFINITIONS: ref+azurekeyvault://your-vault-name/azure-document-intelligence-endpoint-definitions
 rabbitMQ:
   username: ref+azurekeyvault://your-vault-name/rabbitmq-username # ! can't be changed without deleting the PVC+PV
   password: ref+azurekeyvault://your-vault-name/rabbitmq-password # ! can't be changed without deleting the PVC+PV
@@ -216,20 +228,40 @@ sharepointConnector:
         clientId: <app-registration-client-id>
   connectorConfig:
     sharepoint:
+      tenantId: <your-tenant-id>
       auth:
         clientId: <your-app-registration-client-id>
-        tenantId: <your-tenant-id>
         thumbprintSha1: <your-certificate-thumbprint-sha1>
+      sites:
+      - siteId: 00000000-0000-0000-0000-000000000000
+        syncColumnName: <your-sharepoint-sync-column-name>
+        ingestionMode: recursive
+        scopeId: scope_example123456789
+        maxFilesToIngest: 10000
+        storeInternally: enabled
+        syncStatus: active
+        syncMode: content_only
+        # -- THIS CONFIG HAS EFFECT ONLY IN CONTENT_ONLY SYNC MODE: inheritance mode for scopes and files.
+        # Allowed values: inherit_scopes_and_files, inherit_scopes, inherit_files, none.
+        # When unset, defaults to inherit_scopes_and_files; ignored in content_and_permissions.
+        permissionsInheritanceMode: inherit_scopes_and_files
+        # -- Whether to recursively discover and sync content from subsites.
+        # Allowed values: enabled, disabled. Default: disabled.
+        subsitesScan: disabled
+      - siteId: 00000000-0000-0000-0000-000000000001
+        syncColumnName: <your-sharepoint-sync-column-name>
+        ingestionMode: recursive
+        scopeId: scope_example123456789
+        maxFilesToIngest: 10000
+        storeInternally: enabled
+        syncStatus: active
+        syncMode: content_only
+        permissionsInheritanceMode: inherit_scopes_and_files
+        subsitesScan: disabled
     unique:
-      # -- Scope ID to be used as root for ingestion.
-      # example: scope_bu4gokr0atzj0kfiuaaaaaaa
-      scopeId: "<your-knowledge-base-root-scope-id>"
       serviceExtraHeaders:
         x-company-id: "<your-zitadel-company-id>"
         x-user-id: "<your-zitadel-service-user-id>"
-      zitadel:
-        clientId: <your-zitadel-service-user-client-id>
-        projectId: "<your-zitadel-project-id>"
     processing:
       scanIntervalCron: "*/15 * * * *"
 elasticsearch:

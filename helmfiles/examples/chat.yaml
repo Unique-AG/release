@@ -87,6 +87,7 @@ releases:
           QDRANT_URL: http://qdrant-zrs-headless.chat.svc.cluster.local:6333
           SCOPE_MANAGEMENT_URL: http://node-scope-management.chat.svc.cluster.local:8094
           CHAT_URL: http://node-chat.chat.svc.cluster.local:8093
+          CONFIGURATION_BACKEND_URL: http://configuration-backend.chat.svc.cluster.local:8095
           AUDIT_LOG_DIR: /audit
           CORS_ALLOWED_ORIGINS: https://{{ .Values.host }}
           USE_SCOPE_MANAGEMENT: {{ .Values.chat.nodeIngestion.env.USE_SCOPE_MANAGEMENT | quote }}
@@ -101,13 +102,10 @@ releases:
           USE_NEW_FTS_QUERY_APPROACH: {{ .Values.chat.nodeIngestion.env | get "USE_NEW_FTS_QUERY_APPROACH" "true" }}
           MAX_REQUEST_BODY_SIZE: {{ .Values.chat.nodeIngestion.env | get "MAX_REQUEST_BODY_SIZE" "30mb" }}
           PDF_READ_MODE: {{ .Values.chat.nodeIngestion.env.PDF_READ_MODE | quote }}
-          FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: {{ .Values.chat.nodeIngestion.env.FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660 | quote }}
           DATABASE_CONNECTION_POOL_LIMIT: {{ .Values.chat.nodeIngestion.env | get "DATABASE_CONNECTION_POOL_LIMIT" 10 | quote }}
           ELASTICSEARCH_CA_BUNDLE: /etc/ssl/elastic/ca.crt
           ELASTICSEARCH_URL: https://elasticsearch-ingestion-es-http.chat.svc:9200
           ELASTICSEARCH_USERNAME: elastic
-          FEATURE_FLAG_ENABLE_SEARCH_ADAPTER_ELASTICSEARCH_UN_9883: {{ .Values.chat.nodeIngestion.env.FEATURE_FLAG_ENABLE_SEARCH_ADAPTER_ELASTICSEARCH_UN_9883 | quote }}
-          FEATURE_FLAG_ENABLE_ELASTICSEARCH_INDEXING: {{ .Values.chat.nodeIngestion.env.FEATURE_FLAG_ENABLE_ELASTICSEARCH_INDEXING | quote }}
           PG_DATABASE_SSL_MODE: "verify"
         envVars:
           - name: ELASTICSEARCH_PASSWORD
@@ -156,7 +154,7 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /home/node/app/services/node-ingestion/prisma; npx prisma migrate deploy --config ../prisma.config.ts; cd /home/node/app/services/node-ingestion/dist; RUNNING_MODE=data-migration  node /home/node/app/services/node-ingestion/dist/main.js;
+              cd /home/node/app/services/node-ingestion/prisma; pnpm exec prisma migrate deploy --config ../prisma.config.ts; cd /home/node/app/services/node-ingestion/dist; RUNNING_MODE=data-migration  node /home/node/app/services/node-ingestion/dist/main.js;
         cronJob:
           enabled: true
           name: expired-content-deletion
@@ -227,6 +225,7 @@ releases:
           LOG_LEVEL: info
           CHAT_API_URL: http://node-chat.chat.svc.cluster.local:8092
           INGESTION_API_URL: http://node-ingestion.chat.svc.cluster.local:8091
+          CONFIGURATION_BACKEND_URL: http://configuration-backend.chat.svc.cluster.local:8095
           AUDIT_LOG_DIR: /audit
           MAX_HEAP_MB: {{ .Values.chat.nodeIngestionWorker.env.MAX_HEAP_MB }}
           CONVERT_OFFICE_FILES_TO_PDF: {{ .Values.chat.nodeIngestionWorker.env.CONVERT_OFFICE_FILES_TO_PDF | quote }}
@@ -235,8 +234,6 @@ releases:
           NUMBER_OF_PDF_PAGES_IN_PARALLEL: {{ .Values.chat.nodeIngestionWorker.env | get "NUMBER_OF_PDF_PAGES_IN_PARALLEL" 3 }}
           THREAD_TASK_TIMEOUT_MS: {{ .Values.chat.nodeIngestionWorker.env | get "THREAD_TASK_TIMEOUT_MS" "3600000" | quote}}
           CUSTOM_API_DEFINITIONS: {{ .Values.chat.nodeIngestionWorker.env.CUSTOM_API_DEFINITIONS | quote }}
-          FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444: {{ .Values.chat.nodeIngestionWorker.env.FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444 | quote }}
-          FEATURE_FLAG_ENABLE_LANDSCAPED_PDF_PAGE_BASED_CHUNKING_UN_10606: {{ .Values.chat.nodeIngestionWorker.env.FEATURE_FLAG_ENABLE_LANDSCAPED_PDF_PAGE_BASED_CHUNKING_UN_10606 | quote }}
         envSecrets:
           AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS: {{ .Values.chat.nodeIngestionWorker.secrets.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS | fetchSecretValue | quote }}
           AMQP_URL: {{ .Values.rabbitMQ.url | fetchSecretValue | quote }}
@@ -317,8 +314,7 @@ releases:
           THREAD_TASK_TIMEOUT_MS: {{ .Values.chat.nodeIngestionWorker.env | get "THREAD_TASK_TIMEOUT_MS" "3600000" | quote}}
           CUSTOM_API_DEFINITIONS: {{ .Values.chat.nodeIngestionWorker.env.CUSTOM_API_DEFINITIONS | quote }}
           CHAT_API_URL: http://node-chat.chat.svc.cluster.local:8092
-          FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444: {{ .Values.chat.nodeIngestionWorker.env.FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444 | quote }}
-          FEATURE_FLAG_ENABLE_LANDSCAPED_PDF_PAGE_BASED_CHUNKING_UN_10606: {{ .Values.chat.nodeIngestionWorker.env.FEATURE_FLAG_ENABLE_LANDSCAPED_PDF_PAGE_BASED_CHUNKING_UN_10606 | quote }}
+          CONFIGURATION_BACKEND_URL: http://configuration-backend.chat.svc.cluster.local:8095
         envSecrets:
           AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS: {{ .Values.chat.nodeIngestionWorker.secrets.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS | fetchSecretValue | quote }}
           AMQP_URL: {{ .Values.rabbitMQ.url | fetchSecretValue | quote }}
@@ -392,6 +388,7 @@ releases:
           AZURE_OPENAI_API_ENDPOINTS_JSON: {{ .Values.chat.nodeChat.secrets.AZURE_OPENAI_API_ENDPOINTS_JSON | fetchSecretValue | quote }}
           INGESTION_API_URL: http://node-ingestion.chat.svc.cluster.local:8091
           SCOPE_MANAGEMENT_API_URL: http://node-scope-management.chat.svc.cluster.local:8094
+          CONFIGURATION_BACKEND_URL: http://configuration-backend.chat.svc.cluster.local:8095
           OPENAI_PROVIDER: azure
           PUBSUB_BACKEND: {{ .Values.chat.nodeChat.env.PUBSUB_BACKEND | quote }}
           PUBSUB_REDIS_HOST: {{ .Values.tyk.redis.host | fetchSecretValue | quote }}
@@ -414,8 +411,6 @@ releases:
           ENABLE_ANALYTICS_CHAT_DETAILED_INTERACTIONS_PRISMA_CURSOR: {{ .Values.chat.nodeChat.env | get "ENABLE_ANALYTICS_CHAT_DETAILED_INTERACTIONS_PRISMA_CURSOR" true }}
           ASSISTANT_CORE_API_URL: {{ .Values.chat.nodeChat.env | get "ASSISTANT_CORE_API_URL" "http://assistants-core.chat.svc.cluster.local:8081/core" }}
           CHAT_LLM_INITIAL_REQUEST_TIMEOUT: {{ .Values.chat.nodeChat.env | get "CHAT_LLM_INITIAL_REQUEST_TIMEOUT" 20000 }}
-          FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: {{ .Values.chat.nodeChat.env | get "FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099" false }}
-          FEATURE_FLAG_ENABLE_MCP_UN_11963: {{ .Values.chat.nodeChat.env | get "FEATURE_FLAG_ENABLE_MCP_UN_11963" false }}
           MCP_POLICY_MODE: {{ .Values.chat.nodeChat.env | get "MCP_POLICY_MODE" "UNRESTRICTED" }}
           MCP_ALLOWED_ENDPOINTS: {{ .Values.chat.nodeChat.env | get "MCP_ALLOWED_ENDPOINTS" "*" | quote }}
           MCP_DENIED_ENDPOINTS: {{ .Values.chat.nodeChat.env | get "MCP_DENIED_ENDPOINTS" "" | quote }}
@@ -424,6 +419,9 @@ releases:
           ADMIN_FRONTEND_URL: https://{{ .Values.host }}/admin
           DATABASE_CONNECTION_POOL_LIMIT: {{ .Values.chat.nodeChat.env | get "DATABASE_CONNECTION_POOL_LIMIT" 10 | quote }}
           PG_DATABASE_SSL_MODE: "verify"
+          DEEP_RESEARCH_MAX_EXECUTION_TIME_IN_MINUTES: {{ .Values.chat.nodeChat.env | get "DEEP_RESEARCH_MAX_EXECUTION_TIME_IN_MINUTES" 15 | quote }}
+          DEEP_RESEARCH_MAX_PARALLEL_EXECUTIONS_PER_COMPANY: {{ .Values.chat.nodeChat.env | get "DEEP_RESEARCH_MAX_PARALLEL_EXECUTIONS_PER_COMPANY" 5 | quote }}
+          SOURCE_AVAILABLE_TOOLS_REMOTELY: {{ .Values.chat.nodeChat.env | get "SOURCE_AVAILABLE_TOOLS_REMOTELY" false }}
         envSecrets:
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/chat"
           PUBSUB_REDIS_PASSWORD: {{ .Values.tyk.redis.password | fetchSecretValue | quote }}
@@ -454,7 +452,7 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /home/node/app/services/node-chat/prisma; npx prisma migrate deploy --config ../prisma.config.ts; cd /home/node/app/services/node-chat/dist; RUNNING_MODE=DATA_MIGRATION node /home/node/app/services/node-chat/dist/main.js;
+              cd /home/node/app/services/node-chat/prisma; pnpm exec prisma migrate deploy --config ../prisma.config.ts; cd /home/node/app/services/node-chat/dist; RUNNING_MODE=DATA_MIGRATION node /home/node/app/services/node-chat/dist/main.js;
         cronJob:
           enabled: true
           name: data-redaction-task
@@ -506,12 +504,6 @@ releases:
             {{ "#" }}{{ .Values.chat.nextTheme.env.STATIC_BACKGROUND_COLOR }}
           STATIC_TAB_NAME: {{ .Values.chat.nextTheme.env.STATIC_TAB_NAME | quote }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
-          FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416 | quote }}
-          FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608 | quote }}
-          FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099 | quote }}
-          FEATURE_FLAG_ENABLE_MCP_UN_11963: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_ENABLE_MCP_UN_11963 | quote }}
-          FEATURE_FLAG_CONFIGURE_FILE_METADATA_UN_10908: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_CONFIGURE_FILE_METADATA_UN_10908 | quote }}
-          FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: {{ .Values.chat.nextKnowledgeUpload.env.FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660 | quote }}
         resources:
           {{ .Values.chat.nextKnowledgeUpload.resources | toYaml | nindent 10 }}
         securityContext:
@@ -553,6 +545,7 @@ releases:
           APP_REPOSITORY_BACKEND_API_URL: https://api.{{ .Values.host }}/apps
           CHAT_APP_URL: https://{{ .Values.host }}/chat
           CHAT_BACKEND_API_URL: https://api.{{ .Values.host }}/chat
+          REFLECTOR_BACKEND_API_URL: https://reflector.{{ .Values.host }}
           INGESTION_BACKEND_API_URL: https://api.{{ .Values.host }}/ingestion
           SCOPE_MANAGEMENT_BACKEND_API_URL: https://api.{{ .Values.host }}/scope-management
           THEME_BACKEND_API_URL: https://api.{{ .Values.host }}/configuration
@@ -569,15 +562,8 @@ releases:
           MAX_HEAP_MB: {{ .Values.chat.nextChat.env | get "MAX_HEAP_MB" 400 }}
           STATIC_BACKGROUND_COLOR:  >-
             {{ "#" }}{{ .Values.chat.nextTheme.env.STATIC_BACKGROUND_COLOR }}
-          FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: {{ .Values.chat.nextChat.env | get "FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747" "" | quote }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
           FILE_TYPES_DOCUMENT_TRANSLATOR: {{ .Values.chat.nextChat.env.FILE_TYPES_DOCUMENT_TRANSLATOR | quote }}
-          FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270 | quote }}
-          FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: {{ .Values.chat.nextChat.env.FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416 | quote }}
-          FEATURE_FLAG_ENABLE_ADVANCED_FORMATTING_UN_9758: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_ADVANCED_FORMATTING_UN_9758 | quote }}
-          FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203 | quote }}
-          FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099 | quote }}
-          FEATURE_FLAG_ENABLE_MCP_UN_11963: {{ .Values.chat.nextChat.env.FEATURE_FLAG_ENABLE_MCP_UN_11963 | quote }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
         routes:
@@ -627,9 +613,6 @@ releases:
           MAX_HEAP_MB: {{ .Values.chat.nextTheme.env.MAX_HEAP_MB }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
           SCOPE_MANAGEMENT_BACKEND_API_URL: https://api.{{ .Values.host }}/scope-management
-          FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: {{ .Values.chat.nextTheme.env.FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416 | quote }}
-          FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: {{ .Values.chat.nextTheme.env.FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099 | quote }}
-          FEATURE_FLAG_ENABLE_MCP_UN_11963: {{ .Values.chat.nextTheme.env.FEATURE_FLAG_ENABLE_MCP_UN_11963 | quote }}
         securityContext: null # FIXME should be set but we did not want to change it
         routes:
           {{- $routes := .Values.chat.nextTheme.routes | deepCopy }}
@@ -682,10 +665,8 @@ releases:
           STATIC_TAB_NAME: {{ .Values.chat.nextTheme.env.STATIC_TAB_NAME | quote }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
           INGESTION_BACKEND_API_URL: https://api.{{ .Values.host }}/ingestion
-          FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: {{ .Values.chat.nextAdmin.env.FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416 | quote }}
-          FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: {{ .Values.chat.nextAdmin.env.FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099 | quote }}
-          FEATURE_FLAG_ENABLE_MCP_UN_11963: {{ .Values.chat.nextAdmin.env.FEATURE_FLAG_ENABLE_MCP_UN_11963 | quote }}
-          FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: {{ .Values.chat.nextAdmin.env.FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203 | quote }}
+          FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: {{ .Values.chat.configurationBackend.env | get "FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099" false }}
+          FEATURE_FLAG_ENABLE_MCP_UN_11963: {{ .Values.chat.configurationBackend.env | get "FEATURE_FLAG_ENABLE_MCP_UN_11963" false }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
         routes:
@@ -725,6 +706,41 @@ releases:
           CORS_ALLOWED_ORIGINS: https://{{ .Values.host }}
           MAX_HEAP_MB: {{ .Values.chat.configurationBackend.env.MAX_HEAP_MB }}
           PG_DATABASE_SSL_MODE: "verify"
+          FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660 | quote }}
+          FEATURE_FLAG_ENABLE_SEARCH_ADAPTER_ELASTICSEARCH_UN_9883: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_SEARCH_ADAPTER_ELASTICSEARCH_UN_9883 | quote }}
+          FEATURE_FLAG_ENABLE_ELASTICSEARCH_INDEXING: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_ELASTICSEARCH_INDEXING | quote }}
+          FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444 | quote }}
+          FEATURE_FLAG_ENABLE_LANDSCAPED_PDF_PAGE_BASED_CHUNKING_UN_10606: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_LANDSCAPED_PDF_PAGE_BASED_CHUNKING_UN_10606 | quote }}
+          FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: {{ .Values.chat.configurationBackend.env | get "FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099" false }}
+          FEATURE_FLAG_ENABLE_MCP_UN_11963: {{ .Values.chat.configurationBackend.env | get "FEATURE_FLAG_ENABLE_MCP_UN_11963" false }}
+          FEATURE_FLAG_ENABLE_MCP_TOOL_REFRESH_UN_19255: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_MCP_TOOL_REFRESH_UN_19255 | quote }}
+          FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416 | quote }}
+          FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608 | quote }}
+          FEATURE_FLAG_CONFIGURE_FILE_METADATA_UN_10908: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_CONFIGURE_FILE_METADATA_UN_10908 | quote }}
+          FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: {{ .Values.chat.configurationBackend.env | get "FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747" "" | quote }}
+          FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270 | quote }}
+          FEATURE_FLAG_ENABLE_ADVANCED_FORMATTING_UN_9758: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_ADVANCED_FORMATTING_UN_9758 | quote }}
+          FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203 | quote }}
+          FEATURE_FLAG_ENABLE_HTML_RENDERING_UN_15131: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_HTML_RENDERING_UN_15131 | quote }}
+          FEATURE_FLAG_ENABLE_DEEP_RESEARCH_UN_12630: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_DEEP_RESEARCH_UN_12630 | quote }}
+          FEATURE_FLAG_ENABLE_THINKING_STEPS_UN_13848: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_THINKING_STEPS_UN_13848 | quote }}
+          FEATURE_FLAG_ENABLE_CODE_EXECUTION_UN_17498: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_CODE_EXECUTION_UN_17498 | quote }}
+          FEATURE_FLAG_USE_OPENAI_V1_13819: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_USE_OPENAI_V1_13819 | quote }}
+          FEATURE_FLAG_ENABLE_NEW_ANSWERS_UI_UN_14411: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_NEW_ANSWERS_UI_UN_14411 | quote }}
+          FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392 | quote }}
+          FEATURE_FLAG_ENABLE_MOVE_FILE_UN_15517: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_MOVE_FILE_UN_15517 | quote }}
+          FEATURE_FLAG_ENABLE_MOVE_FOLDER_UN_16037: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_MOVE_FOLDER_UN_16037 | quote }}
+          FEATURE_FLAG_ENABLE_MAGIC_TABLE_UN_8472: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_MAGIC_TABLE_UN_8472 | quote }}
+          FEATURE_FLAG_AGENTIC_TABLE_ERROR_BANNER_UN_11777: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_ERROR_BANNER_UN_11777 | quote }}
+          FEATURE_FLAG_AGENTIC_TABLE_CONTEXT_UN_14904: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_CONTEXT_UN_14904 | quote }}
+          FEATURE_FLAG_AGENTIC_TABLE_SHEET_METADATA_UN_14904: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_SHEET_METADATA_UN_14904 | quote }}
+          FEATURE_FLAG_AGENTIC_TABLE_ROW_METADATA_UN_14904: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_ROW_METADATA_UN_14904 | quote }}
+          FEATURE_FLAG_AGENTIC_TABLE_REFERENCE_SIDEBAR_COMPONENTS_UN_16483: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_REFERENCE_SIDEBAR_COMPONENTS_UN_16483 | quote }}
+          FEATURE_FLAG_ENABLE_SUB_AGENTS_UN_13661: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_SUB_AGENTS_UN_13661 | quote }}
+          FEATURE_FLAG_ENABLE_END_USER_SPACE_UN_8855: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_END_USER_SPACE_UN_8855 | quote }}
+          FEATURE_FLAG_SET_PRIVATE_FOLDER_ACCESS_DEFAULT_UN_13988: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_SET_PRIVATE_FOLDER_ACCESS_DEFAULT_UN_13988 | quote }}
+          FEATURE_FLAG_ENABLE_SESSION_TIMEOUT_UN_15656: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_SESSION_TIMEOUT_UN_15656 | quote }}
+          FEATURE_FLAG_ENABLE_AGENTIC_METADATA_EXTRACTION_UN_15619: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_AGENTIC_METADATA_EXTRACTION_UN_15619 | quote }}
         envSecrets:
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/theme"
         securityContext:
@@ -739,13 +755,19 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /home/node/app/services/configuration-backend/prisma; npx prisma migrate deploy --config ../prisma.config.ts;
+              cd /home/node/app/services/configuration-backend/prisma; pnpm exec prisma migrate deploy --config ../prisma.config.ts;
         auditVolume:
           enabled: {{ .Values.chat._common.auditVolume.enabled }}
           mountPath: /audit
           attributes:
             resourceGroup: {{ .Values.chat._common.auditVolume.resourceGroup | fetchSecretValue | quote }}
             storageAccount: {{ .Values.chat._common.auditVolume.storageAccount | fetchSecretValue | quote }}
+        autoscaling:
+          enabled: true
+          minReplicas: {{ .Values.chat.configurationBackend | get "replicaCount" 2 }}
+          maxReplicas: 6
+          targetCPUUtilizationPercentage: 80
+          targetMemoryUtilizationPercentage: 80
   - name: node-scope-management
     chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
     version: 6.1.0
@@ -773,11 +795,10 @@ releases:
           MAX_HEAP_MB: {{ .Values.chat.nodeScopeManagement.env.MAX_HEAP_MB }}
           INGESTION_API_URL: http://node-ingestion.chat.svc.cluster.local:8091
           CHAT_API_URL: http://node-chat.chat.svc.cluster.local:8093
+          CONFIGURATION_BACKEND_URL: http://configuration-backend.chat.svc.cluster.local:8095
           ENABLE_CLIENT_INSIGHT_SHIPPER: {{ .Values.chat.nodeScopeManagement.env | get "ENABLE_CLIENT_INSIGHT_SHIPPER" false }}
           UNIQUE_INSTALLATION_ID: {{ .Values.host }}
-          FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: {{ .Values.chat.nodeScopeManagement.env.FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608 | quote }}
           SCOPE_MANAGEMENT_IDP_ROLE_MANAGEMENT: {{ .Values.chat.nodeScopeManagement.env.SCOPE_MANAGEMENT_IDP_ROLE_MANAGEMENT | quote }}
-          FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: {{ .Values.chat.nodeScopeManagement.env.FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660 | quote }}
           DATABASE_CONNECTION_POOL_LIMIT: {{ .Values.chat.nodeScopeManagement.env | get "DATABASE_CONNECTION_POOL_LIMIT" 10 | quote }}
           PG_DATABASE_SSL_MODE: "verify"
         envSecrets:
@@ -800,7 +821,7 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /home/node/app/services/node-scope-management/prisma; npx prisma migrate deploy --config ../prisma.config.ts; cd /home/node/app/services/node-scope-management/dist; RUNNING_MODE=DATA_MIGRATION  node /home/node/app/services/node-scope-management/dist/main.js;
+              cd /home/node/app/services/node-scope-management/prisma; pnpm exec prisma migrate deploy --config ../prisma.config.ts; cd /home/node/app/services/node-scope-management/dist; RUNNING_MODE=DATA_MIGRATION  node /home/node/app/services/node-scope-management/dist/main.js;
         cronJob:
           enabled: true
           name: user-sync
@@ -841,6 +862,7 @@ releases:
         env:
           LOG_LEVEL: info
           SPEECH_SUPPORTED_LANGUAGES: {{ .Values.chat.backendServiceSpeech.env.SPEECH_SUPPORTED_LANGUAGES | quote }}
+          CONFIGURATION_BACKEND_URL: http://configuration-backend.chat.svc.cluster.local:8095
         envSecrets:
           SPEECH_PRIVATE_ENDPOINT_HOST: {{ .Values.chat.backendServiceSpeech.secrets.SPEECH_PRIVATE_ENDPOINT_HOST | fetchSecretValue | quote }}
         routes:
@@ -875,6 +897,7 @@ releases:
             enabled: true
         env:
           API_BASE: http://node-chat.chat.svc.cluster.local:8093/public
+          CONFIGURATION_BACKEND_URL: http://configuration-backend.chat.svc.cluster.local:8095
           GUNICORN_WORKERS: {{ .Values.chat.assistantsCore.env.GUNICORN_WORKERS }}
           GUNICORN_THREADS: {{ .Values.chat.assistantsCore.env.GUNICORN_THREADS }}
           AZURE_DOCUMENT_INTELLIGENCE_LOCATION: {{ .Values.chat.assistantsCore.env.AZURE_DOCUMENT_INTELLIGENCE_LOCATION | quote }}
@@ -886,6 +909,7 @@ releases:
           GOOGLE_SEARCH_API_ENDPOINT: {{ .Values.chat.assistantsCore.env.GOOGLE_SEARCH_API_ENDPOINT | quote }}
           GOOGLE_SEARCH_ENGINE_ID: {{ .Values.chat.assistantsCore.env.GOOGLE_SEARCH_ENGINE_ID | quote }}
           SIX_API_ACTIVATED_COMPANIES: {{ .Values.chat.assistantsCore.env.SIX_API_ACTIVATED_COMPANIES | quote }}
+          FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392: {{ .Values.chat.assistantsCore.env.FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392 | quote }}
         envSecrets:
           AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT_DEFINITIONS: {{ .Values.chat.assistantsCore.envSecrets.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT_DEFINITIONS | fetchSecretValue | quote }}
           GOOGLE_SEARCH_API_KEY: {{ .Values.chat.assistantsCore.envSecrets.GOOGLE_SEARCH_API_KEY | fetchSecretValue | quote }}
@@ -1289,3 +1313,111 @@ releases:
                           requests:
                             storage: 100Gi
                         storageClassName: default-zrs
+  - name: reflector
+    chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
+    version: 10.3.0
+    namespace: chat
+    createNamespace: true
+    wait: false
+    values:
+      -
+        image:
+          repository: {{ .Values.chat._common.acr.url }}/backend-service-reflector
+          tag: {{ .Values.chat._common.tenantReleaseOverrides.reflector | default .Values.chat._common.defaultReleases.reflector | quote }}
+        replicaCount: 1
+        imagePullSecrets:
+          - name: image-pull-secret
+        env:
+          LOG_LEVEL: info
+          MAX_HEAP_MB: 384
+          NODE_ENV: production
+          HTML_STORE_MAX_SLOTS: "150"
+          HTML_STORE_MAX_SIZE_BYTES: "7340032"
+          HTML_STORE_TTL_MS: "1500"
+          CONFIGURATION_BACKEND_URL: http://configuration-backend.chat.svc.cluster.local:8095
+        ports:
+          application: 5299
+        resources:
+          limits:
+            cpu: 200m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 400Mi
+        routes:
+          {{- $routes := .Values.chat.reflector.routes | deepCopy }}
+          {{- $_ := set $routes "hostname" (printf "reflector.%s" .Values.host) }}
+          {{ $routes | toYaml | nindent 10 }}
+        volumeMounts:
+          - mountPath: /tmp
+            name: tmp
+        volumes:
+          - emptyDir:
+              sizeLimit: 5Gi
+            name: tmp
+  - name: agentic-ingestion
+    chart: oci://ghcr.io/unique-ag/helm-charts/backend-service
+    version: 6.1.0
+    namespace: chat
+    createNamespace: true
+    wait: false
+    values:
+      -
+        image:
+          repository: {{ .Values.chat._common.acr.url }}/unique/agentic-ingestion
+          tag: {{ .Values.chat._common.tenantReleaseOverrides.agenticIngestion | default .Values.chat._common.defaultReleases.agenticIngestion | quote }}
+        replicaCount: 2
+        imagePullSecrets:
+          - name: image-pull-secret
+        autoscaling:
+          enabled: false
+        env:
+          API_BASE: http://node-chat.chat.svc.cluster.local:8093/public
+          DEFAULT_ENCODER_NAME: "o200k_base"
+          FEATURE_FLAG_ENABLE_AGENTIC_METADATA_EXTRACTION_UN_15619: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_AGENTIC_METADATA_EXTRACTION_UN_15619 | quote }}
+          GUNICORN_THREADS: 4
+          GUNICORN_WORKERS: 2
+          LOG_LEVEL: INFO
+          MDI_LOCATION: switzerlandnorth
+          MDI_VERSION: "2024-11-30"
+        envSecrets:
+          MDI_ENDPOINT_DEFINITIONS: {{ .Values.chat.agenticIngestion.secrets.MDI_ENDPOINT_DEFINITIONS | fetchSecretValue | quote }}
+          REDIS_HOST: {{ .Values.tyk.redis.host | fetchSecretValue | quote }}
+          REDIS_PASSWORD: {{ .Values.tyk.redis.password | fetchSecretValue | quote }}
+          REDIS_PORT: {{ .Values.tyk.redis.port | fetchSecretValue | quote }}
+        probes:
+          enabled: true
+          liveness:
+            httpGet: null
+            tcpSocket:
+              port: 8081
+          readiness:
+            httpGet: null
+            tcpSocket:
+              port: 8081
+          startup:
+            httpGet: null
+            tcpSocket:
+              port: 8081
+        resources:
+          limits:
+            memory: 8Gi
+          requests:
+            cpu: 2
+            memory: 2Gi
+        serviceAccount:
+          enabled: true
+          workloadIdentity:
+            clientId: {{ .Values.chat.agenticIngestion.secrets.WORKLOAD_IDENTITY_CLIENT_ID | fetchSecretValue | quote }}
+            enabled: true
+        ports:
+          application: 8081
+        service:
+          port: 8081
+        volumeMounts:
+          - mountPath: /tmp
+            name: tmp-volume
+        volumes:
+          - emptyDir:
+              sizeLimit: 20Gi
+            name: tmp-volume

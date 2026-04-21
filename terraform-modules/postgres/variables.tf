@@ -44,8 +44,3 @@ variable "flex_pg_backup_retention_days" {
   description = "The backup retention days for the PostgreSQL Flexible Server. Possible values are between 7 and 35 days."
   default     = 14
 }
-variable "sentinel_log_analytics_workspace_id" {
-  description = "Resource ID of the Log Analytics Workspace used by Sentinel for audit log forwarding"
-  type        = string
-  default     = "/subscriptions/926bb92d-ce73-43e5-97eb-9965e0f0b238/resourceGroups/rg-infra-security-sentinel/providers/Microsoft.OperationalInsights/workspaces/law-infra-security-sentinel"
-}

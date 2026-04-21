@@ -11,29 +11,24 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:             "2026.10.9"
-      nextKnowledgeUpload:  "2026.10.9"
-      nextTheme:            "2026.10.9"
-      nextAdmin:            "2026.10.9"
-      nodeChat:             "2026.10.9"
-      nodeIngestion:        "2026.10.9"
-      nodeIngestionWorker:  "2026.10.9"
-      configurationBackend: "2026.10.9"
-      nodeScopeManagement:  "2026.10.9"
-      backendServiceSpeech: "2026.10.9"
-      assistantsCore:       "2026.10.9"
+      nextChat:             "2026.16.5"
+      nextKnowledgeUpload:  "2026.16.5"
+      nextTheme:            "2026.16.5"
+      nextAdmin:            "2026.16.5"
+      nodeChat:             "2026.16.5"
+      nodeIngestion:        "2026.16.5"
+      nodeIngestionWorker:  "2026.16.5"
+      configurationBackend: "2026.16.5"
+      nodeScopeManagement:  "2026.16.5"
+      backendServiceSpeech: "2026.16.5"
+      assistantsCore:       "2026.16.5"
+      reflector:            "2026.16.5"
+      agenticIngestion:     "2026.16.5"
   nextChat:
     env:
       MAX_FILE_SIZE_IN_MB: 512
       MAX_HEAP_MB: 400
-      FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: "true"
       FILE_TYPES_DOCUMENT_TRANSLATOR: "docx,xlsx,pptx"
-      FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270: "false"
-      FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "false"
-      FEATURE_FLAG_ENABLE_ADVANCED_FORMATTING_UN_9758: "true"
-      FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: "true" # enable spaces 2.0, BETA feature
-      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "false" # BETA MCP admin feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # BETA MCP feature, only enable for DEV/TEST
     resources:
       requests:
         cpu: 300m
@@ -56,11 +51,6 @@ chat:
   nextKnowledgeUpload:
     env:
       MAX_HEAP_MB: 400
-      FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "false"
-      FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: "false"
-      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "false" # BETA MCP admin feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # BETA MCP feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "false" # Experimental feature, only enable for DEV/TEST
     resources:
       requests:
         cpu: 300m
@@ -80,9 +70,6 @@ chat:
   nextTheme:
     env:
       MAX_HEAP_MB: 400
-      FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "false"
-      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "false" # BETA MCP admin feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # BETA MCP feature, only enable for DEV/TEST
     resources:
       requests:
         cpu: 300m
@@ -102,10 +89,6 @@ chat:
   nextAdmin:
     env:
       MAX_HEAP_MB: 400
-      FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "false"
-      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "false" # BETA MCP admin feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # BETA MCP feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: "true" # enable spaces 2.0, BETA feature
     resources:
       requests:
         cpu: 300m
@@ -154,19 +137,19 @@ chat:
         ]
       ENABLE_CLIENT_INSIGHT_SHIPPER: "true"
       MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER: "30"
-      FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: "true"
       APP_REPOSITORY_URL: http://node-app-repository.apps.svc.cluster.local:8088
       ENABLE_DOWNLOAD_UPLOAD_FILES_AS_STREAM: "true"
       ENABLE_UPLOAD_CHAT_INTERACTIONS_AS_STREAM: "true"
       ENABLE_ANALYTICS_CHAT_DETAILED_INTERACTIONS_PRISMA_CURSOR: "true"
       ASSISTANT_CORE_API_URL: http://assistants-core.chat.svc.cluster.local:8081/core
       CHAT_LLM_INITIAL_REQUEST_TIMEOUT: 20000
-      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "false" # BETA MCP admin feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # BETA MCP feature, only enable for DEV/TEST
       MCP_POLICY_MODE: "UNRESTRICTED" # STRICT | PATTERN | UNRESTRICTED
       MCP_ALLOWED_ENDPOINTS: "*" # Examples: *.unique.app, mcp.*.com
       MCP_DENIED_ENDPOINTS: ""
       CACHE_REDIS_DB: 3
+      DEEP_RESEARCH_MAX_EXECUTION_TIME_IN_MINUTES: 15
+      DEEP_RESEARCH_MAX_PARALLEL_EXECUTIONS_PER_COMPANY: 5
+      SOURCE_AVAILABLE_TOOLS_REMOTELY: "true"
     resources:
       requests:
         cpu: 2
@@ -197,9 +180,6 @@ chat:
       FILE_RETENTION_IN_DAYS: 7
       MAX_REQUEST_BODY_SIZE: '30mb'
       PDF_READ_MODE: DOC_INTELLIGENCE_DEFAULT # Uses MDI for ingestion. Unique recommends this as default if MDI is available.
-      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "false" # experimental file-based access feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_SEARCH_ADAPTER_ELASTICSEARCH_UN_9883: "true" 
-      FEATURE_FLAG_ENABLE_ELASTICSEARCH_INDEXING: "true"
     resources:
       requests:
         cpu: 2
@@ -223,8 +203,6 @@ chat:
       NUMBER_OF_PDF_PAGES_IN_PARALLEL: 25
       CONVERT_OFFICE_FILES_TO_PDF: "true"
       THREAD_TASK_TIMEOUT_MS: "3600000"
-      FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444: "true"
-      FEATURE_FLAG_ENABLE_LANDSCAPED_PDF_PAGE_BASED_CHUNKING_UN_10606: "true"
       CUSTOM_API_DEFINITIONS: >-
         [ 
         {"identifier": "Unique Text Extraction API", "url": "http://assistants-core.chat.svc.cluster.local:8081/core/text-extractions"}, 
@@ -248,6 +226,40 @@ chat:
   configurationBackend:
     env:
       MAX_HEAP_MB: 384
+      FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: "true"
+      FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270: "false"
+      FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: "false"
+      FEATURE_FLAG_ENABLE_ADVANCED_FORMATTING_UN_9758: "true"
+      FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: "true" # enable spaces 2.0, BETA feature
+      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "false" # BETA MCP admin feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # BETA MCP feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MCP_TOOL_REFRESH_UN_19255: "false" # BETA MCP tool refresh button feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: "false"
+      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_SEARCH_ADAPTER_ELASTICSEARCH_UN_9883: "true" 
+      FEATURE_FLAG_ENABLE_ELASTICSEARCH_INDEXING: "true"
+      FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444: "true"
+      FEATURE_FLAG_ENABLE_LANDSCAPED_PDF_PAGE_BASED_CHUNKING_UN_10606: "true"
+      FEATURE_FLAG_ENABLE_HTML_RENDERING_UN_15131: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_DEEP_RESEARCH_UN_12630: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_THINKING_STEPS_UN_13848: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_CODE_EXECUTION_UN_17498: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_USE_OPENAI_V1_13819: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_NEW_ANSWERS_UI_UN_14411: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MOVE_FILE_UN_15517: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MOVE_FOLDER_UN_16037: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MAGIC_TABLE_UN_8472: "false"
+      FEATURE_FLAG_AGENTIC_TABLE_ERROR_BANNER_UN_11777: "false"
+      FEATURE_FLAG_AGENTIC_TABLE_CONTEXT_UN_14904: "false"
+      FEATURE_FLAG_AGENTIC_TABLE_SHEET_METADATA_UN_14904: "false"
+      FEATURE_FLAG_AGENTIC_TABLE_ROW_METADATA_UN_14904: "false"
+      FEATURE_FLAG_AGENTIC_TABLE_REFERENCE_SIDEBAR_COMPONENTS_UN_16483: "false"
+      FEATURE_FLAG_ENABLE_SUB_AGENTS_UN_13661: "false"
+      FEATURE_FLAG_ENABLE_END_USER_SPACE_UN_8855: "false"
+      FEATURE_FLAG_SET_PRIVATE_FOLDER_ACCESS_DEFAULT_UN_13988: "false"
+      FEATURE_FLAG_ENABLE_SESSION_TIMEOUT_UN_15656: "false" # Enables automatic session timeout after 30 minutes
+      FEATURE_FLAG_ENABLE_AGENTIC_METADATA_EXTRACTION_UN_15619: "false" # Experimental feature, only enable for DEV/TEST
     resources:
       requests:
         cpu: 500m
@@ -268,8 +280,6 @@ chat:
       MAX_HEAP_MB: 1750
       ENABLE_CLIENT_INSIGHT_SHIPPER: "true"
       SCOPE_MANAGEMENT_IDP_ROLE_MANAGEMENT: "GRANT_AND_REVOKE"
-      FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: "false"
-      FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "false" # experimental file-based access feature, only enable for DEV/TEST
     resources:
       requests:
         cpu: 1
@@ -336,6 +346,27 @@ chat:
           enabled: true
         probe:
           enabled: true
+  reflector:
+    routes:
+      hostname: unset_default_value
+      pathPrefix: "/"
+      paths:
+        default:
+          extraAnnotations:
+            external-dns.alpha.kubernetes.io/enabled: "true"
+        probe:
+          enabled: true
+        scoped:
+          enabled: true
+          allowList:
+            - # matches GET /scoped/html-store/{id}
+              path: /html-store
+              type: PathPrefix
+              methods:
+                - GET
+          extraAnnotations:
+            external-dns.alpha.kubernetes.io/enabled: "true"
+            konghq.com/methods: GET
   assistantsCore:
     env:
       GUNICORN_WORKERS: 2
@@ -348,6 +379,7 @@ chat:
       ENABLED_MIME_TYPES_DOCUMENT_TRANSLATION: '["DOCX", "MSEXCEL", "EXCEL", "PPT", "MSPPT"]'
       GOOGLE_SEARCH_API_ENDPOINT: https://customsearch.googleapis.com/customsearch/v1
       GOOGLE_SEARCH_ENGINE_ID: unset_default_value
+      FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392: "false" # Experimental feature, only enable for DEV/TEST
     resources:
       requests:
         cpu: 1

@@ -138,7 +138,7 @@ module "cluster" {
   appgw_5xx_alert_threshold       = var.appgw_5xx_alert_threshold
   domain_config = {
     name        = local.base_domain
-    sub_domains = ["api", "id"]
+    sub_domains = ["api", "id", "reflector"]
   }
   azure_prometheus_grafana_monitor = {
     enabled                = true
@@ -264,6 +264,11 @@ module "workload_identities" {
       namespace   = "chat"
       roles       = ["Cognitive Services User" /* Speech Service */]
     }
+    agentic-ingestion = {
+      keyvault_id = module.chat.keyvault_id
+      namespace   = "chat"
+      roles       = ["Cognitive Services User" /* Document Intelligence */]
+    }
   }
 }
 module "chat" {
@@ -338,7 +343,7 @@ module "switzerlandnorth" {
   ]
 }
 module "speech_service" {
-  source              = "github.com/unique-ag/terraform-modules.git//modules/azure-speech-service?depth=1&ref=azure-speech-service@4.1.0"
+  source              = "github.com/unique-ag/terraform-modules.git//modules/azure-speech-service?ref=0b403eb50496da428ec54d6ee12a26dff4c9629d"
   key_vault_id        = module.chat.keyvault_id
   resource_group_name = module.context.rg_app_main.name
   speech_service_name = "speech-service"
@@ -360,6 +365,6 @@ module "speech_service" {
   }
 }
 module "sharepoint-connector-secrets" {
-  source       = "github.com/unique-ag/connectors.git//services/sharepoint-connector/deploy/terraform/azure/sharepoint-connector-secrets?depth=1&ref=sharepoint-connector%40v2.0.0-beta.6"
+  source       = "github.com/unique-ag/connectors.git//services/sharepoint-connector/deploy/terraform/azure/sharepoint-connector-secrets?ref=6c0d76429670256d85e34d07e420ac7b3e3dc029"
   key_vault_id = module.automation.keyvault_id
 }

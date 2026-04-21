@@ -7,8 +7,6 @@ environments:
 repositories:
   - name: bedag
     url: https://bedag.github.io/helm-charts
-  - name: sharepoint-connector
-    url: git+https://github.com/Unique-AG/connectors@services/sharepoint-connector/deploy/helm-charts?ref=sharepoint-connector@v2.0.0-beta.6&depupdate=1
 releases:
   - name: sharepoint-connector-secret
     chart: bedag/raw
@@ -27,8 +25,8 @@ releases:
               UNIQUE_ZITADEL_CLIENT_SECRET: {{ .Values.sharepointConnector.secrets.UNIQUE_ZITADEL_CLIENT_SECRET | fetchSecretValue | b64enc | quote }}
               key.pem: {{ .Values.sharepointConnector.secrets.KEY_PEM | fetchSecretValue | b64enc | quote }}
   - name: sharepoint-connector
-    chart: sharepoint-connector/sharepoint-connector
-    version: 2.0.0-beta.6
+    chart: oci://ghcr.io/unique-ag/connectors/helm/sharepoint-connector
+    version: 2.6.0
     namespace: apps
     createNamespace: true
     wait: false
@@ -42,39 +40,26 @@ releases:
               clientId: {{ .Values.sharepointConnector.connector.serviceAccount.workloadIdentity.clientId }}
         connectorConfig:
           sharepoint:
+            tenantId: {{ .Values.sharepointConnector.connectorConfig.sharepoint.tenantId }}
             baseUrl: {{ .Values.sharepointConnector.connectorConfig.sharepoint.baseUrl }}
-            siteIds:
-              {{ .Values.sharepointConnector.connectorConfig.sharepoint.siteIds | toYaml | nindent 14 }}
-            syncColumnName: {{ .Values.sharepointConnector.connectorConfig.sharepoint.syncColumnName }}
+            # -- Sites source configuration
+            # Determines how sites are configured: from static YAML (config_file) or dynamically from SharePoint list (sharepoint_list)
+            # possible values: config_file, sharepoint_list
+            sitesSource: config_file
+            sites:
+              {{ .Values.sharepointConnector.connectorConfig.sharepoint.sites | toYaml | nindent 14 }}
             auth:
               clientId: {{ .Values.sharepointConnector.connectorConfig.sharepoint.auth.clientId }}
-              tenantId: {{ .Values.sharepointConnector.connectorConfig.sharepoint.auth.tenantId }}
               thumbprintSha1: {{ .Values.sharepointConnector.connectorConfig.sharepoint.auth.thumbprintSha1 }}
           unique:
             ingestionServiceBaseUrl: http://node-ingestion.chat.svc.cluster.local:8091
             scopeManagementServiceBaseUrl: http://node-scope-management.chat.svc.cluster.local:8094
-            scopeId: {{ .Values.sharepointConnector.connectorConfig.unique.scopeId }}
-            # -- Maximum number of files to ingest per site in a single run.
-            # If the number of new + updated files for a site exceeds this limit, the sync for that site will fail.
-            maxIngestedFiles: 10000
-            # -- Whether to store content internally in Unique or not. Required for reference document preview feature.
-            # possible values: enabled, disabled
-            storeInternally: enabled
             # -- Object containing extra HTTP headers for Unique API requests (GraphQL and REST)
             # Required when authMode is cluster_local. Must contain x-company-id and x-user-id headers.
             # example: {"x-company-id": "1234567890", "x-user-id": "1234567890"}
             serviceExtraHeaders:
               x-company-id: {{ index .Values.sharepointConnector.connectorConfig.unique.serviceExtraHeaders "x-company-id" | quote }}
               x-user-id: {{ index .Values.sharepointConnector.connectorConfig.unique.serviceExtraHeaders "x-user-id" | quote }}
-            zitadel:
-              clientId: {{ .Values.sharepointConnector.connectorConfig.unique.zitadel.clientId | quote }}
-              oauthTokenUrl: http://zitadel.system.svc.cluster.local:8080/oauth/v2/token
-              projectId: {{ .Values.sharepointConnector.connectorConfig.unique.zitadel.projectId | quote }}
           processing:
-            # -- mode of synchronization from SharePoint to Unique.
-            # Possible values:
-            # - content_only: sync only the content,
-            # - content_and_permissions: sync both content and permissions,
-            syncMode: content_only # content_and_permissions
             # -- cron expression for the scheduled SharePoint scan interval default: every 15 minutes
             scanIntervalCron: {{ .Values.sharepointConnector.connectorConfig.processing.scanIntervalCron | quote }}
