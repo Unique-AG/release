@@ -60,6 +60,7 @@ chat:
       FEATURE_FLAG_SET_PRIVATE_FOLDER_ACCESS_DEFAULT_UN_13988: "true"
       FEATURE_FLAG_ENABLE_SESSION_TIMEOUT_UN_15656: "false" # Enables automatic session timeout after 30 minutes
       FEATURE_FLAG_ENABLE_AGENTIC_METADATA_EXTRACTION_UN_15619: "true" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_IMAGE_CONTENT_EXTRACTION_UN_17223: "true" # Experimental feature, only enable for DEV/TEST
   nodeChat:
     secrets:
       WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-node-chat

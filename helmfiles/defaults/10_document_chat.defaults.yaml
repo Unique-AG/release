@@ -11,19 +11,19 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:             "2026.16.5"
-      nextKnowledgeUpload:  "2026.16.5"
-      nextTheme:            "2026.16.5"
-      nextAdmin:            "2026.16.5"
-      nodeChat:             "2026.16.5"
-      nodeIngestion:        "2026.16.5"
-      nodeIngestionWorker:  "2026.16.5"
-      configurationBackend: "2026.16.5"
-      nodeScopeManagement:  "2026.16.5"
-      backendServiceSpeech: "2026.16.5"
-      assistantsCore:       "2026.16.5"
-      reflector:            "2026.16.5"
-      agenticIngestion:     "2026.16.5"
+      nextChat:             "2026.16.7"
+      nextKnowledgeUpload:  "2026.16.7"
+      nextTheme:            "2026.16.7"
+      nextAdmin:            "2026.16.7"
+      nodeChat:             "2026.16.7"
+      nodeIngestion:        "2026.16.7"
+      nodeIngestionWorker:  "2026.16.7"
+      configurationBackend: "2026.16.7"
+      nodeScopeManagement:  "2026.16.7"
+      backendServiceSpeech: "2026.16.7"
+      assistantsCore:       "2026.16.7"
+      reflector:            "2026.16.7"
+      agenticIngestion:     "2026.16.7"
   nextChat:
     env:
       MAX_FILE_SIZE_IN_MB: 512
@@ -51,6 +51,9 @@ chat:
   nextKnowledgeUpload:
     env:
       MAX_HEAP_MB: 400
+      # The language models available for image content extraction.
+      # Needs to be manually configured in the knowledge-upload app depending on the available models.
+      IMAGE_CONTENT_EXTRACTION_LANGUAGE_MODELS: "AZURE_GPT_51_2025_1113:GPT-5.1 (2025-11-13),AZURE_GPT_4o_2024_1120:GPT-4o (2024-11-20)"
     resources:
       requests:
         cpu: 300m
@@ -260,6 +263,7 @@ chat:
       FEATURE_FLAG_SET_PRIVATE_FOLDER_ACCESS_DEFAULT_UN_13988: "false"
       FEATURE_FLAG_ENABLE_SESSION_TIMEOUT_UN_15656: "false" # Enables automatic session timeout after 30 minutes
       FEATURE_FLAG_ENABLE_AGENTIC_METADATA_EXTRACTION_UN_15619: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_IMAGE_CONTENT_EXTRACTION_UN_17223: "false" # Experimental feature, only enable for DEV/TEST
     resources:
       requests:
         cpu: 500m

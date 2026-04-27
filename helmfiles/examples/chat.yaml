@@ -226,6 +226,7 @@ releases:
           CHAT_API_URL: http://node-chat.chat.svc.cluster.local:8092
           INGESTION_API_URL: http://node-ingestion.chat.svc.cluster.local:8091
           CONFIGURATION_BACKEND_URL: http://configuration-backend.chat.svc.cluster.local:8095
+          AGENTIC_INGESTION_BASE_URL: http://agentic-ingestion.chat.svc.cluster.local:8081
           AUDIT_LOG_DIR: /audit
           MAX_HEAP_MB: {{ .Values.chat.nodeIngestionWorker.env.MAX_HEAP_MB }}
           CONVERT_OFFICE_FILES_TO_PDF: {{ .Values.chat.nodeIngestionWorker.env.CONVERT_OFFICE_FILES_TO_PDF | quote }}
@@ -315,6 +316,7 @@ releases:
           CUSTOM_API_DEFINITIONS: {{ .Values.chat.nodeIngestionWorker.env.CUSTOM_API_DEFINITIONS | quote }}
           CHAT_API_URL: http://node-chat.chat.svc.cluster.local:8092
           CONFIGURATION_BACKEND_URL: http://configuration-backend.chat.svc.cluster.local:8095
+          AGENTIC_INGESTION_BASE_URL: http://agentic-ingestion.chat.svc.cluster.local:8081
         envSecrets:
           AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS: {{ .Values.chat.nodeIngestionWorker.secrets.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS | fetchSecretValue | quote }}
           AMQP_URL: {{ .Values.rabbitMQ.url | fetchSecretValue | quote }}
@@ -504,6 +506,7 @@ releases:
             {{ "#" }}{{ .Values.chat.nextTheme.env.STATIC_BACKGROUND_COLOR }}
           STATIC_TAB_NAME: {{ .Values.chat.nextTheme.env.STATIC_TAB_NAME | quote }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
+          IMAGE_CONTENT_EXTRACTION_LANGUAGE_MODELS: {{ .Values.chat.nextKnowledgeUpload.env.IMAGE_CONTENT_EXTRACTION_LANGUAGE_MODELS | quote }}
         resources:
           {{ .Values.chat.nextKnowledgeUpload.resources | toYaml | nindent 10 }}
         securityContext:
@@ -741,6 +744,7 @@ releases:
           FEATURE_FLAG_SET_PRIVATE_FOLDER_ACCESS_DEFAULT_UN_13988: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_SET_PRIVATE_FOLDER_ACCESS_DEFAULT_UN_13988 | quote }}
           FEATURE_FLAG_ENABLE_SESSION_TIMEOUT_UN_15656: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_SESSION_TIMEOUT_UN_15656 | quote }}
           FEATURE_FLAG_ENABLE_AGENTIC_METADATA_EXTRACTION_UN_15619: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_AGENTIC_METADATA_EXTRACTION_UN_15619 | quote }}
+          FEATURE_FLAG_ENABLE_IMAGE_CONTENT_EXTRACTION_UN_17223: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_IMAGE_CONTENT_EXTRACTION_UN_17223 | quote }}
         envSecrets:
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/theme"
         securityContext:
@@ -1375,6 +1379,7 @@ releases:
           API_BASE: http://node-chat.chat.svc.cluster.local:8093/public
           DEFAULT_ENCODER_NAME: "o200k_base"
           FEATURE_FLAG_ENABLE_AGENTIC_METADATA_EXTRACTION_UN_15619: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_AGENTIC_METADATA_EXTRACTION_UN_15619 | quote }}
+          FEATURE_FLAG_ENABLE_IMAGE_CONTENT_EXTRACTION_UN_17223: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_IMAGE_CONTENT_EXTRACTION_UN_17223 | quote }}
           GUNICORN_THREADS: 4
           GUNICORN_WORKERS: 2
           LOG_LEVEL: INFO
