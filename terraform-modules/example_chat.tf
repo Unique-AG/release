@@ -237,7 +237,7 @@ module "workload_identities" {
     node-chat = {
       keyvault_id = module.chat.keyvault_id
       namespace   = "chat"
-      roles       = ["Cognitive Services OpenAI User"]
+      roles       = ["Cognitive Services User"]
     }
     node-ingestion = {
       keyvault_id = module.chat.keyvault_id
