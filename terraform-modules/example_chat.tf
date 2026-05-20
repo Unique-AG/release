@@ -269,6 +269,11 @@ module "workload_identities" {
       namespace   = "chat"
       roles       = ["Cognitive Services User" /* Document Intelligence */]
     }
+    assistants-agentic-table = {
+      keyvault_id = module.chat.keyvault_id
+      namespace   = "chat"
+      roles       = ["Cognitive Services User"]
+    }
   }
 }
 module "chat" {
@@ -343,7 +348,7 @@ module "switzerlandnorth" {
   ]
 }
 module "speech_service" {
-  source              = "github.com/unique-ag/terraform-modules.git//modules/azure-speech-service?ref=0b403eb50496da428ec54d6ee12a26dff4c9629d"
+  source              = "github.com/unique-ag/terraform-modules.git//modules/azure-speech-service?ref=dc3cc760393ef366179ed5179d16e3c1547f22f2"
   key_vault_id        = module.chat.keyvault_id
   resource_group_name = module.context.rg_app_main.name
   speech_service_name = "speech-service"

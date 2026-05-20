@@ -26,7 +26,7 @@ releases:
               key.pem: {{ .Values.sharepointConnector.secrets.KEY_PEM | fetchSecretValue | b64enc | quote }}
   - name: sharepoint-connector
     chart: oci://ghcr.io/unique-ag/connectors/helm/sharepoint-connector
-    version: 2.6.0
+    version: 2.7.0
     namespace: apps
     createNamespace: true
     wait: false
@@ -42,6 +42,32 @@ releases:
           sharepoint:
             tenantId: {{ .Values.sharepointConnector.connectorConfig.sharepoint.tenantId }}
             baseUrl: {{ .Values.sharepointConnector.connectorConfig.sharepoint.baseUrl }}
+            # -- Deployment-level defaults applied to every site (config_file rows or
+            # sharepoint_list rows). Per-site values always win when set; empty/blank
+            # values fall through to these defaults. Any field except siteId may be
+            # defaulted here. Leave as `{}` to keep today's behaviour where every
+            # field is supplied per-site.
+            # Example:
+            # siteDefaults:
+            #   syncColumnName: FinanceGPTKnowledge
+            #   ingestionMode: recursive
+            #   scopeId: scope_xxx (or in_parent:scope_<parentId>)
+            #   maxFilesToIngest: 10000
+            #   storeInternally: enabled
+            #   syncStatus: active
+            #   syncMode: content_only
+            #   permissionsInheritanceMode: inherit_scopes_and_files
+            #   subsitesScan: disabled
+            siteDefaults:
+              syncColumnName: <your-sharepoint-sync-column-name>
+              ingestionMode: recursive
+              scopeId: in_parent:scope_<parentId> # root SharePoint scope
+              maxFilesToIngest: 10000
+              storeInternally: enabled
+              syncStatus: active
+              syncMode: content_only
+              permissionsInheritanceMode: inherit_scopes_and_files
+              subsitesScan: disabled
             # -- Sites source configuration
             # Determines how sites are configured: from static YAML (config_file) or dynamically from SharePoint list (sharepoint_list)
             # possible values: config_file, sharepoint_list

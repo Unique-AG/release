@@ -672,8 +672,6 @@ releases:
           STATIC_TAB_NAME: {{ .Values.chat.nextTheme.env.STATIC_TAB_NAME | quote }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
           INGESTION_BACKEND_API_URL: https://api.{{ .Values.host }}/ingestion
-          FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: {{ .Values.chat.configurationBackend.env | get "FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099" false }}
-          FEATURE_FLAG_ENABLE_MCP_UN_11963: {{ .Values.chat.configurationBackend.env | get "FEATURE_FLAG_ENABLE_MCP_UN_11963" false }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
         routes:
@@ -750,6 +748,17 @@ releases:
           FEATURE_FLAG_ENABLE_SESSION_TIMEOUT_UN_15656: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_SESSION_TIMEOUT_UN_15656 | quote }}
           FEATURE_FLAG_ENABLE_AGENTIC_METADATA_EXTRACTION_UN_15619: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_AGENTIC_METADATA_EXTRACTION_UN_15619 | quote }}
           FEATURE_FLAG_ENABLE_IMAGE_CONTENT_EXTRACTION_UN_17223: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_IMAGE_CONTENT_EXTRACTION_UN_17223 | quote }}
+          FEATURE_FLAG_ENABLE_FOLDER_PATH_RESOLUTION_FOR_EXCLUSIVE_FILE_ACCESS: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_FOLDER_PATH_RESOLUTION_FOR_EXCLUSIVE_FILE_ACCESS | quote }}
+          FEATURE_FLAG_ENABLE_SELECTED_UPLOADED_FILES_UN_18215: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_SELECTED_UPLOADED_FILES_UN_18215 | quote }}
+          FEATURE_FLAG_DEPLOYMENT_VERSION_CHECK: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_DEPLOYMENT_VERSION_CHECK | quote }}
+          FEATURE_FLAG_FILE_PREVIEW_UN_19395: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_FILE_PREVIEW_UN_19395 | quote }}
+          FEATURE_FLAG_SIDE_MENU_NAVIGATION: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_SIDE_MENU_NAVIGATION | quote }}
+          FEATURE_FLAG_AGENTIC_TABLE_ENABLE_NEW_SHARING_UI_UN_16758: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_ENABLE_NEW_SHARING_UI_UN_16758 | quote }}
+          FEATURE_FLAG_ENABLE_NEW_SPACE_ACCESS_MODAL_UN_17544: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_NEW_SPACE_ACCESS_MODAL_UN_17544 | quote }}
+          FEATURE_FLAG_ANALYTICS_TIMEZONE_UN_18143: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ANALYTICS_TIMEZONE_UN_18143 | quote }}
+          FEATURE_FLAG_ENABLE_NARRATIVE_SUGGESTED_PROMPTS_UN_19396: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_NARRATIVE_SUGGESTED_PROMPTS_UN_19396 | quote }}
+          FEATURE_FLAG_ENABLE_DYNAMIC_SCOPE_RULE_UN_17614: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_DYNAMIC_SCOPE_RULE_UN_17614 | quote }}
+          FEATURE_FLAG_ENABLE_SKILLS_UN_20042: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_SKILLS_UN_20042 | quote }}
         envSecrets:
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/theme"
         securityContext:
@@ -1432,3 +1441,29 @@ releases:
           - emptyDir:
               sizeLimit: 20Gi
             name: tmp-volume
+  - name: assistants-agentic-table
+    chart: oci://uniquecr.azurecr.io/helm/assistants-agentic-table
+    version: {{ .Values.chat._common.tenantReleaseOverrides.assistantsAgenticTable | default .Values.chat._common.defaultReleases.assistantsAgenticTable | quote }}
+    namespace: chat
+    createNamespace: true
+    wait: false
+    values:
+      -
+        replicaCount: {{ .Values.chat.assistantsAgenticTable | get "replicaCount" 2 }}
+        image:
+          registry: {{ .Values.chat._common.acr.url }}
+        imagePullSecrets:
+          - name: image-pull-secret
+        workloadIdentity:
+          azure:
+            enabled: true
+            clientId: {{ .Values.chat.assistantsAgenticTable.secrets.WORKLOAD_IDENTITY_CLIENT_ID | fetchSecretValue | quote }}
+        env:
+          UNIQUE_API_BASE_URL: http://node-chat.chat.svc.cluster.local:8093/public
+          INGESTION_UPLOAD_API_URL_INTERNAL: http://node-ingestion.chat.svc.cluster.local:8091/scoped/upload
+        resources:
+          limits:
+            memory: 8Gi
+          requests:
+            cpu: 2
+            memory: 4Gi

@@ -28,13 +28,12 @@ resource "azurerm_role_assignment" "rg_app_sec" {
   principal_id         = azurerm_user_assigned_identity.this[each.value.service].principal_id
 }
 resource "azurerm_federated_identity_credential" "this" {
-  for_each            = var.identities
-  name                = "${module.context.full_name}-federated-wid-${each.key}"
-  resource_group_name = module.context.rg_app_main.name
-  audience            = ["api://AzureADTokenExchange"]
-  issuer              = var.aks_oidc_issuer_url
-  parent_id           = azurerm_user_assigned_identity.this[each.key].id
-  subject             = "system:serviceaccount:${each.value.namespace}:${each.key}"
+  audience                  = ["api://AzureADTokenExchange"]
+  for_each                  = var.identities
+  issuer                    = var.aks_oidc_issuer_url
+  name                      = "${module.context.full_name}-federated-wid-${each.key}"
+  subject                   = "system:serviceaccount:${each.value.namespace}:${each.key}"
+  user_assigned_identity_id = azurerm_user_assigned_identity.this[each.key].id
 }
 resource "azurerm_key_vault_secret" "workload_identity_client_id" {
   for_each     = var.identities

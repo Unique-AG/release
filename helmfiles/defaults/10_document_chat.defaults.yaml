@@ -11,19 +11,20 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:             "2026.16.7"
-      nextKnowledgeUpload:  "2026.16.7"
-      nextTheme:            "2026.16.7"
-      nextAdmin:            "2026.16.7"
-      nodeChat:             "2026.16.7"
-      nodeIngestion:        "2026.16.7"
-      nodeIngestionWorker:  "2026.16.7"
-      configurationBackend: "2026.16.7"
-      nodeScopeManagement:  "2026.16.7"
-      backendServiceSpeech: "2026.16.7"
-      assistantsCore:       "2026.16.7"
-      reflector:            "2026.16.7"
-      agenticIngestion:     "2026.16.7"
+      nextChat:               "2026.20.2"
+      nextKnowledgeUpload:    "2026.20.2"
+      nextTheme:              "2026.20.2"
+      nextAdmin:              "2026.20.2"
+      nodeChat:               "2026.20.2"
+      nodeIngestion:          "2026.20.2"
+      nodeIngestionWorker:    "2026.20.2"
+      configurationBackend:   "2026.20.2"
+      nodeScopeManagement:    "2026.20.2"
+      backendServiceSpeech:   "2026.20.2"
+      assistantsCore:         "2026.20.2"
+      reflector:              "2026.20.2"
+      agenticIngestion:       "2026.20.2"
+      assistantsAgenticTable: "2026.20.2"
   nextChat:
     env:
       MAX_FILE_SIZE_IN_MB: 512
@@ -47,7 +48,7 @@ chat:
           enabled: true
           redirectPath: /chat
     strategy:
-      type: Recreate
+      type: RollingUpdate
   nextKnowledgeUpload:
     env:
       MAX_HEAP_MB: 400
@@ -69,7 +70,7 @@ chat:
         default:
           enabled: true
     strategy:
-      type: Recreate
+      type: RollingUpdate
   nextTheme:
     env:
       MAX_HEAP_MB: 400
@@ -88,7 +89,7 @@ chat:
         default:
           enabled: true
     strategy:
-      type: Recreate
+      type: RollingUpdate
   nextAdmin:
     env:
       MAX_HEAP_MB: 400
@@ -107,7 +108,7 @@ chat:
         default:
           enabled: true
     strategy:
-      type: Recreate
+      type: RollingUpdate
   nodeChat:
     env:
       PUBSUB_BACKEND: redis
@@ -134,7 +135,7 @@ chat:
         {"name": "EarningCallsBeta", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/earning_calls"},
         {"name": "HallucinationLevelEvaluation", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/evaluations/hallucination-level"},
         {"name": "DueDiligence", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/magic_table_dd"},
-        {"name": "RfpAgent", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/rfp_agent"},
+        {"name": "RfpAgent", "apiURL": "http://assistants-agentic-table.chat.svc.cluster.local:8081/agentic_table"},
         {"name": "UniqueAi", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/unique_ai"},
         {"name": "KycReviewAgent", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/kyc_review_agent"}
         ]
@@ -265,6 +266,19 @@ chat:
       FEATURE_FLAG_ENABLE_SESSION_TIMEOUT_UN_15656: "false" # Enables automatic session timeout after 30 minutes
       FEATURE_FLAG_ENABLE_AGENTIC_METADATA_EXTRACTION_UN_15619: "false" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_IMAGE_CONTENT_EXTRACTION_UN_17223: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_FOLDER_PATH_RESOLUTION_FOR_EXCLUSIVE_FILE_ACCESS: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_SELECTED_UPLOADED_FILES_UN_18215: "false"
+      # Allows rolling update strategy for frontends - prompts page refresh on update
+      # If disabled, frontend strategy needs to be set to Recreate again
+      FEATURE_FLAG_DEPLOYMENT_VERSION_CHECK: "true"
+      FEATURE_FLAG_FILE_PREVIEW_UN_19395: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_SIDE_MENU_NAVIGATION: "false" # Beta feature
+      FEATURE_FLAG_AGENTIC_TABLE_ENABLE_NEW_SHARING_UI_UN_16758: "false"
+      FEATURE_FLAG_ENABLE_NEW_SPACE_ACCESS_MODAL_UN_17544: "false" # Beta feature, only enable for DEV/TEST
+      FEATURE_FLAG_ANALYTICS_TIMEZONE_UN_18143: "false"
+      FEATURE_FLAG_ENABLE_NARRATIVE_SUGGESTED_PROMPTS_UN_19396: "false"
+      FEATURE_FLAG_ENABLE_DYNAMIC_SCOPE_RULE_UN_17614: "false" # Beta feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_SKILLS_UN_20042: "false" # Experimental feature, only enable for DEV/TEST
     resources:
       requests:
         cpu: 500m

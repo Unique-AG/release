@@ -27,6 +27,7 @@ chat:
       assistantsCore:
       reflector:
       agenticIngestion:
+      assistantsAgenticTable:
   nextTheme:
     env:
       STATIC_THEME_COLORS: {"color-primary-cta": "#D63384", "color-primary-variant": "#B2447A", "color-secondary": "#042834", "color-secondary-variant": "#03212B", "color-background": "#F7F7F7", "color-background-variant": "#EBEBED", "color-surface": "#FFFFFF", "color-control": "#D8D8D8", "color-info": "#0A96E6", "color-success-light": "#A0C855", "color-success-dark": "#3D9E3F", "color-error-light": "#F65D67", "color-error-dark": "#DC3545", "color-attention": "#FFC65C", "color-attention-variant": "#19AADA", "color-on-primary": "#FFFFFF", "color-on-secondary": "#FFFFFF", "color-on-background-main": "#02161D", "color-on-background-dimmed": "#1F505F", "color-on-surface": "#02161D", "color-on-control-main": "#02161D", "color-on-control-dimmed": "#9C9C9C", "color-on-info": "#FFFFFF", "color-on-success-light": "#FFFFFF", "color-on-success-dark": "#FFFFFF", "color-on-error-light": "#FFFFFF", "color-on-error-dark": "#FFFFFF", "color-on-attention": "#02161D", "color-on-attention-variant": "#FFFFFF"}
@@ -62,6 +63,16 @@ chat:
       FEATURE_FLAG_ENABLE_SESSION_TIMEOUT_UN_15656: "false" # Enables automatic session timeout after 30 minutes
       FEATURE_FLAG_ENABLE_AGENTIC_METADATA_EXTRACTION_UN_15619: "true" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_IMAGE_CONTENT_EXTRACTION_UN_17223: "true" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_FOLDER_PATH_RESOLUTION_FOR_EXCLUSIVE_FILE_ACCESS: "true" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_SELECTED_UPLOADED_FILES_UN_18215: "true"
+      FEATURE_FLAG_FILE_PREVIEW_UN_19395: "true" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_SIDE_MENU_NAVIGATION: "true" # Beta feature - new UI/UX for side navigation
+      FEATURE_FLAG_AGENTIC_TABLE_ENABLE_NEW_SHARING_UI_UN_16758: "true"
+      FEATURE_FLAG_ENABLE_NEW_SPACE_ACCESS_MODAL_UN_17544: "true"
+      FEATURE_FLAG_ANALYTICS_TIMEZONE_UN_18143: "true"
+      FEATURE_FLAG_ENABLE_NARRATIVE_SUGGESTED_PROMPTS_UN_19396: "true"
+      FEATURE_FLAG_ENABLE_DYNAMIC_SCOPE_RULE_UN_17614: "true" # Beta feature
+      FEATURE_FLAG_ENABLE_SKILLS_UN_20042: "true" # Experimental feature, only enable for DEV/TEST
   nodeChat:
     secrets:
       WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-node-chat
@@ -118,6 +129,9 @@ chat:
     secrets:
       WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-agentic-ingestion
       MDI_ENDPOINT_DEFINITIONS: ref+azurekeyvault://your-vault-name/azure-document-intelligence-endpoint-definitions
+  assistantsAgenticTable:
+    secrets:
+      WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-assistants-agentic-table
 # For PROD, uncomment the following block to set the release name and new replicaCount
 # qdrant:
 #   releaseName: qdrant-zrs-vdb
@@ -240,30 +254,7 @@ sharepointConnector:
         thumbprintSha1: <your-certificate-thumbprint-sha1>
       sites:
       - siteId: 00000000-0000-0000-0000-000000000000
-        syncColumnName: <your-sharepoint-sync-column-name>
-        ingestionMode: recursive
-        scopeId: scope_example123456789
-        maxFilesToIngest: 10000
-        storeInternally: enabled
-        syncStatus: active
-        syncMode: content_only
-        # -- THIS CONFIG HAS EFFECT ONLY IN CONTENT_ONLY SYNC MODE: inheritance mode for scopes and files.
-        # Allowed values: inherit_scopes_and_files, inherit_scopes, inherit_files, none.
-        # When unset, defaults to inherit_scopes_and_files; ignored in content_and_permissions.
-        permissionsInheritanceMode: inherit_scopes_and_files
-        # -- Whether to recursively discover and sync content from subsites.
-        # Allowed values: enabled, disabled. Default: disabled.
-        subsitesScan: disabled
       - siteId: 00000000-0000-0000-0000-000000000001
-        syncColumnName: <your-sharepoint-sync-column-name>
-        ingestionMode: recursive
-        scopeId: scope_example123456789
-        maxFilesToIngest: 10000
-        storeInternally: enabled
-        syncStatus: active
-        syncMode: content_only
-        permissionsInheritanceMode: inherit_scopes_and_files
-        subsitesScan: disabled
     unique:
       serviceExtraHeaders:
         x-company-id: "<your-zitadel-company-id>"
