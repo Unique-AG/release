@@ -11,20 +11,20 @@ chat:
     env:
       CONTENT_SECURITY_POLICY_VALUE: "default-src 'self'; img-src https: blob: data: *.blob.core.windows.net; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' blob: *.unique.app *.core.windows.net wss://*.unique.app; media-src 'self' *.blob.core.windows.net; frame-ancestors 'self'; frame-src 'self' https://*.unique.app;"
     defaultReleases:
-      nextChat:               "2026.20.2"
-      nextKnowledgeUpload:    "2026.20.2"
-      nextTheme:              "2026.20.2"
-      nextAdmin:              "2026.20.2"
-      nodeChat:               "2026.20.2"
-      nodeIngestion:          "2026.20.2"
-      nodeIngestionWorker:    "2026.20.2"
-      configurationBackend:   "2026.20.2"
-      nodeScopeManagement:    "2026.20.2"
-      backendServiceSpeech:   "2026.20.2"
-      assistantsCore:         "2026.20.2"
-      reflector:              "2026.20.2"
-      agenticIngestion:       "2026.20.2"
-      assistantsAgenticTable: "2026.20.2"
+      nextChat:               "2026.24.1"
+      nextKnowledgeUpload:    "2026.24.1"
+      nextTheme:              "2026.24.1"
+      nextAdmin:              "2026.24.1"
+      nodeChat:               "2026.24.1"
+      nodeIngestion:          "2026.24.1"
+      nodeIngestionWorker:    "2026.24.1"
+      configurationBackend:   "2026.24.1"
+      nodeScopeManagement:    "2026.24.1"
+      backendServiceSpeech:   "2026.24.1"
+      assistantsCore:         "2026.24.1"
+      reflector:              "2026.24.1"
+      agenticIngestion:       "2026.24.1"
+      assistantsAgenticTable: "2026.24.1"
   nextChat:
     env:
       MAX_FILE_SIZE_IN_MB: 512
@@ -252,14 +252,11 @@ chat:
       FEATURE_FLAG_USE_OPENAI_V1_13819: "false" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_NEW_ANSWERS_UI_UN_14411: "false" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392: "false" # Experimental feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_MOVE_FILE_UN_15517: "false" # Experimental feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_MOVE_FOLDER_UN_16037: "false" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_MAGIC_TABLE_UN_8472: "false"
       FEATURE_FLAG_AGENTIC_TABLE_ERROR_BANNER_UN_11777: "false"
       FEATURE_FLAG_AGENTIC_TABLE_CONTEXT_UN_14904: "false"
       FEATURE_FLAG_AGENTIC_TABLE_SHEET_METADATA_UN_14904: "false"
       FEATURE_FLAG_AGENTIC_TABLE_ROW_METADATA_UN_14904: "false"
-      FEATURE_FLAG_AGENTIC_TABLE_REFERENCE_SIDEBAR_COMPONENTS_UN_16483: "false"
       FEATURE_FLAG_ENABLE_SUB_AGENTS_UN_13661: "false"
       FEATURE_FLAG_ENABLE_END_USER_SPACE_UN_8855: "false"
       FEATURE_FLAG_SET_PRIVATE_FOLDER_ACCESS_DEFAULT_UN_13988: "false"
@@ -274,11 +271,19 @@ chat:
       FEATURE_FLAG_FILE_PREVIEW_UN_19395: "false" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_SIDE_MENU_NAVIGATION: "false" # Beta feature
       FEATURE_FLAG_AGENTIC_TABLE_ENABLE_NEW_SHARING_UI_UN_16758: "false"
-      FEATURE_FLAG_ENABLE_NEW_SPACE_ACCESS_MODAL_UN_17544: "false" # Beta feature, only enable for DEV/TEST
       FEATURE_FLAG_ANALYTICS_TIMEZONE_UN_18143: "false"
       FEATURE_FLAG_ENABLE_NARRATIVE_SUGGESTED_PROMPTS_UN_19396: "false"
       FEATURE_FLAG_ENABLE_DYNAMIC_SCOPE_RULE_UN_17614: "false" # Beta feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_SKILLS_UN_20042: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_AGENTIC_INGESTION_PAGE_BATCH_FIGURE_EXTRACTION_UN_19457: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_ATOMIC_FIGURE_CHUNKING_UN_19136: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MDI_PDF_HYPERLINK_EXTRACTION_UN_19716: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_AGENTIC_TABLE_COMMENTS_UN_17606: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_AGENTIC_TABLE_COPY_ACTION_UN_20824: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_HTML_INLINE_IMAGE_EXTRACTION_UN_20936: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MULTI_FILE_IMAGE_CONTENT_EXTRACTION_UN_20936: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_USER_MODEL_SELECTION_UN_20804: "false" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_MCP_ACCESS_CONTROL_UN_20854: "false" # Experimental feature, only enable for DEV/TEST
     resources:
       requests:
         cpu: 500m
