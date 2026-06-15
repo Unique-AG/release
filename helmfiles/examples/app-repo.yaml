@@ -57,7 +57,7 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /home/node/app/services/node-app-repository && pnpm exec prisma migrate deploy --config ../prisma.config.ts;
+              cd /home/node/app/services/node-app-repository && pnpm exec prisma migrate deploy --config prisma.config.ts;
         probes:
           enabled: false
         auditVolume:

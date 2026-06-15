@@ -158,7 +158,7 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /home/node/app/services/node-ingestion && pnpm exec prisma migrate deploy --config ../prisma.config.ts; cd /home/node/app/services/node-ingestion/dist; RUNNING_MODE=data-migration  node /home/node/app/services/node-ingestion/dist/main.js;
+              cd /home/node/app/services/node-ingestion && pnpm exec prisma migrate deploy --config prisma.config.ts; cd /home/node/app/services/node-ingestion/dist; RUNNING_MODE=data-migration  node /home/node/app/services/node-ingestion/dist/main.js;
         cronJob:
           enabled: true
           name: expired-content-deletion
@@ -458,7 +458,7 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /home/node/app/services/node-chat && pnpm exec prisma migrate deploy --config ../prisma.config.ts; cd /home/node/app/services/node-chat/dist; RUNNING_MODE=DATA_MIGRATION node /home/node/app/services/node-chat/dist/main.js;
+              cd /home/node/app/services/node-chat && pnpm exec prisma migrate deploy --config prisma.config.ts; cd /home/node/app/services/node-chat/dist; RUNNING_MODE=DATA_MIGRATION node /home/node/app/services/node-chat/dist/main.js;
         cronJob:
           enabled: true
           name: data-redaction-task
@@ -780,7 +780,7 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /home/node/app/services/configuration-backend && pnpm exec prisma migrate deploy --config ../prisma.config.ts;
+              cd /home/node/app/services/configuration-backend && pnpm exec prisma migrate deploy --config prisma.config.ts;
         auditVolume:
           enabled: {{ .Values.chat._common.auditVolume.enabled }}
           mountPath: /audit
@@ -846,7 +846,7 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /home/node/app/services/node-scope-management && pnpm exec prisma migrate deploy --config ../prisma.config.ts; cd /home/node/app/services/node-scope-management/dist; RUNNING_MODE=DATA_MIGRATION  node /home/node/app/services/node-scope-management/dist/main.js;
+              cd /home/node/app/services/node-scope-management && pnpm exec prisma migrate deploy --config prisma.config.ts; cd /home/node/app/services/node-scope-management/dist; RUNNING_MODE=DATA_MIGRATION  node /home/node/app/services/node-scope-management/dist/main.js;
         cronJob:
           enabled: true
           name: user-sync
