@@ -738,8 +738,6 @@ releases:
           FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392 | quote }}
           FEATURE_FLAG_ENABLE_MAGIC_TABLE_UN_8472: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_MAGIC_TABLE_UN_8472 | quote }}
           FEATURE_FLAG_AGENTIC_TABLE_ERROR_BANNER_UN_11777: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_ERROR_BANNER_UN_11777 | quote }}
-          FEATURE_FLAG_AGENTIC_TABLE_CONTEXT_UN_14904: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_CONTEXT_UN_14904 | quote }}
-          FEATURE_FLAG_AGENTIC_TABLE_SHEET_METADATA_UN_14904: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_SHEET_METADATA_UN_14904 | quote }}
           FEATURE_FLAG_AGENTIC_TABLE_ROW_METADATA_UN_14904: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_ROW_METADATA_UN_14904 | quote }}
           FEATURE_FLAG_ENABLE_SUB_AGENTS_UN_13661: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_SUB_AGENTS_UN_13661 | quote }}
           FEATURE_FLAG_ENABLE_END_USER_SPACE_UN_8855: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_END_USER_SPACE_UN_8855 | quote }}
@@ -752,7 +750,6 @@ releases:
           FEATURE_FLAG_DEPLOYMENT_VERSION_CHECK: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_DEPLOYMENT_VERSION_CHECK | quote }}
           FEATURE_FLAG_FILE_PREVIEW_UN_19395: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_FILE_PREVIEW_UN_19395 | quote }}
           FEATURE_FLAG_SIDE_MENU_NAVIGATION: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_SIDE_MENU_NAVIGATION | quote }}
-          FEATURE_FLAG_AGENTIC_TABLE_ENABLE_NEW_SHARING_UI_UN_16758: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_ENABLE_NEW_SHARING_UI_UN_16758 | quote }}
           FEATURE_FLAG_ANALYTICS_TIMEZONE_UN_18143: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ANALYTICS_TIMEZONE_UN_18143 | quote }}
           FEATURE_FLAG_ENABLE_NARRATIVE_SUGGESTED_PROMPTS_UN_19396: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_NARRATIVE_SUGGESTED_PROMPTS_UN_19396 | quote }}
           FEATURE_FLAG_ENABLE_DYNAMIC_SCOPE_RULE_UN_17614: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_DYNAMIC_SCOPE_RULE_UN_17614 | quote }}
@@ -766,6 +763,12 @@ releases:
           FEATURE_FLAG_ENABLE_MULTI_FILE_IMAGE_CONTENT_EXTRACTION_UN_20936: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_MULTI_FILE_IMAGE_CONTENT_EXTRACTION_UN_20936 | quote }}
           FEATURE_FLAG_ENABLE_USER_MODEL_SELECTION_UN_20804: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_USER_MODEL_SELECTION_UN_20804 | quote }}
           FEATURE_FLAG_ENABLE_MCP_ACCESS_CONTROL_UN_20854: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_MCP_ACCESS_CONTROL_UN_20854 | quote }}
+          FEATURE_FLAG_SAVE_MODEL_USAGE_UN_12832: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_SAVE_MODEL_USAGE_UN_12832 | quote }}
+          FEATURE_FLAG_SAVE_MODEL_USAGE_DASHBOARD_UN_18889: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_SAVE_MODEL_USAGE_DASHBOARD_UN_18889 | quote }}
+          FEATURE_FLAG_MODEL_USAGE_LIMITS_UN_18889: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_MODEL_USAGE_LIMITS_UN_18889 | quote }}
+          FEATURE_FLAG_AGENTIC_TABLE_METADATA_FORM_UN_17903: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_METADATA_FORM_UN_17903 | quote }}
+          FEATURE_FLAG_AGENTIC_TABLE_CAN_ANSWER_ROLE_UN_21308: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_CAN_ANSWER_ROLE_UN_21308 | quote }}
+          FEATURE_FLAG_ENABLE_FULL_WIDTH_SCROLL_UN_19453: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_FULL_WIDTH_SCROLL_UN_19453 | quote }}
         envSecrets:
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/theme"
         securityContext:
