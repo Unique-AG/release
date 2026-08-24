@@ -28,6 +28,7 @@ chat:
       reflector:
       agenticIngestion:
       assistantsAgenticTable:
+      uniqueApi:
   nextTheme:
     env:
       STATIC_THEME_COLORS: {"color-primary-cta": "#D63384", "color-primary-variant": "#B2447A", "color-secondary": "#042834", "color-secondary-variant": "#03212B", "color-background": "#F7F7F7", "color-background-variant": "#EBEBED", "color-surface": "#FFFFFF", "color-control": "#D8D8D8", "color-info": "#0A96E6", "color-success-light": "#A0C855", "color-success-dark": "#3D9E3F", "color-error-light": "#F65D67", "color-error-dark": "#DC3545", "color-attention": "#FFC65C", "color-attention-variant": "#19AADA", "color-on-primary": "#FFFFFF", "color-on-secondary": "#FFFFFF", "color-on-background-main": "#02161D", "color-on-background-dimmed": "#1F505F", "color-on-surface": "#02161D", "color-on-control-main": "#02161D", "color-on-control-dimmed": "#9C9C9C", "color-on-info": "#FFFFFF", "color-on-success-light": "#FFFFFF", "color-on-success-dark": "#FFFFFF", "color-on-error-light": "#FFFFFF", "color-on-error-dark": "#FFFFFF", "color-on-attention": "#02161D", "color-on-attention-variant": "#FFFFFF"}
@@ -45,9 +46,9 @@ chat:
       FEATURE_FLAG_ENABLE_DEEP_RESEARCH_UN_12630: "true" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_THINKING_STEPS_UN_13848: "true" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_CODE_EXECUTION_UN_17498: "true" # Beta feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_CODE_EXECUTION_FENCE_UN_17972: "true" # Beta feature, only enable for DEV/TEST
+      FEATURE_FLAG_ENABLE_CODE_EXECUTION_FENCE_UN_17972: "true" # Now owned by configuration-backend (moved from assistants-core in 2026.34)
+      FEATURE_FLAG_ENABLE_HTML_WITH_FENCE_UN_17927: "true"
       FEATURE_FLAG_USE_OPENAI_V1_13819: "true" # Experimental feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_NEW_ANSWERS_UI_UN_14411: "true" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392: "true" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_MAGIC_TABLE_UN_8472: "true"
       FEATURE_FLAG_AGENTIC_TABLE_ERROR_BANNER_UN_11777: "true"
@@ -69,7 +70,6 @@ chat:
       FEATURE_FLAG_ENABLE_AGENTIC_INGESTION_PAGE_BATCH_FIGURE_EXTRACTION_UN_19457: "true" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_ATOMIC_FIGURE_CHUNKING_UN_19136: "true" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_MDI_PDF_HYPERLINK_EXTRACTION_UN_19716: "true" # Experimental feature, only enable for DEV/TEST
-      FEATURE_FLAG_AGENTIC_TABLE_COMMENTS_UN_17606: "true" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_AGENTIC_TABLE_COPY_ACTION_UN_20824: "true" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_HTML_INLINE_IMAGE_EXTRACTION_UN_20936: "true" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_MULTI_FILE_IMAGE_CONTENT_EXTRACTION_UN_20936: "true" # Experimental feature, only enable for DEV/TEST
@@ -79,8 +79,14 @@ chat:
       FEATURE_FLAG_SAVE_MODEL_USAGE_DASHBOARD_UN_18889: "true" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_MODEL_USAGE_LIMITS_UN_18889: "true" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_AGENTIC_TABLE_METADATA_FORM_UN_17903: "true" # Experimental feature, only enable for DEV/TEST
-      FEATURE_FLAG_AGENTIC_TABLE_CAN_ANSWER_ROLE_UN_21308: "true" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_FULL_WIDTH_SCROLL_UN_19453: "true" # Experimental feature, only enable for DEV/TEST
+      FEATURE_FLAG_AGENTIC_TABLE_ASSIGNEE_EMAIL_UN_20992: "true"
+      FEATURE_FLAG_NOTIFICATIONS_BELL_UN_21769: "true"
+      FEATURE_FLAG_ENABLE_SERVICE_USER_API_KEY_UN_22696: "true"
+      FEATURE_FLAG_ENABLE_CONTEXT_MEMORY_UN_22033: "true"
+      FEATURE_FLAG_ENABLE_SHARED_CHATS_UN_19869: "true"
+      FEATURE_FLAG_NEW_NOTIFICATION_BANNER_UN_23900: "true"
+      FEATURE_FLAG_ENABLE_KB_ROOT_VISIBILITY_UN_23074: "true"
   nodeChat:
     secrets:
       WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-node-chat

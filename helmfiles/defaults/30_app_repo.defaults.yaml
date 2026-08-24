@@ -9,14 +9,18 @@ appRepo:
       seccompProfile:
         type: RuntimeDefault
     defaultReleases:
-      nodeAppRepository:            "2026.26.5"
-      nodeWebhookWorker:            "2026.26.5"
-      nodeWebhookScheduler:         "2026.26.5"
-      typescriptServiceEventSocket: "2026.26.5"
-      clientInsightsExporter:       "2026.26.5"
+      nodeAppRepository:            "2026.34.4"
+      nodeWebhookWorker:            "2026.34.4"
+      nodeWebhookScheduler:         "2026.34.4"
+      typescriptServiceEventSocket: "2026.34.4"
+      clientInsightsExporter:       "2026.34.4"
   nodeAppRepository:
     env:
       MAX_HEAP_MB: 1900
+      # Gates personal API key creation. Accepts "true", "false", or a comma-separated
+      # list of company IDs, and must match chat._common.env.USER_API_KEY_GENERATION_ENABLED
+      # in 10_document_chat.defaults.yaml, which drives the matching UI in the frontends.
+      USER_API_KEY_GENERATION_ENABLED: "false"
     resources:
       requests:
         cpu: 1

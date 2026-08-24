@@ -106,6 +106,10 @@ releases:
           USE_NEW_FTS_QUERY_APPROACH: {{ .Values.chat.nodeIngestion.env | get "USE_NEW_FTS_QUERY_APPROACH" "true" }}
           MAX_REQUEST_BODY_SIZE: {{ .Values.chat.nodeIngestion.env | get "MAX_REQUEST_BODY_SIZE" "30mb" }}
           PDF_READ_MODE: {{ .Values.chat.nodeIngestion.env.PDF_READ_MODE | quote }}
+          RECENCY_RANKING_COMPANY_IDS: {{ .Values.chat.nodeIngestion.env | get "RECENCY_RANKING_COMPANY_IDS" "" | quote }}
+          RECENCY_RANKING_FLOOR: {{ .Values.chat.nodeIngestion.env | get "RECENCY_RANKING_FLOOR" "0.6" | quote }}
+          RECENCY_RANKING_QDRANT_OVERFETCH_MULTIPLIER: {{ .Values.chat.nodeIngestion.env | get "RECENCY_RANKING_QDRANT_OVERFETCH_MULTIPLIER" "5" | quote }}
+          RECENCY_RANKING_SCALE_DAYS: {{ .Values.chat.nodeIngestion.env | get "RECENCY_RANKING_SCALE_DAYS" "180" | quote }}
           DATABASE_CONNECTION_POOL_LIMIT: {{ .Values.chat.nodeIngestion.env | get "DATABASE_CONNECTION_POOL_LIMIT" 10 | quote }}
           ELASTICSEARCH_CA_BUNDLE: /etc/ssl/elastic/ca.crt
           ELASTICSEARCH_URL: https://elasticsearch-ingestion-es-http.chat.svc:9200
@@ -158,7 +162,7 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /home/node/app/services/node-ingestion && pnpm exec prisma migrate deploy --config prisma.config.ts; cd /home/node/app/services/node-ingestion/dist; RUNNING_MODE=data-migration  node /home/node/app/services/node-ingestion/dist/main.js;
+              cd /home/node/app/services/node-ingestion && pnpm exec prisma migrate deploy --config prisma.config.ts; cd /home/node/app/services/node-ingestion/dist; RUNNING_MODE=data-migration AUDIT_LOG_DIR=/dev/stdout node /home/node/app/services/node-ingestion/dist/main.js;
         cronJob:
           enabled: true
           name: expired-content-deletion
@@ -170,6 +174,7 @@ releases:
           failedJobsHistoryLimit: 2
           env:
             RUNNING_MODE: 'expired-content-deletion'
+            AUDIT_LOG_DIR: /dev/stdout
           startingDeadlineSeconds: 10
           jobTemplate:
             restartPolicy: Never
@@ -428,6 +433,7 @@ releases:
           DEEP_RESEARCH_MAX_EXECUTION_TIME_IN_MINUTES: {{ .Values.chat.nodeChat.env | get "DEEP_RESEARCH_MAX_EXECUTION_TIME_IN_MINUTES" 15 | quote }}
           DEEP_RESEARCH_MAX_PARALLEL_EXECUTIONS_PER_COMPANY: {{ .Values.chat.nodeChat.env | get "DEEP_RESEARCH_MAX_PARALLEL_EXECUTIONS_PER_COMPANY" 5 | quote }}
           SOURCE_AVAILABLE_TOOLS_REMOTELY: {{ .Values.chat.nodeChat.env | get "SOURCE_AVAILABLE_TOOLS_REMOTELY" false }}
+          ALLOW_CONTEXT_MEMORY_WITH_WEB_SEARCH_UN_22591: {{ .Values.chat.nodeChat.env | get "ALLOW_CONTEXT_MEMORY_WITH_WEB_SEARCH_UN_22591" false | quote }}
         envSecrets:
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/chat"
           PUBSUB_REDIS_PASSWORD: {{ .Values.tyk.redis.password | fetchSecretValue | quote }}
@@ -458,7 +464,7 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /home/node/app/services/node-chat && pnpm exec prisma migrate deploy --config prisma.config.ts; cd /home/node/app/services/node-chat/dist; RUNNING_MODE=DATA_MIGRATION node /home/node/app/services/node-chat/dist/main.js;
+              cd /home/node/app/services/node-chat && pnpm exec prisma migrate deploy --config prisma.config.ts; cd /home/node/app/services/node-chat/dist; RUNNING_MODE=DATA_MIGRATION AUDIT_LOG_DIR=/dev/stdout node /home/node/app/services/node-chat/dist/main.js;
         cronJob:
           enabled: true
           name: data-redaction-task
@@ -470,6 +476,7 @@ releases:
           failedJobsHistoryLimit: 2
           env:
             RUNNING_MODE: 'DATA_REDACTION_TASK'
+            AUDIT_LOG_DIR: /dev/stdout
           startingDeadlineSeconds: 10
           jobTemplate:
             restartPolicy: Never
@@ -510,6 +517,8 @@ releases:
             {{ "#" }}{{ .Values.chat.nextTheme.env.STATIC_BACKGROUND_COLOR }}
           STATIC_TAB_NAME: {{ .Values.chat.nextTheme.env.STATIC_TAB_NAME | quote }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
+          USER_API_KEY_GENERATION_ENABLED: {{ .Values.chat._common.env.USER_API_KEY_GENERATION_ENABLED | quote }}
+          GRAPHQL_OPERATION_NAME_IN_URL_ENABLED: {{ .Values.chat._common.env.GRAPHQL_OPERATION_NAME_IN_URL_ENABLED | quote }}
           IMAGE_CONTENT_EXTRACTION_LANGUAGE_MODELS: {{ .Values.chat.nextKnowledgeUpload.env.IMAGE_CONTENT_EXTRACTION_LANGUAGE_MODELS | quote }}
         resources:
           {{ .Values.chat.nextKnowledgeUpload.resources | toYaml | nindent 10 }}
@@ -570,6 +579,9 @@ releases:
           STATIC_BACKGROUND_COLOR:  >-
             {{ "#" }}{{ .Values.chat.nextTheme.env.STATIC_BACKGROUND_COLOR }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
+          NET_PROMOTER_SCORE_UI_ENABLED: {{ .Values.chat._common.env.NET_PROMOTER_SCORE_UI_ENABLED | quote }}
+          USER_API_KEY_GENERATION_ENABLED: {{ .Values.chat._common.env.USER_API_KEY_GENERATION_ENABLED | quote }}
+          GRAPHQL_OPERATION_NAME_IN_URL_ENABLED: {{ .Values.chat._common.env.GRAPHQL_OPERATION_NAME_IN_URL_ENABLED | quote }}
           FILE_TYPES_DOCUMENT_TRANSLATOR: {{ .Values.chat.nextChat.env.FILE_TYPES_DOCUMENT_TRANSLATOR | quote }}
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
@@ -619,6 +631,8 @@ releases:
           THEME_BACKEND_API_URL: https://api.{{ .Values.host }}/configuration
           MAX_HEAP_MB: {{ .Values.chat.nextTheme.env.MAX_HEAP_MB }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
+          USER_API_KEY_GENERATION_ENABLED: {{ .Values.chat._common.env.USER_API_KEY_GENERATION_ENABLED | quote }}
+          GRAPHQL_OPERATION_NAME_IN_URL_ENABLED: {{ .Values.chat._common.env.GRAPHQL_OPERATION_NAME_IN_URL_ENABLED | quote }}
           SCOPE_MANAGEMENT_BACKEND_API_URL: https://api.{{ .Values.host }}/scope-management
         securityContext: null # FIXME should be set but we did not want to change it
         routes:
@@ -671,6 +685,9 @@ releases:
             {{ "#" }}{{ .Values.chat.nextTheme.env.STATIC_BACKGROUND_COLOR }}
           STATIC_TAB_NAME: {{ .Values.chat.nextTheme.env.STATIC_TAB_NAME | quote }}
           CONTENT_SECURITY_POLICY_VALUE: {{ .Values.chat._common.env.CONTENT_SECURITY_POLICY_VALUE | quote }}
+          USER_API_KEY_GENERATION_ENABLED: {{ .Values.chat._common.env.USER_API_KEY_GENERATION_ENABLED | quote }}
+          GRAPHQL_OPERATION_NAME_IN_URL_ENABLED: {{ .Values.chat._common.env.GRAPHQL_OPERATION_NAME_IN_URL_ENABLED | quote }}
+          ALLOW_CONTEXT_MEMORY_WITH_WEB_SEARCH_UN_22591: {{ .Values.chat.nextAdmin.env.ALLOW_CONTEXT_MEMORY_WITH_WEB_SEARCH_UN_22591 | quote }}
           INGESTION_BACKEND_API_URL: https://api.{{ .Values.host }}/ingestion
         securityContext:
           {{ .Values.chat._common.securityContext | toYaml | nindent 10 }}
@@ -721,10 +738,8 @@ releases:
           FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: {{ .Values.chat.configurationBackend.env | get "FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099" false }}
           FEATURE_FLAG_ENABLE_MCP_UN_11963: {{ .Values.chat.configurationBackend.env | get "FEATURE_FLAG_ENABLE_MCP_UN_11963" false }}
           FEATURE_FLAG_ENABLE_MCP_TOOL_REFRESH_UN_19255: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_MCP_TOOL_REFRESH_UN_19255 | quote }}
-          FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_USER_API_KEY_GENERATION_UN_11416 | quote }}
           FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608 | quote }}
           FEATURE_FLAG_CONFIGURE_FILE_METADATA_UN_10908: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_CONFIGURE_FILE_METADATA_UN_10908 | quote }}
-          FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747: {{ .Values.chat.configurationBackend.env | get "FEATURE_FLAG_NET_PROMOTER_SCORE_UI_UN_7747" "" | quote }}
           FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270 | quote }}
           FEATURE_FLAG_ENABLE_ADVANCED_FORMATTING_UN_9758: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_ADVANCED_FORMATTING_UN_9758 | quote }}
           FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203 | quote }}
@@ -733,8 +748,8 @@ releases:
           FEATURE_FLAG_ENABLE_THINKING_STEPS_UN_13848: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_THINKING_STEPS_UN_13848 | quote }}
           FEATURE_FLAG_ENABLE_CODE_EXECUTION_UN_17498: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_CODE_EXECUTION_UN_17498 | quote }}
           FEATURE_FLAG_ENABLE_CODE_EXECUTION_FENCE_UN_17972: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_CODE_EXECUTION_FENCE_UN_17972 | quote }}
+          FEATURE_FLAG_ENABLE_HTML_WITH_FENCE_UN_17927: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_HTML_WITH_FENCE_UN_17927 | quote }}
           FEATURE_FLAG_USE_OPENAI_V1_13819: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_USE_OPENAI_V1_13819 | quote }}
-          FEATURE_FLAG_ENABLE_NEW_ANSWERS_UI_UN_14411: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_NEW_ANSWERS_UI_UN_14411 | quote }}
           FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392 | quote }}
           FEATURE_FLAG_ENABLE_MAGIC_TABLE_UN_8472: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_MAGIC_TABLE_UN_8472 | quote }}
           FEATURE_FLAG_AGENTIC_TABLE_ERROR_BANNER_UN_11777: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_ERROR_BANNER_UN_11777 | quote }}
@@ -757,7 +772,6 @@ releases:
           FEATURE_FLAG_ENABLE_AGENTIC_INGESTION_PAGE_BATCH_FIGURE_EXTRACTION_UN_19457: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_AGENTIC_INGESTION_PAGE_BATCH_FIGURE_EXTRACTION_UN_19457 | quote }}
           FEATURE_FLAG_ENABLE_ATOMIC_FIGURE_CHUNKING_UN_19136: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_ATOMIC_FIGURE_CHUNKING_UN_19136 | quote }}
           FEATURE_FLAG_ENABLE_MDI_PDF_HYPERLINK_EXTRACTION_UN_19716: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_MDI_PDF_HYPERLINK_EXTRACTION_UN_19716 | quote }}
-          FEATURE_FLAG_AGENTIC_TABLE_COMMENTS_UN_17606: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_COMMENTS_UN_17606 | quote }}
           FEATURE_FLAG_AGENTIC_TABLE_COPY_ACTION_UN_20824: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_COPY_ACTION_UN_20824 | quote }}
           FEATURE_FLAG_ENABLE_HTML_INLINE_IMAGE_EXTRACTION_UN_20936: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_HTML_INLINE_IMAGE_EXTRACTION_UN_20936 | quote }}
           FEATURE_FLAG_ENABLE_MULTI_FILE_IMAGE_CONTENT_EXTRACTION_UN_20936: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_MULTI_FILE_IMAGE_CONTENT_EXTRACTION_UN_20936 | quote }}
@@ -767,8 +781,20 @@ releases:
           FEATURE_FLAG_SAVE_MODEL_USAGE_DASHBOARD_UN_18889: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_SAVE_MODEL_USAGE_DASHBOARD_UN_18889 | quote }}
           FEATURE_FLAG_MODEL_USAGE_LIMITS_UN_18889: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_MODEL_USAGE_LIMITS_UN_18889 | quote }}
           FEATURE_FLAG_AGENTIC_TABLE_METADATA_FORM_UN_17903: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_METADATA_FORM_UN_17903 | quote }}
-          FEATURE_FLAG_AGENTIC_TABLE_CAN_ANSWER_ROLE_UN_21308: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_CAN_ANSWER_ROLE_UN_21308 | quote }}
           FEATURE_FLAG_ENABLE_FULL_WIDTH_SCROLL_UN_19453: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_FULL_WIDTH_SCROLL_UN_19453 | quote }}
+          FEATURE_FLAG_AGENTIC_TABLE_ASSIGNEE_EMAIL_UN_20992: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_ASSIGNEE_EMAIL_UN_20992 | quote }}
+          FEATURE_FLAG_NOTIFICATIONS_BELL_UN_21769: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_NOTIFICATIONS_BELL_UN_21769 | quote }}
+          NOTIFICATION_EMAIL_WORKER_ENABLED: {{ .Values.chat.configurationBackend.env.NOTIFICATION_EMAIL_WORKER_ENABLED | quote }}
+          NOTIFICATION_PERMALINK_BASE_URL: https://{{ .Values.host }}/chat/notifications/go
+          NOTIFICATION_UNSUBSCRIBE_BASE_URL: https://{{ .Values.host }}/chat/notifications/unsubscribe
+          NOTIFICATION_THROTTLE_DAILY_CAP: {{ .Values.chat.configurationBackend.env.NOTIFICATION_THROTTLE_DAILY_CAP | quote }}
+          NOTIFICATION_THROTTLE_WEEKLY_CAP: {{ .Values.chat.configurationBackend.env.NOTIFICATION_THROTTLE_WEEKLY_CAP | quote }}
+          FEATURE_FLAG_ENABLE_SERVICE_USER_API_KEY_UN_22696: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_SERVICE_USER_API_KEY_UN_22696 | quote }}
+          FEATURE_FLAG_ENABLE_CONTEXT_MEMORY_UN_22033: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_CONTEXT_MEMORY_UN_22033 | quote }}
+          FEATURE_FLAG_ENABLE_SHARED_CHATS_UN_19869: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_SHARED_CHATS_UN_19869 | quote }}
+          FEATURE_FLAG_NEW_NOTIFICATION_BANNER_UN_23900: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_NEW_NOTIFICATION_BANNER_UN_23900 | quote }}
+          FEATURE_FLAG_ENABLE_KB_ROOT_VISIBILITY_UN_23074: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_KB_ROOT_VISIBILITY_UN_23074 | quote }}
+          FEATURE_FLAG_ENFORCE_INTERNAL_SEARCH_WEB_SEARCH_EXCLUSIVITY_UN_22973: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENFORCE_INTERNAL_SEARCH_WEB_SEARCH_EXCLUSIVITY_UN_22973 | quote }}
         envSecrets:
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/theme"
         securityContext:
@@ -783,7 +809,14 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /home/node/app/services/configuration-backend && pnpm exec prisma migrate deploy --config prisma.config.ts;
+              cd /home/node/app/services/configuration-backend && pnpm exec prisma migrate deploy --config prisma.config.ts; cd /home/node/app/services/configuration-backend/dist; RUNNING_MODE=DATA_MIGRATION AUDIT_LOG_DIR=/dev/stdout node --max-old-space-size=1000 /home/node/app/services/configuration-backend/dist/main.js;
+            resources:
+              requests:
+                cpu: 200m
+                memory: 600Mi
+              limits:
+                memory: 1000Mi
+                cpu: 500m
         auditVolume:
           enabled: {{ .Values.chat._common.auditVolume.enabled }}
           mountPath: /audit
@@ -849,7 +882,7 @@ releases:
           migration:
             enabled: true
             command: |
-              cd /home/node/app/services/node-scope-management && pnpm exec prisma migrate deploy --config prisma.config.ts; cd /home/node/app/services/node-scope-management/dist; RUNNING_MODE=DATA_MIGRATION  node /home/node/app/services/node-scope-management/dist/main.js;
+              cd /home/node/app/services/node-scope-management && pnpm exec prisma migrate deploy --config prisma.config.ts; cd /home/node/app/services/node-scope-management/dist; RUNNING_MODE=DATA_MIGRATION AUDIT_LOG_DIR=/dev/stdout node /home/node/app/services/node-scope-management/dist/main.js;
         cronJob:
           enabled: true
           name: user-sync
@@ -937,8 +970,8 @@ releases:
           GOOGLE_SEARCH_API_ENDPOINT: {{ .Values.chat.assistantsCore.env.GOOGLE_SEARCH_API_ENDPOINT | quote }}
           GOOGLE_SEARCH_ENGINE_ID: {{ .Values.chat.assistantsCore.env.GOOGLE_SEARCH_ENGINE_ID | quote }}
           SIX_API_ACTIVATED_COMPANIES: {{ .Values.chat.assistantsCore.env.SIX_API_ACTIVATED_COMPANIES | quote }}
+          FEATURE_FLAG_SERVICE_ID: assistants-core
           FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392 | quote }}
-          FEATURE_FLAG_ENABLE_CODE_EXECUTION_FENCE_UN_17972: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_CODE_EXECUTION_FENCE_UN_17972 | quote }}
         envSecrets:
           AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT_DEFINITIONS: {{ .Values.chat.assistantsCore.envSecrets.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT_DEFINITIONS | fetchSecretValue | quote }}
           GOOGLE_SEARCH_API_KEY: {{ .Values.chat.assistantsCore.envSecrets.GOOGLE_SEARCH_API_KEY | fetchSecretValue | quote }}
@@ -1478,3 +1511,63 @@ releases:
           requests:
             cpu: 2
             memory: 4Gi
+  - name: unique-api
+    chart: oci://uniquecr.azurecr.io/helm/unique-api
+    version: {{ .Values.chat._common.tenantReleaseOverrides.uniqueApi | default .Values.chat._common.defaultReleases.uniqueApi | quote }}
+    namespace: chat
+    createNamespace: true
+    wait: false
+    values:
+      -
+        replicaCount: {{ .Values.chat.uniqueApi | get "replicaCount" 2 }}
+        image:
+          registry: {{ .Values.chat._common.acr.url }}
+        imagePullSecrets:
+          - name: image-pull-secret
+        env:
+          MAX_HEAP_MB: {{ .Values.chat.uniqueApi.env.MAX_HEAP_MB | quote }}
+          ZITADEL_PROJECT_ID: {{ .Values.zitadel.projectId | quote }}
+        resources:
+          {{ .Values.chat.uniqueApi.resources | toYaml | nindent 10 }}
+        routes:
+          hostname: api.{{ .Values.host }}
+        extraRoutes:
+          public-versioned:
+            enabled: true
+            annotations:
+              konghq.com/read-timeout: "3600000"
+              konghq.com/write-timeout: "3600000"
+              konghq.com/connect-timeout: "3600000"
+          swagger:
+            enabled: true
+          openapi:
+            enabled: true
+          gateway-api:
+            enabled: true
+        # CMT service names differ from the chart defaults (chat vs node-chat, etc.).
+        internalServices:
+          dependencies:
+            appRepository:
+              name: node-app-repository
+              namespace: apps
+              servicePort: 8088
+            chat:
+              name: node-chat
+              namespace: chat
+              servicePort: 8093
+            configurationBackend:
+              name: configuration-backend
+              namespace: chat
+              servicePort: 8095
+            ingestion:
+              name: node-ingestion
+              namespace: chat
+              servicePort: 8091
+            scopeManagement:
+              name: node-scope-management
+              namespace: chat
+              servicePort: 8094
+        networkPolicy:
+          enabled: false
+        autoscaling:
+          minReplicas: {{ .Values.chat.uniqueApi | get "replicaCount" 2 }}

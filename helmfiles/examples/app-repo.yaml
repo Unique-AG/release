@@ -40,6 +40,7 @@ releases:
           CORS_ALLOWED_ORIGINS: https://{{ .Values.host }}
           SCOPE_MANAGEMENT_API_URL: http://node-scope-management.chat.svc.cluster.local:8094
           CONFIGURATION_BACKEND_URL: http://configuration-backend.chat.svc.cluster.local:8095
+          USER_API_KEY_GENERATION_ENABLED: {{ .Values.appRepo.nodeAppRepository.env.USER_API_KEY_GENERATION_ENABLED | quote }}
           PG_DATABASE_SSL_MODE: "verify"
         envSecrets:
           DATABASE_URL: "postgresql://{{ .Values.appRepo._common.database.username | fetchSecretValue }}:{{ .Values.appRepo._common.database.password | fetchSecretValue }}@{{ .Values.appRepo._common.database.host | fetchSecretValue }}/app-repository"

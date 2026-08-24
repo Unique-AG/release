@@ -287,6 +287,17 @@ variable "gateway" {
               rule_group_name = "REQUEST-942-APPLICATION-ATTACK-SQLI"
             }
           },
+          {
+            match_variable          = "RequestArgKeys"
+            selector                = "crawlerConfig.contentTypes.xhtml"
+            selector_match_operator = "EndsWith"
+            excluded_rule_set = {
+              type            = "OWASP"
+              version         = "3.2"
+              excluded_rules  = ["941130"]
+              rule_group_name = "REQUEST-941-APPLICATION-ATTACK-XSS"
+            }
+          },
         ]
       )
     }), {})

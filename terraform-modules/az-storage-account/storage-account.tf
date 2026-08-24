@@ -77,7 +77,6 @@ resource "azurerm_key_vault_key" "storage-account-byok" {
 }
 resource "azurerm_storage_account_customer_managed_key" "this" {
   storage_account_id = azurerm_storage_account.this.id
-  key_vault_id       = azurerm_key_vault.this.id
-  key_name           = azurerm_key_vault_key.storage-account-byok.name
+  key_vault_key_id   = azurerm_key_vault_key.storage-account-byok.versionless_id
   depends_on         = [azurerm_key_vault_key.storage-account-byok, azurerm_role_assignment.rbac_keyvault_managed_identity]
 }

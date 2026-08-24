@@ -143,6 +143,7 @@ module "cluster" {
   azure_prometheus_grafana_monitor = {
     enabled                = true
     azure_monitor_location = local.locations.monitor
+    grafana_major_version  = 12
   }
   audit_containers = [
     "node-chat",

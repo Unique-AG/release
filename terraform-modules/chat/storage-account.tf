@@ -78,8 +78,7 @@ resource "azurerm_key_vault_key" "storage-account-byok" {
 resource "azurerm_storage_account_customer_managed_key" "this" {
   depends_on         = [azurerm_key_vault_key.storage-account-byok]
   storage_account_id = azurerm_storage_account.document-chat.id
-  key_vault_id       = azurerm_key_vault.document-chat.id
-  key_name           = azurerm_key_vault_key.storage-account-byok.name
+  key_vault_key_id   = azurerm_key_vault_key.storage-account-byok.versionless_id
 }
 resource "azurerm_storage_management_policy" "management_policy" {
   count              = var.storage_account_versioning_enabled ? 1 : 0

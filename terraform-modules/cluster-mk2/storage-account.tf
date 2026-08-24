@@ -98,6 +98,5 @@ resource "azurerm_key_vault_key" "this" {
 }
 resource "azurerm_storage_account_customer_managed_key" "this" {
   storage_account_id = azurerm_storage_account.this.id
-  key_vault_id       = azurerm_key_vault.this.id
-  key_name           = azurerm_key_vault_key.this.name
+  key_vault_key_id   = azurerm_key_vault_key.this.versionless_id
 }

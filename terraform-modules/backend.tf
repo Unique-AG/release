@@ -2,8 +2,8 @@ terraform {
   required_version = ">= 1.8.0, < 2"
   required_providers {
     azurerm = {
-      version = "~> 4"
       source  = "hashicorp/azurerm"
+      version = "~> 4"
     }
     azuread = {
       version = "3.8.0"
