@@ -103,6 +103,11 @@ releases:
               - "token"
             allowed_iss:
               - https://{{ printf "%s.%s" .Values.plain.zitadel.subDomainName .Values.params.zoneName }}
+            # Fetch JWKS from Zitadel in-cluster and avoid
+            jwks_uri: http://zitadel.system.svc.cluster.local:8080/oauth/v2/keys
+            jwks_extra_headers:
+              Forwarded: host={{ printf "%s.%s" .Values.plain.zitadel.subDomainName .Values.params.zoneName }}
+            ssl_verify: false
             algorithm: RS256
             well_known_template: https://{{ printf "%s.%s" .Values.plain.zitadel.subDomainName .Values.params.zoneName }}/.well-known/openid-configuration
             zitadel_project_id: {{ .Values.plain.zitadel.projectId | quote }}
