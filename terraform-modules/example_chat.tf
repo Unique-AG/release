@@ -277,6 +277,12 @@ module "workload_identities" {
     }
   }
 }
+module "defender" {
+  source  = "./modules/az-defender"
+  context = module.context
+  name    = "defender"
+  enable_cwp_storage = true
+}
 module "chat" {
   source                     = "./modules/chat"
   name                       = "chat"

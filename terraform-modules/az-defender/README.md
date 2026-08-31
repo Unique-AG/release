@@ -1,6 +1,8 @@
 # Azure Security Center
 
-This Terraform code configures Azure Security Center for a subscription, enabling various security features and settings. Let's break down the code section by section:
+This Terraform code configures Azure Security Center for a subscription, enabling various security features and settings.
+
+**Required for Unique AI chat file/image upload:** `enable_cwp_storage` (default `true`) turns on Defender for Storage v2 with on-upload malware scanning. node-ingestion `ENABLE_MALWARE_SCAN=true` reads blob index tag `Malware Scanning scan result`. This is subscription-level only.
 
 ## Breakdown of the Code
 
