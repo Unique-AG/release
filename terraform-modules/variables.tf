@@ -23,6 +23,34 @@ variable "kubernetes_default_node_size" {
   description = "Kubernetes default node size."
   default     = "Standard_D8s_v5"
 }
+variable "cilium_enabled" {
+  type        = bool
+  description = "Run AKS on Azure CNI powered by Cilium (network_data_plane/network_policy = cilium). Required for Unique AI Conduct."
+  default     = false
+}
+variable "advanced_networking_enabled" {
+  type        = bool
+  description = "Enable Advanced Container Networking Services (security + observability) on the Cilium dataplane. Requires cilium_enabled."
+  default     = false
+}
+variable "kata_node_pool" {
+  description = "Dedicated Kata (AKS Pod Sandboxing) node pool for Unique AI Conduct sandboxes. Set enabled = true to create it; size via min_count/max_count (one Standard_D8s_v5 node fits ~6 sandboxes)."
+  type = object({
+    enabled                       = optional(bool, false)
+    name                          = optional(string, "kata")
+    vm_size                       = optional(string, "Standard_D8s_v5")
+    os_disk_size_gb               = optional(number, 100)
+    min_count                     = optional(number, 0)
+    max_count                     = optional(number, 10)
+    max_pods                      = optional(number, 30)
+    zones                         = optional(list(string), ["1", "2", "3"])
+    max_surge                     = optional(string, "1")
+    drain_timeout_in_minutes      = optional(number, 30)
+    node_soak_duration_in_minutes = optional(number, 0)
+    undrainable_node_behavior     = optional(string, "Cordon")
+  })
+  default = {}
+}
 variable "gateway_global_config" {
   description = "Global configuration for the Application Gateway used to configure response and request buffering. Set to null to disable the global block."
   type = object({

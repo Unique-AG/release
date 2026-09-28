@@ -86,7 +86,7 @@ chat:
       FEATURE_FLAG_ENABLE_CONTEXT_MEMORY_UN_22033: "true"
       FEATURE_FLAG_ENABLE_SHARED_CHATS_UN_19869: "true"
       FEATURE_FLAG_NEW_NOTIFICATION_BANNER_UN_23900: "true"
-      FEATURE_FLAG_ENABLE_KB_ROOT_VISIBILITY_UN_23074: "true"
+      FEATURE_FLAG_ENABLE_SWAPPABLE_INTELLIGENCE_UN_18404: "true" # Unique AI Conduct (Beta) - requires the Conduct stack (helmfiles/conduct.yaml), see docs/conduct-handbook.md
   nodeChat:
     secrets:
       WORKLOAD_IDENTITY_CLIENT_ID: ref+azurekeyvault://your-vault-name/wid-client-id-node-chat
@@ -279,3 +279,21 @@ elasticsearch:
   ingestion:
     nodeSets:
       count: 3 # In production, run cluster with 3 nodes, can be set to 1 for development envs
+# ── Unique AI Conduct (Beta) ───────────────────────────────────────────────────────────────────────────
+# Requires the Cilium dataplane and the Kata node pool (terraform) and helmfiles/conduct.yaml.
+# Defaults live in helmfiles/defaults/20_conduct.defaults.yaml; read docs/conduct-handbook.md first.
+conduct:
+  enabled: true # wires assistants-core to the sandbox stack (SANDBOX_* env); deploy conduct.yaml first
+  storageAccount:
+    # Document storage account (also hosts the RWX checkpoint share). Both secrets are written by terraform.
+    name: ref+azurekeyvault://your-vault-name/storage-account-name
+    resourceGroup: ref+azurekeyvault://your-vault-name/storage-account-resource-group-name
+  gateway:
+    pypi:
+      enabled: true # set false when the cluster has no internet egress and add an internal mirror below
+    extraUpstreams: {}
+  sandbox:
+    warmPool:
+      replicas: 1 # pre-started sandboxes, ~ceil(concurrent users / 2); each one reserves 4 GiB on the Kata pool
+      keda:
+        enabled: false # cron scale-to-zero outside business hours, see 20_conduct.defaults.yaml

@@ -124,15 +124,18 @@ module "monitor" {
   }
 }
 module "cluster" {
-  source                          = "./modules/cluster-mk2"
-  context                         = module.context
-  subnet_nodes                    = module.vnet.subnets["AksNodes"]
-  subnet_pods                     = module.vnet.subnets["AksPods"]
-  subnet_appgw                    = module.vnet.subnets["AppGW"]
-  storage_retention_period_days   = 1865
-  keyvault_access_principals      = [module.jumpbox.vm_identity]
-  kubernetes_default_node_size    = var.kubernetes_default_node_size
-  kubernetes_version              = var.kubernetes_version
+  source                        = "./modules/cluster-mk2"
+  context                       = module.context
+  subnet_nodes                  = module.vnet.subnets["AksNodes"]
+  subnet_pods                   = module.vnet.subnets["AksPods"]
+  subnet_appgw                  = module.vnet.subnets["AppGW"]
+  storage_retention_period_days = 1865
+  keyvault_access_principals    = [module.jumpbox.vm_identity]
+  kubernetes_default_node_size  = var.kubernetes_default_node_size
+  kubernetes_version            = var.kubernetes_version
+  cilium_enabled                  = var.cilium_enabled
+  advanced_networking_enabled     = var.advanced_networking_enabled
+  kata_node_pool                  = var.kata_node_pool
   image_cleaner_interval_hours    = var.image_cleaner_interval_hours
   auto_scaler_scale_down_unneeded = var.auto_scaler_scale_down_unneeded
   appgw_5xx_alert_threshold       = var.appgw_5xx_alert_threshold
@@ -316,6 +319,7 @@ module "chat" {
     module.workload_identities.user_assigned_identity_ids["node-chat"],
     module.workload_identities.user_assigned_identity_ids["node-ingestion"]
   ]
+  file_share_provisioner_principal_ids = var.kata_node_pool.enabled ? [module.cluster.cluster_identity_principal_id] : []
 }
 module "automation" {
   source                     = "./modules/automation"

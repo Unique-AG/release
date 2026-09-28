@@ -61,6 +61,22 @@ resource "azurerm_key_vault_secret" "storage-account-connection-string-2" {
   value        = azurerm_storage_account.document-chat.secondary_connection_string
   key_vault_id = azurerm_key_vault.document-chat.id
 }
+resource "azurerm_key_vault_secret" "storage-account-name" {
+  name         = "storage-account-name"
+  value        = azurerm_storage_account.document-chat.name
+  key_vault_id = azurerm_key_vault.document-chat.id
+}
+resource "azurerm_key_vault_secret" "storage-account-resource-group-name" {
+  name         = "storage-account-resource-group-name"
+  value        = module.context.rg_app_sec.name
+  key_vault_id = azurerm_key_vault.document-chat.id
+}
+resource "azurerm_role_assignment" "file_share_provisioners" {
+  for_each             = toset(var.file_share_provisioner_principal_ids)
+  scope                = azurerm_storage_account.document-chat.id
+  role_definition_name = "Storage Account Contributor"
+  principal_id         = each.value
+}
 resource "azurerm_key_vault_key" "storage-account-byok" {
   name         = "${module.context.full_name}-sa-hsm"
   key_vault_id = azurerm_key_vault.document-chat.id

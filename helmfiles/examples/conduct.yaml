@@ -1,0 +1,370 @@
+# run: helmfile -e your-tenant-alias -f helmfiles/conduct.yaml apply --skip-diff-on-install
+#
+# Unique AI Conduct - sandboxed agent execution (Beta). Read docs/conduct-handbook.md first.
+#
+# Prerequisites (not created by this helmfile):
+#   1. AKS runs Azure CNI powered by Cilium         -> terraform `cilium_enabled = true`
+#   2. Kata (Pod Sandboxing) node pool exists       -> terraform `kata_node_pool.enabled = true`
+#   3. AKS cluster (system-assigned) identity may create Azure Files shares -> terraform (Storage Account Contributor)
+#   4. platform release >= 2026.38 deployed with `conduct.enabled: true` in your tenant values
+#   5. `helm registry login <acr>` done for the oci:// charts (same registry as chat.yaml)
+#
+# Deploy order is expressed with `needs`; a plain `helmfile apply` installs everything in the right order:
+#   agent-sandbox-controller (CRDs, controller, router)  ->  namespace + pull secret + StorageClass
+#   ->  sbx-storage  ->  sbx-gateway  ->  assistants-core RBAC  ->  SandboxTemplate + warm pool
+environments:
+  your-tenant-alias:
+    values:
+      - ../defaults/01_system.defaults.yaml
+      - ../defaults/10_document_chat.defaults.yaml
+      - ../defaults/20_conduct.defaults.yaml
+      - ./your-tenant-alias.yaml
+---
+{{- $ns := .Values.conduct.namespace }}
+{{- $controllerNs := .Values.conduct.controller.namespace }}
+{{- $template := .Values.conduct.sandbox.template }}
+{{- $storageHost := printf "sbx-storage.%s.svc.cluster.local" $ns }}
+{{- $gatewayHost := printf "sbx-gateway.%s.svc.cluster.local" $ns }}
+repositories:
+  - name: bedag
+    url: https://bedag.github.io/helm-charts
+releases:
+  # ── 1. Sandbox CRDs, controller and router (namespace system) ──────────────────────────────────────
+  # Installs the four cluster-scoped CRDs (Sandbox, SandboxClaim, SandboxTemplate, SandboxWarmPool), the
+  # controller that allocates sandboxes and the router assistants-core uses to reach a sandbox.
+  # Helm installs the CRDs on first install but never upgrades them: after a chart version bump run
+  #   kubectl apply --server-side --force-conflicts -f <chart>/crds/
+  # (see the handbook) before `helmfile apply`.
+  - name: agent-sandbox-controller
+    chart: oci://ghcr.io/unique-ag/helm-charts/agent-sandbox-controller
+    version: {{ .Values.conduct.versions.agentSandboxController | quote }}
+    namespace: {{ $controllerNs }}
+    createNamespace: true
+    wait: true
+    timeout: 600
+    values:
+      -
+        image:
+          repository: {{ .Values.conduct.controller.image.repository | quote }}
+          digest: {{ .Values.conduct.controller.image.digest | default "" | quote }}
+        router:
+          enabled: true
+          replicaCount: {{ .Values.conduct.controller.routerReplicaCount }}
+          image:
+            repository: {{ .Values.conduct.controller.routerImage.repository | quote }}
+            digest: {{ .Values.conduct.controller.routerImage.digest | default "" | quote }}
+          networkPolicy:
+            enabled: true
+            ingress:
+              # Only the orchestrator (assistants-core) may talk to the router.
+              allowedSources:
+                - podSelector:
+                    app.kubernetes.io/name: assistants-core
+                  namespaceSelector:
+                    kubernetes.io/metadata.name: chat
+            egress:
+              # The router forwards turns to the sandbox pods on their runtime port.
+              sandboxPort: 8888
+              sandboxNamespaceSelector:
+                kubernetes.io/metadata.name: {{ $ns }}
+        metrics:
+          serviceMonitor:
+            enabled: false
+          prometheusRule:
+            enabled: false
+  # ── 2. Sandbox namespace, image pull secret and checkpoint StorageClass ────────────────────────────
+  - name: image-pull-secret
+    chart: ../../charts/image-pull-secret
+    namespace: {{ $ns }}
+    createNamespace: true
+    wait: false
+    values:
+      -
+        secret:
+          url: {{ .Values.chat._common.acr.url | quote }}
+          username: {{ .Values.chat._common.acr.username | fetchSecretValue | quote }}
+          password: {{ .Values.chat._common.acr.password | fetchSecretValue | quote }}
+  # Azure Files (SMB) share on the document storage account, dynamically provisioned by the AKS Azure
+  # Files CSI driver, which acts as the cluster's system-assigned identity: that identity (not the kubelet
+  # identity) needs "Storage Account Contributor" on the account (terraform file_share_provisioner_principal_ids).
+  # uid/gid 65534 match the non-root sbx-storage service, which is the only pod that mounts the share.
+  - name: sbx-storage-class
+    chart: bedag/raw
+    version: 2.0.0
+    namespace: {{ $ns }}
+    createNamespace: true
+    wait: false
+    values:
+      - resources:
+        - apiVersion: storage.k8s.io/v1
+          kind: StorageClass
+          metadata:
+            name: {{ .Values.conduct.storage.storageClassName }}
+          provisioner: file.csi.azure.com
+          allowVolumeExpansion: true
+          reclaimPolicy: Delete
+          volumeBindingMode: Immediate
+          parameters:
+            skuName: {{ .Values.conduct.storage.skuName }}
+            storageAccount: {{ .Values.conduct.storageAccount.name | fetchSecretValue | quote }}
+            resourceGroup: {{ .Values.conduct.storageAccount.resourceGroup | fetchSecretValue | quote }}
+          mountOptions:
+            - dir_mode=0750
+            - file_mode=0640
+            - uid=65534
+            - gid=65534
+            - mfsymlinks
+            - cache=strict
+            - nosharesock
+  # ── 3. sbx-storage: workspace checkpoints + skill cache on the RWX share ───────────────────────────
+  - name: sbx-storage
+    chart: oci://{{ .Values.conduct.helmRegistry }}/sbx-storage
+    version: {{ .Values.conduct.versions.sbxStorage | quote }}
+    namespace: {{ $ns }}
+    needs:
+      - {{ $ns }}/image-pull-secret
+      - {{ $ns }}/sbx-storage-class
+    wait: false
+    values:
+      -
+        image:
+          registry: {{ .Values.chat._common.acr.url | quote }}
+          useDigest: {{ .Values.conduct.images.useDigest }}
+        imagePullSecrets:
+          - name: image-pull-secret
+        replicaCount: {{ .Values.conduct.storage.replicaCount }}
+        env:
+          SBX_STORAGE_RETENTION_DAYS: {{ .Values.conduct.storage.retentionDays | quote }}
+        resources:
+          {{ .Values.conduct.storage.resources | toYaml | nindent 10 }}
+        pvc:
+          accessMode: ReadWriteMany
+          storageClassName: {{ .Values.conduct.storage.storageClassName }}
+          storage: {{ .Values.conduct.storage.size }}
+        # CiliumNetworkPolicy: ingress from sbx-gateway only (chart default, requires the Cilium CRDs).
+        networkPolicy:
+          enabled: true
+        prometheus:
+          scraping:
+            enabled: false
+  # ── 4. sbx-gateway: the single egress path of every sandbox ───────────────────────────────────────
+  # Intercepting HTTPS proxy (MITM). Sandboxes can only reach the hosts, paths and methods listed here;
+  # user/company identity headers are injected by the gateway from the calling pod's labels, so a sandbox
+  # cannot impersonate another user. node-chat and node-ingestion policies are owned by the chart
+  # (egressGateway.chatUpstream) and resolved through internalServices.dependencies.
+  #
+  # The MITM CA lives in Secret `egress-mitm-ca` and is generated once by the chart and kept on later
+  # upgrades (`helmfile diff` always shows it as changing - that is expected). Delete the Secret to rotate
+  # the CA, then recreate the warm pool so the sandboxes pick up the new certificate.
+  # There is no Reloader on this cluster: after changing the allow-list run
+  #   kubectl -n {{ $ns }} rollout restart deployment/sbx-gateway
+  {{- $identityHeaders := dict "x-user-id" "${context:source_pod.labels.unique.app/user-id}" "x-company-id" "${context:source_pod.labels.unique.app/company-id}" }}
+  {{- $blobHost := printf "%s.blob.core.windows.net" (.Values.conduct.storageAccount.name | fetchSecretValue) }}
+  {{- $upstreams := dict }}
+  {{- /* public API hostname: produced files are uploaded through the scoped ingestion endpoint */ -}}
+  {{- $_ := set $upstreams (printf "api.%s" .Values.host) (dict "paths" (list "/scoped/ingestion/upload") "methods" (list "PUT")) }}
+  {{- /* ingestion blob storage: SAS reads of chat uploads and preview PDF writes, limited to the ingestion container */ -}}
+  {{- $_ := set $upstreams $blobHost (dict "paths" (list "/ingestion/*/cont_*") "methods" (list "GET" "HEAD" "PUT")) }}
+  {{- /* checkpoint / skill cache service, identity asserted by the gateway */ -}}
+  {{- $_ := set $upstreams $storageHost (dict "paths" (list "/v1/checkpoint" "/v1/skill-cache-base") "methods" (list "GET" "HEAD" "PUT") "injectRequestHeaders" $identityHeaders) }}
+  {{- if .Values.conduct.gateway.pypi.enabled }}
+  {{- $_ := set $upstreams "pypi.org" (dict "paths" (list "/simple*") "methods" (list "GET" "HEAD")) }}
+  {{- $_ := set $upstreams "files.pythonhosted.org" (dict "paths" (list "/packages/*") "methods" (list "GET" "HEAD")) }}
+  {{- end }}
+  {{- /* tenant additions only: a built-in host (identity injection, container-scoped paths) must not be replaced */ -}}
+  {{- range $host, $upstream := .Values.conduct.gateway.extraUpstreams }}
+  {{- if hasKey $upstreams $host }}
+  {{- fail (printf "conduct.gateway.extraUpstreams: %q is a built-in upstream of the Conduct helmfile and cannot be overridden" $host) }}
+  {{- end }}
+  {{- $_ := set $upstreams $host $upstream }}
+  {{- end }}
+  - name: sbx-gateway
+    chart: oci://{{ .Values.conduct.helmRegistry }}/sbx-gateway
+    version: {{ .Values.conduct.versions.sbxGateway | quote }}
+    namespace: {{ $ns }}
+    needs:
+      - {{ $ns }}/image-pull-secret
+    wait: false
+    values:
+      -
+        image:
+          registry: {{ .Values.chat._common.acr.url | quote }}
+          useDigest: {{ .Values.conduct.images.useDigest }}
+        imagePullSecrets:
+          - name: image-pull-secret
+        replicaCount: {{ .Values.conduct.gateway.replicaCount }}
+        resources:
+          {{ .Values.conduct.gateway.resources | toYaml | nindent 10 }}
+        autoscaling:
+          enabled: true
+          minReplicas: {{ .Values.conduct.gateway.autoscaling.minReplicas }}
+          maxReplicas: {{ .Values.conduct.gateway.autoscaling.maxReplicas }}
+        internalServices:
+          dependencies:
+            chat:
+              namespace: chat
+            ingestion:
+              namespace: chat
+        # CiliumNetworkPolicy: default deny, ingress from sandbox pods only, egress to the platform
+        # services above plus HTTPS to the world (chart default, requires the Cilium CRDs).
+        networkPolicy:
+          enabled: true
+        prometheus:
+          scraping:
+            enabled: false
+        egressGateway:
+          allowHosts:
+            {{- range $host, $upstream := $upstreams }}
+            {{ $host | quote }}: true
+            {{- end }}
+          allowPaths:
+            {{- range $host, $upstream := $upstreams }}
+            {{ $host | quote }}:
+              {{- toYaml $upstream.paths | nindent 14 }}
+            {{- end }}
+          allowMethods:
+            {{- range $host, $upstream := $upstreams }}
+            {{- if hasKey $upstream "methods" }}
+            {{ $host | quote }}:
+              {{- toYaml $upstream.methods | nindent 14 }}
+            {{- end }}
+            {{- end }}
+          injectRequestHeaders:
+            {{- range $host, $upstream := $upstreams }}
+            {{- if hasKey $upstream "injectRequestHeaders" }}
+            {{ $host | quote }}:
+              {{- toYaml $upstream.injectRequestHeaders | nindent 14 }}
+            {{- end }}
+            {{- end }}
+          allowRequestHeaders:
+            {{- toYaml .Values.conduct.gateway.allowRequestHeaders | nindent 12 }}
+  # ── 5. RBAC: assistants-core manages SandboxClaims in the sandbox namespace ───────────────────────
+  # The orchestrator (assistants-core, namespace chat) creates one SandboxClaim per user and watches the
+  # resulting Sandbox. Scoped to the sandbox namespace, no cluster-wide permissions.
+  - name: assistants-core-sandbox-rbac
+    chart: bedag/raw
+    version: 2.0.0
+    namespace: {{ $ns }}
+    needs:
+      - {{ $controllerNs }}/agent-sandbox-controller
+    wait: false
+    values:
+      - resources:
+        - apiVersion: rbac.authorization.k8s.io/v1
+          kind: Role
+          metadata:
+            name: assistants-core-agent-sandbox
+            namespace: {{ $ns }}
+          rules:
+            - apiGroups: ["extensions.agents.x-k8s.io"]
+              resources: ["sandboxclaims"]
+              verbs: ["create", "get", "list", "watch", "patch", "delete"]
+            - apiGroups: ["extensions.agents.x-k8s.io"]
+              resources: ["sandboxclaims/status"]
+              verbs: ["get"]
+            - apiGroups: ["extensions.agents.x-k8s.io"]
+              resources: ["sandboxtemplates"]
+              verbs: ["get", "list"]
+            - apiGroups: ["extensions.agents.x-k8s.io"]
+              resources: ["sandboxwarmpools"]
+              verbs: ["get"]
+            - apiGroups: ["agents.x-k8s.io"]
+              resources: ["sandboxes"]
+              verbs: ["get", "list", "watch"]
+            - apiGroups: [""]
+              resources: ["pods"]
+              verbs: ["get"]
+        - apiVersion: rbac.authorization.k8s.io/v1
+          kind: RoleBinding
+          metadata:
+            name: assistants-core-agent-sandbox
+            namespace: {{ $ns }}
+          roleRef:
+            apiGroup: rbac.authorization.k8s.io
+            kind: Role
+            name: assistants-core-agent-sandbox
+          subjects:
+            - kind: ServiceAccount
+              name: assistants-core
+              namespace: chat
+  # ── 6. SandboxTemplate + warm pool: the Unique polyagent runtime ──────────────────────────────────
+  # One micro VM (Kata) per sandbox on the dedicated node pool. Network: default deny in both directions,
+  # ingress only from the router, egress only to cluster DNS and sbx-gateway:3128 (chart defaults).
+  - name: {{ $template }}
+    chart: oci://{{ .Values.conduct.helmRegistry }}/sbx-templates
+    version: {{ .Values.conduct.versions.sbxTemplates | quote }}
+    namespace: {{ $ns }}
+    needs:
+      - {{ $controllerNs }}/agent-sandbox-controller
+      - {{ $ns }}/image-pull-secret
+      - {{ $ns }}/sbx-gateway
+      - {{ $ns }}/sbx-storage
+    wait: false
+    values:
+      -
+        image:
+          registry: {{ .Values.chat._common.acr.url | quote }}
+          useDigest: {{ .Values.conduct.images.useDigest }}
+        sandboxTemplate:
+          name: {{ $template }}
+          imagePullSecrets:
+            - name: image-pull-secret
+          resources:
+            {{ .Values.conduct.sandbox.resources | toYaml | nindent 12 }}
+          readinessProbe:
+            {{ .Values.conduct.sandbox.readinessProbe | toYaml | nindent 12 }}
+          livenessProbe:
+            {{ .Values.conduct.sandbox.livenessProbe | toYaml | nindent 12 }}
+          podAnnotations:
+            # A single sandbox does not keep a Kata node above the scale-down threshold; never let the
+            # cluster autoscaler drain a node with a live user session on it.
+            cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+          env:
+            # The runtime logs request payloads at DEBUG - keep INFO in client environments.
+            - name: LOG_LEVEL
+              value: "INFO"
+            # All traffic leaves through the gateway; only loopback bypasses the proxy.
+            - name: HTTP_PROXY
+              value: http://{{ $gatewayHost }}:3128
+            - name: HTTPS_PROXY
+              value: http://{{ $gatewayHost }}:3128
+            - name: NO_PROXY
+              value: localhost,127.0.0.1,::1
+            # Placeholder only - the gateway injects the real identity, no platform secret enters the sandbox.
+            - name: UNIQUE_API_KEY
+              value: "dummy"
+            - name: UNIQUE_API_BASE
+              value: http://node-chat.chat.svc.cluster.local:8093/public
+            - name: INGESTION_UPLOAD_API_URL_INTERNAL
+              value: http://node-ingestion.chat.svc.cluster.local:8091/scoped/upload
+            - name: SBX_STORAGE_URL
+              value: http://{{ $storageHost }}:80
+            - name: SANDBOX_IDLE_TTL_SECONDS
+              value: {{ .Values.conduct.sandbox.idleTtlSeconds | quote }}
+            - name: SANDBOX_TURN_MAX_SECONDS
+              value: {{ .Values.conduct.sandbox.turnMaxSeconds | quote }}
+          warmPool:
+            enabled: true
+            replicas: {{ .Values.conduct.sandbox.warmPool.replicas }}
+            updateStrategy:
+              type: Recreate
+            {{- if .Values.conduct.sandbox.warmPool.keda.enabled }}
+            keda:
+              enabled: true
+              minReplicaCount: {{ .Values.conduct.sandbox.warmPool.keda.minReplicaCount }}
+              maxReplicaCount: {{ .Values.conduct.sandbox.warmPool.replicas }}
+              triggers:
+                cron:
+                  type: cron
+                  metadata:
+                    timezone: {{ .Values.conduct.sandbox.warmPool.keda.timezone | quote }}
+                    start: {{ .Values.conduct.sandbox.warmPool.keda.start | quote }}
+                    end: {{ .Values.conduct.sandbox.warmPool.keda.end | quote }}
+                    desiredReplicas: {{ .Values.conduct.sandbox.warmPool.replicas | quote }}
+            {{- end }}
+        # Metrics and dashboards need the Prometheus Operator / Grafana sidecar, neither runs here.
+        prometheus:
+          enabled: false
+        grafana:
+          dashboards:
+            enabled: false

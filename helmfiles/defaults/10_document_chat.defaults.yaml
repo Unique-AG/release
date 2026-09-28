@@ -17,21 +17,21 @@ chat:
       USER_API_KEY_GENERATION_ENABLED: "false"
       GRAPHQL_OPERATION_NAME_IN_URL_ENABLED: "false"
     defaultReleases:
-      nextChat:               "2026.34.4"
-      nextKnowledgeUpload:    "2026.34.4"
-      nextTheme:              "2026.34.4"
-      nextAdmin:              "2026.34.4"
-      nodeChat:               "2026.34.4"
-      nodeIngestion:          "2026.34.4"
-      nodeIngestionWorker:    "2026.34.4"
-      configurationBackend:   "2026.34.4"
-      nodeScopeManagement:    "2026.34.4"
-      backendServiceSpeech:   "2026.34.4"
-      assistantsCore:         "2026.34.4"
-      reflector:              "2026.34.4"
-      agenticIngestion:       "2026.34.4"
-      assistantsAgenticTable: "2026.34.4"
-      uniqueApi:              "2026.34.4"
+      nextChat:               "2026.38.2"
+      nextKnowledgeUpload:    "2026.38.2"
+      nextTheme:              "2026.38.2"
+      nextAdmin:              "2026.38.2"
+      nodeChat:               "2026.38.2"
+      nodeIngestion:          "2026.38.2"
+      nodeIngestionWorker:    "2026.38.2"
+      configurationBackend:   "2026.38.2"
+      nodeScopeManagement:    "2026.38.2"
+      backendServiceSpeech:   "2026.38.2"
+      assistantsCore:         "2026.38.2"
+      reflector:              "2026.38.2"
+      agenticIngestion:       "2026.38.2"
+      assistantsAgenticTable: "2026.38.2"
+      uniqueApi:              "2026.38.2"
   nextChat:
     env:
       MAX_FILE_SIZE_IN_MB: 512
@@ -142,7 +142,8 @@ chat:
         {"name": "HallucinationLevelEvaluation", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/evaluations/hallucination-level"},
         {"name": "RfpAgent", "apiURL": "http://assistants-agentic-table.chat.svc.cluster.local:8081/agentic_table"},
         {"name": "UniqueAi", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/unique_ai"},
-        {"name": "KycReviewAgent", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/kyc_review_agent"}
+        {"name": "KycReviewAgent", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/kyc_review_agent"},
+        {"name": "SwappableIntelligence", "apiURL": "http://assistants-core.chat.svc.cluster.local:8081/core/sandbox_orchestrator"}
         ]
       ENABLE_CLIENT_INSIGHT_SHIPPER: "true"
       MIN_NO_OF_MESSAGES_BY_USER_BEFORE_NPS_TRIGGER: "30"
@@ -302,7 +303,6 @@ chat:
       FEATURE_FLAG_ENABLE_CONTEXT_MEMORY_UN_22033: "false"
       FEATURE_FLAG_ENABLE_SHARED_CHATS_UN_19869: "false"
       FEATURE_FLAG_NEW_NOTIFICATION_BANNER_UN_23900: "false"
-      FEATURE_FLAG_ENABLE_KB_ROOT_VISIBILITY_UN_23074: "false"
       FEATURE_FLAG_ENFORCE_INTERNAL_SEARCH_WEB_SEARCH_EXCLUSIVITY_UN_22973: "false"
     resources:
       requests:
@@ -465,7 +465,9 @@ zitadel:
   replicaCount: 2
   versions:
     chart: 8.13.1
-    image: v3.4.7
+    # Plain tag only: the zitadel chart reuses image.tag as the app.kubernetes.io/version label and a
+    # @sha256 digest is not a valid label value (helm pre-upgrade hook fails).
+    image: v3.4.15
   resources:
     requests:
       cpu: 1

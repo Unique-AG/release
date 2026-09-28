@@ -137,6 +137,16 @@ variable "aks_oidc_issuer_url" {
   description = "The AKS OIDC issuer URL where the chat gets deployed to."
   type        = string
 }
+variable "file_share_provisioner_principal_ids" {
+  description = <<-EOT
+    Principals allowed to create Azure Files shares on the document/ingestion storage account and to read its
+    keys. Used for Unique AI Conduct: the AKS control-plane (system-assigned) identity provisions the
+    ReadWriteMany checkpoint share (`sbx-storage`) through the Azure Files CSI driver. Grants
+    "Storage Account Contributor" on the account.
+  EOT
+  type        = list(string)
+  default     = []
+}
 variable "sdk_deployment_service_principal_object_ids" {
   description = "Principals that can read the storage account keys in order to wire an Azure Container App (or similar) to a Storage Account via a Diagnostic Setting."
   type        = list(string)

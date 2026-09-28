@@ -28,10 +28,18 @@ resource "azurerm_kubernetes_cluster" "this" {
   private_cluster_public_fqdn_enabled = true
   network_profile {
     network_plugin = "azure"
-    network_policy = "azure"
+    network_policy     = var.cilium_enabled ? "cilium" : "azure"
+    network_data_plane = var.cilium_enabled ? "cilium" : null
     load_balancer_profile {
       idle_timeout_in_minutes = 100
       outbound_ip_address_ids = [azurerm_public_ip.this.id]
+    }
+    dynamic "advanced_networking" {
+      for_each = var.cilium_enabled && var.advanced_networking_enabled ? [1] : []
+      content {
+        observability_enabled = true
+        security_enabled      = true
+      }
     }
   }
   storage_profile {
@@ -97,6 +105,9 @@ resource "azurerm_kubernetes_cluster" "this" {
     }
   }
   tags = module.context.tags
+  timeouts {
+    update = "4h"
+  }
   lifecycle {
     ignore_changes = [
       kubernetes_version

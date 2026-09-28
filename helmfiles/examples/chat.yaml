@@ -3,6 +3,7 @@ environments:
     values:
       - ../defaults/01_system.defaults.yaml
       - ../defaults/10_document_chat.defaults.yaml
+      - ../defaults/20_conduct.defaults.yaml
       - ./your-tenant-alias.yaml
 ---
 repositories:
@@ -748,6 +749,13 @@ releases:
           FEATURE_FLAG_ENABLE_THINKING_STEPS_UN_13848: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_THINKING_STEPS_UN_13848 | quote }}
           FEATURE_FLAG_ENABLE_CODE_EXECUTION_UN_17498: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_CODE_EXECUTION_UN_17498 | quote }}
           FEATURE_FLAG_ENABLE_CODE_EXECUTION_FENCE_UN_17972: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_CODE_EXECUTION_FENCE_UN_17972 | quote }}
+          # Unique AI Conduct (Beta): adds the Conduct space type; requires helmfiles/conduct.yaml, see docs/conduct-handbook.md.
+          # The flag only makes sense together with conduct.enabled (SANDBOX_* on assistants-core) - refuse to render otherwise.
+          {{- $swappableIntelligence := .Values.chat.configurationBackend.env | get "FEATURE_FLAG_ENABLE_SWAPPABLE_INTELLIGENCE_UN_18404" "false" | toString }}
+          {{- if and (eq $swappableIntelligence "true") (not .Values.conduct.enabled) }}
+          {{- fail "FEATURE_FLAG_ENABLE_SWAPPABLE_INTELLIGENCE_UN_18404 is \"true\" but conduct.enabled is false: set conduct.enabled: true (and deploy helmfiles/conduct.yaml) or turn the flag off" }}
+          {{- end }}
+          FEATURE_FLAG_ENABLE_SWAPPABLE_INTELLIGENCE_UN_18404: {{ $swappableIntelligence | quote }}
           FEATURE_FLAG_ENABLE_HTML_WITH_FENCE_UN_17927: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_HTML_WITH_FENCE_UN_17927 | quote }}
           FEATURE_FLAG_USE_OPENAI_V1_13819: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_USE_OPENAI_V1_13819 | quote }}
           FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392 | quote }}
@@ -793,7 +801,6 @@ releases:
           FEATURE_FLAG_ENABLE_CONTEXT_MEMORY_UN_22033: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_CONTEXT_MEMORY_UN_22033 | quote }}
           FEATURE_FLAG_ENABLE_SHARED_CHATS_UN_19869: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_SHARED_CHATS_UN_19869 | quote }}
           FEATURE_FLAG_NEW_NOTIFICATION_BANNER_UN_23900: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_NEW_NOTIFICATION_BANNER_UN_23900 | quote }}
-          FEATURE_FLAG_ENABLE_KB_ROOT_VISIBILITY_UN_23074: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_KB_ROOT_VISIBILITY_UN_23074 | quote }}
           FEATURE_FLAG_ENFORCE_INTERNAL_SEARCH_WEB_SEARCH_EXCLUSIVITY_UN_22973: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENFORCE_INTERNAL_SEARCH_WEB_SEARCH_EXCLUSIVITY_UN_22973 | quote }}
         envSecrets:
           DATABASE_URL: "postgresql://{{ .Values.chat._common.database.username | fetchSecretValue }}:{{ .Values.chat._common.database.password | fetchSecretValue }}@{{ .Values.chat._common.database.host | fetchSecretValue }}/theme"
@@ -971,6 +978,14 @@ releases:
           GOOGLE_SEARCH_ENGINE_ID: {{ .Values.chat.assistantsCore.env.GOOGLE_SEARCH_ENGINE_ID | quote }}
           SIX_API_ACTIVATED_COMPANIES: {{ .Values.chat.assistantsCore.env.SIX_API_ACTIVATED_COMPANIES | quote }}
           FEATURE_FLAG_SERVICE_ID: assistants-core
+          {{- if .Values.conduct.enabled }}
+          # Unique AI Conduct: assistants-core orchestrates sandboxes (SandboxClaims in the sandbox namespace, turns via the
+          # sandbox router). Requires helmfiles/conduct.yaml to be deployed, see docs/conduct-handbook.md.
+          SANDBOX_NAMESPACE: {{ .Values.conduct.namespace | quote }}
+          SANDBOX_TEMPLATE: {{ .Values.conduct.sandbox.template | quote }}
+          SANDBOX_ROUTER_URL: {{ printf "http://%s.%s.svc.cluster.local:%v" .Values.conduct.controller.routerServiceName .Values.conduct.controller.namespace .Values.conduct.controller.routerPort | quote }}
+          SANDBOX_CLAIM_TTL_SECONDS: {{ .Values.conduct.sandbox.claimTtlSeconds | quote }}
+          {{- end }}
           FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392 | quote }}
         envSecrets:
           AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT_DEFINITIONS: {{ .Values.chat.assistantsCore.envSecrets.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT_DEFINITIONS | fetchSecretValue | quote }}

@@ -41,6 +41,58 @@ variable "kubernetes_default_node_os_disk_size" {
   description = "OS disk size for the default node pool."
   default     = 100
 }
+variable "cilium_enabled" {
+  type        = bool
+  description = <<-EOT
+    Run the cluster on Azure CNI powered by Cilium (network_data_plane = cilium, network_policy = cilium).
+    Required for Unique AI Conduct, whose sandbox isolation is enforced with CiliumNetworkPolicy.
+    Enabling this on an existing cluster is an in-place update that re-images every node (rolling, 1-3h).
+    Disabling it again on a cluster that already runs Cilium is not supported in-place.
+  EOT
+  default     = false
+}
+variable "advanced_networking_enabled" {
+  type        = bool
+  description = <<-EOT
+    Enable Advanced Container Networking Services (ACNS) with security (FQDN filtering) and observability
+    (Hubble metrics / container network logs). Requires cilium_enabled = true. No node cycle.
+    The Conduct sandbox policies are plain L3/L4 and work without ACNS; ACNS is the Unique default for
+    Cilium clusters and is the prerequisite for FQDN/L7 policies and flow logs.
+  EOT
+  default     = false
+}
+variable "kata_node_pool" {
+  description = <<-EOT
+    Dedicated node pool for Unique AI Conduct sandboxes (AKS Pod Sandboxing / Kata Containers).
+    Nodes run Azure Linux with workload_runtime = KataVmIsolation and are labelled workload-runtime=kata and
+    tainted workload-runtime=kata:NoSchedule so only sandbox pods are scheduled there. The VM size must
+    support nested virtualisation (Dsv5/Ddsv5/Dsv6/Dldsv6 ... families, not B-series or v3 without nesting).
+    Sizing rule of thumb: one sandbox requests 4 GiB / 0.5 vCPU, ~6 sandboxes fit on an 8 vCPU / 32 GiB node.
+  EOT
+  type = object({
+    enabled                       = optional(bool, false)
+    name                          = optional(string, "kata")
+    vm_size                       = optional(string, "Standard_D8s_v5")
+    os_disk_size_gb               = optional(number, 100)
+    min_count                     = optional(number, 0)
+    max_count                     = optional(number, 10)
+    max_pods                      = optional(number, 30)
+    zones                         = optional(list(string), ["1", "2", "3"])
+    max_surge                     = optional(string, "1")
+    drain_timeout_in_minutes      = optional(number, 30)
+    node_soak_duration_in_minutes = optional(number, 0)
+    undrainable_node_behavior     = optional(string, "Cordon")
+  })
+  default = {}
+  validation {
+    condition     = contains(["Cordon", "Schedule"], var.kata_node_pool.undrainable_node_behavior)
+    error_message = "kata_node_pool.undrainable_node_behavior must be Cordon or Schedule"
+  }
+  validation {
+    condition     = var.kata_node_pool.min_count >= 0 && var.kata_node_pool.max_count >= max(var.kata_node_pool.min_count, 1)
+    error_message = "kata_node_pool.max_count must be >= 1 and >= min_count"
+  }
+}
 variable "domain_config" {
   type = object({
     name        = string

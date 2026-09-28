@@ -1,0 +1,160 @@
+# Unique AI Conduct - defaults for the legacy CMT bundle (helmfiles/conduct.yaml).
+#
+# Read docs/conduct-handbook.md before enabling Conduct. Everything in here is a sane default for a
+# small installation (a handful of concurrent users). Tenant-specific values (storage account, warm pool
+# size, extra egress hosts, feature flags) live in your-tenant-alias.yaml under the same `conduct:` key.
+#
+# Prerequisites that are NOT installed by the helmfile (see the handbook):
+#   - AKS on Azure CNI powered by Cilium (terraform: cilium_enabled = true) - CiliumNetworkPolicy CRDs
+#   - a Kata node pool (terraform: kata_node_pool.enabled = true) - RuntimeClass kata-vm-isolation
+#   - the AKS cluster (system-assigned) identity may create Azure Files shares on the document storage
+#     account (terraform, Storage Account Contributor) - not the kubelet identity, the CSI driver does not use it
+#   - platform release >= 2026.38.x (assistants-core / node-chat / configuration-backend)
+conduct:
+  # Master switch consumed by helmfiles/chat.yaml (assistants-core SANDBOX_* env). The Conduct helmfile
+  # itself is deployed explicitly, so this flag only wires the platform to the sandbox stack.
+  enabled: false
+  # Namespace for the sandbox stack (gateway, storage, templates, warm pool, sandbox pods).
+  namespace: sbx
+  # OCI registry that hosts the Unique Conduct helm charts (sbx-gateway, sbx-storage, sbx-templates).
+  # `helm registry login` against this registry is required before running helmfile, exactly as for the
+  # other oci:// charts in chat.yaml.
+  helmRegistry: uniquecr.azurecr.io/helm
+  versions:
+    # oci://ghcr.io/unique-ag/helm-charts/agent-sandbox-controller - CRDs, controller and router.
+    # Coupled to the platform release: 2026.38.x requires the v1beta1 sandbox APIs shipped with 1.0.1.
+    agentSandboxController: "1.0.1"
+    # Unique charts published with every platform release; keep them on the platform release version.
+    # Each chart pins its own image (`<acr>/unique/sbx-gateway`, `<acr>/unique/sbx-storage`,
+    # `<acr>/unique/unique-polyagent-001`) by tag and digest, so bumping the chart version bumps the image.
+    sbxGateway:   "2026.38.2"
+    sbxStorage:   "2026.38.2"
+    sbxTemplates: "2026.38.2"
+  images:
+    # The charts pin their images by digest. Keep this on when your registry mirrors the Unique images
+    # 1:1 (digests are preserved by `az acr import` / `crane copy`); switch it off if your mirror re-tags
+    # images and the digests no longer match.
+    useDigest: true
+  controller:
+    # The controller and its router are installed into the existing `system` namespace.
+    namespace: system
+    # Router Service name (chart default for release name `agent-sandbox-controller`).
+    routerServiceName: agent-sandbox-controller-router-svc
+    routerPort: 8080
+    # Upstream images are pulled from registry.k8s.io. Point these at your mirror if registry.k8s.io is
+    # not reachable from the cluster; keep the digests empty when the mirror re-tags images.
+    image:
+      repository: registry.k8s.io/agent-sandbox/agent-sandbox-controller
+      digest: sha256:e1787f95cda406e2d81322e8637b6dfa2d77514fbbd0536a872b8e5d409b7154
+    routerImage:
+      repository: registry.k8s.io/agent-sandbox/sandbox-router-go
+      digest: sha256:25b1a09396306eb056ea5b81d6b5ac96ae685e785eb45c84b6416e7d7fac938e
+    routerReplicaCount: 2
+  storage:
+    # ReadWriteMany volume for workspace checkpoints and the skill cache (only sbx-storage mounts it).
+    # Provisioned dynamically as an Azure Files share (SMB) on the document storage account.
+    storageClassName: sbx-backup-azurefile
+    skuName: Standard_LRS
+    size: 100Gi
+    replicaCount: 2
+    # Days a checkpoint may sit unread before it is deleted by the background sweeper (0 disables).
+    retentionDays: "14"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  gateway:
+    # The only network path out of a sandbox: an intercepting HTTPS proxy with a host/path/method
+    # allow-list. node-chat and node-ingestion are chart-owned upstreams; everything else is listed here.
+    replicaCount: 2
+    autoscaling:
+      minReplicas: 2
+      maxReplicas: 4
+    resources:
+      requests:
+        cpu: 400m
+        memory: 512Mi
+      limits:
+        cpu: 1
+        memory: 1Gi
+    # Python package index access for `pip install` inside sandboxes (GET/HEAD only). Set enabled: false
+    # when the cluster has no internet egress and add your internal mirror under extraUpstreams instead.
+    pypi:
+      enabled: true
+    # Additional upstreams per tenant, keyed by host, e.g. an internal PyPI mirror:
+    #   nexus.example.com:
+    #     paths: ["/repository/pypi/*"]
+    #     methods: ["GET", "HEAD"]
+    #     injectRequestHeaders: {}
+    extraUpstreams: {}
+    # Request headers forwarded by the proxy (everything else is stripped). This list REPLACES the chart's
+    # list; it mirrors what the Unique-hosted tenants forward for this release.
+    allowRequestHeaders:
+      - accept
+      - accept-encoding
+      - content-type
+      - content-length
+      - transfer-encoding
+      - host
+      - user-agent
+      - x-app-id
+      - x-api-version
+      - x-ms-blob-type
+      - x-ms-blob-content-type
+      - x-unique-client-user-agent
+      - anthropic-beta
+      # Codex harness -> node-chat: the space's reasoning effort (node-chat maps it to reasoning.effort).
+      - x-unique-reasoning-effort
+      # Conversation context for the browser bridge and node-chat cost attribution (UN-23886).
+      - x-chat-id
+      - x-space-id
+      - x-assistant-id
+      - x-message-id
+  sandbox:
+    # SandboxTemplate name; referenced by assistants-core (SANDBOX_TEMPLATE) and the gateway policy.
+    template: unique-polyagent-001
+    # Time a SandboxClaim (one per user) is kept before it is garbage collected.
+    claimTtlSeconds: "14400"
+    # Idle time after which a sandbox pod is torn down (workspace is checkpointed first) and the maximum
+    # duration of a single agent turn.
+    idleTtlSeconds: "600"
+    turnMaxSeconds: "2700"
+    # One sandbox = one micro VM. Memory is the binding resource: ~6 sandboxes fit on an 8 vCPU / 32 GiB
+    # Kata node. Do not lower the memory request below the limit (the VM is sized from it).
+    resources:
+      requests:
+        cpu: 500m
+        memory: 4Gi
+      limits:
+        cpu: 2
+        memory: 4Gi
+    # A Kata VM boot plus the agent runtime import takes noticeably longer than a normal container start.
+    # Sandbox pods are never restarted (restartPolicy Never), so a liveness failure during boot would
+    # terminate the sandbox for good - keep these generous.
+    readinessProbe:
+      path: "/"
+      initialDelaySeconds: 5
+      periodSeconds: 2
+      timeoutSeconds: 3
+      failureThreshold: 30
+    livenessProbe:
+      path: "/"
+      initialDelaySeconds: 90
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 12
+    warmPool:
+      # Pre-started sandboxes so the first turn of a user does not wait for a VM boot. Rule of thumb:
+      # ceil(expected concurrent users / 2). Each warm sandbox reserves 4 GiB on the Kata pool.
+      replicas: 1
+      # Optional KEDA cron scaling of the warm pool (KEDA add-on is enabled on the AKS cluster).
+      # Outside the window the pool scales to minReplicaCount (0 = Kata nodes can scale down).
+      keda:
+        enabled: false
+        minReplicaCount: 0
+        timezone: Europe/Zurich
+        start: "0 7 * * 1-5"
+        end: "0 19 * * 1-5"
