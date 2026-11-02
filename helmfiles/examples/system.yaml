@@ -14,6 +14,8 @@ repositories:
     url: https://charts.bitnami.com/bitnami
   - name: elastic
     url: https://helm.elastic.co
+  - name: kyverno
+    url: https://kyverno.github.io/kyverno/
 releases:
   - name: cert-manager
     createNamespace: true
@@ -308,3 +310,286 @@ releases:
           requests:
             cpu: 100m
             memory: 150Mi
+  # ── QTA-10003 (eMudhra CA compromise) ─────────────────────────────────────────────────────────────────
+  # Three releases, see docs/release-2026.42-upgrade-handbook.md:
+  #   kyverno                   policy engine (admission webhook only)
+  #   inject-patched-ca-bundle  ConfigMap with the corrected CA bundle + ClusterPolicy that mounts it into
+  #                             the selected third-party pods at creation
+  #   emd-distrust              DaemonSet that removes the compromised roots from the AKS node trust stores
+  # Pods are only mutated when they are CREATED: after the first apply restart the targets
+  - name: kyverno
+    chart: kyverno/kyverno
+    version: {{ .Values.kyverno.versions.chart }}
+    namespace: {{ .Values.kyverno.namespace }}
+    createNamespace: true
+    # The ClusterPolicy below needs the CRDs and the admission webhook: wait for Kyverno to be ready.
+    wait: true
+    timeout: 600
+    values:
+      - crds:
+          install: true
+        config:
+          # Chart default: the webhooks skip kube-system and Kyverno's own namespace; AKS' admission enforcer
+          # must not rewrite the webhook configuration.
+          webhookAnnotations:
+            admissions.enforcer/disabled: "true"
+        features:
+          policyExceptions:
+            enabled: false
+        admissionController:
+          replicas: {{ .Values.kyverno.admissionController.replicas }}
+          container:
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                memory: 512Mi
+        # Only admission-time mutation is used: no background scans, cleanup policies or policy reports.
+        backgroundController:
+          enabled: false
+        cleanupController:
+          enabled: false
+        reportsController:
+          enabled: false
+  - name: inject-patched-ca-bundle
+    needs:
+      - {{ .Values.kyverno.namespace }}/kyverno
+    chart: bedag/raw
+    version: 2.0.0
+    namespace: system
+    installed: {{ .Values.caBundleInjection.enabled }}
+    wait: false
+    values:
+      - resources:
+        {{- $targets := .Values.caBundleInjection.targets }}
+        {{- $namespaces := list }}
+        {{- range $targets }}
+        {{- $namespaces = append $namespaces .namespace }}
+        {{- end }}
+        {{- range uniq $namespaces }}
+        - apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: patched-ca-bundle
+            namespace: {{ . }}
+            annotations:
+              # Mutated pods keep mounting this ConfigMap until they are recreated: never delete it before them.
+              helm.sh/resource-policy: keep
+          data:
+            ca-bundle.pem: |
+              {{- readFile $.Values.caBundleInjection.bundleFile | nindent 14 }}
+        {{- end }}
+        - apiVersion: kyverno.io/v1
+          kind: ClusterPolicy
+          metadata:
+            name: inject-patched-ca-bundle
+            annotations:
+              policies.kyverno.io/title: Inject Patched CA Bundle
+              policies.kyverno.io/category: Supply Chain Security
+              policies.kyverno.io/severity: high
+              policies.kyverno.io/subject: Pod
+              policies.kyverno.io/minversion: 1.11.0
+              # Mutate Pods only, not their controllers: the Deployments stay as rendered by their charts.
+              pod-policies.kyverno.io/autogen-controllers: none
+              policies.kyverno.io/description: >-
+                Replaces the system trust store of selected Pods with a CA bundle that no longer contains the
+                roots of the compromised eMudhra intermediates (QTA-10003) and points OpenSSL, Go, requests and
+                botocore at it. Temporary until every targeted vendor image ships a fixed trust store.
+          spec:
+            background: false
+            failurePolicy: {{ .Values.caBundleInjection.failurePolicy }}
+            rules:
+              - name: add-ca-bundle-volume
+                match:
+                  any:
+                    {{- range $targets }}
+                    - resources:
+                        kinds:
+                          - Pod
+                        operations:
+                          - CREATE
+                        namespaces:
+                          - {{ .namespace }}
+                        selector:
+                          {{- toYaml .selector | nindent 26 }}
+                    {{- end }}
+                mutate:
+                  patchStrategicMerge:
+                    spec:
+                      volumes:
+                        - name: patched-ca-bundle
+                          configMap:
+                            name: patched-ca-bundle
+                            items:
+                              - key: ca-bundle.pem
+                                path: ca-certificates.crt
+              - name: mount-ca-bundle
+                match:
+                  any:
+                    {{- range $targets }}
+                    - resources:
+                        kinds:
+                          - Pod
+                        operations:
+                          - CREATE
+                        namespaces:
+                          - {{ .namespace }}
+                        selector:
+                          {{- toYaml .selector | nindent 26 }}
+                    {{- end }}
+                mutate:
+                  foreach:
+                    # initContainers and containers are two separate lists: the key in each patch must match its list.
+                    {{- range $field := list "initContainers" "containers" }}
+                    - list: "request.object.spec.{{ $field }} || `[]`"
+                      patchStrategicMerge:
+                        spec:
+                          {{ $field }}:
+                            - name: {{ "{{ element.name }}" | quote }}
+                              env:
+                                - name: SSL_CERT_FILE
+                                  value: /etc/ssl/certs/ca-certificates.crt
+                                - name: SSL_CERT_DIR
+                                  value: /etc/ssl/certs
+                                - name: REQUESTS_CA_BUNDLE
+                                  value: /etc/ssl/certs/ca-certificates.crt
+                                - name: AWS_CA_BUNDLE
+                                  value: /etc/ssl/certs/ca-certificates.crt
+                              volumeMounts:
+                                # The whole directory: Go, OpenSSL and libcurl also read the per-root files kept there.
+                                - name: patched-ca-bundle
+                                  mountPath: /etc/ssl/certs
+                                  readOnly: true
+                    {{- end }}
+  - name: emd-distrust
+    chart: bedag/raw
+    version: 2.0.0
+    namespace: kube-system
+    installed: {{ .Values.nodeMitigations.emudhraDistrust.enabled }}
+    wait: false
+    values:
+      - resources:
+        # Same manifest Unique runs on all of its AKS clusters (UN-27856). Remove once every node pool runs an
+        # AKS node image with the fixed ca-certificates.
+        - apiVersion: apps/v1
+          kind: DaemonSet
+          metadata:
+            name: emd-distrust
+            namespace: kube-system
+            labels:
+              app: emd-distrust
+              purpose: security-mitigation
+          spec:
+            selector:
+              matchLabels:
+                app: emd-distrust
+            template:
+              metadata:
+                labels:
+                  app: emd-distrust
+              spec:
+                hostPID: true
+                priorityClassName: system-node-critical
+                nodeSelector:
+                  kubernetes.io/os: linux
+                tolerations:
+                  - operator: Exists
+                containers:
+                  - name: distrust
+                    image: mcr.microsoft.com/azurelinux/busybox:1.36@sha256:7c62d6f72fa83c79971a75c923af642701e46b3405b1a0b2002fd066d63a531b
+                    command:
+                      - /bin/sh
+                      - -c
+                      - |
+                        echo "=== eMudhra root distrust (QTA-10003) ==="
+                        chroot /host /bin/sh <<'EOF'
+                        set -u
+                        DISTRUST='emSign ECC Root CA - G3|emSign Root TLS CA - G3|AAA Certificate Services'
+                        is_distrusted() {
+                          openssl x509 -noout -subject -nameopt multiline -in "$1" 2>/dev/null |
+                            grep -Eq "commonName += ($DISTRUST)\$"
+                        }
+                        each_cert() {
+                          dir=$(mktemp -d)
+                          awk -v d="$dir" '/-----BEGIN CERTIFICATE-----/ { n++ } n { print > (d "/" n ".pem") }' "$1"
+                          for cert in "$dir"/*.pem; do
+                            [ -f "$cert" ] && "$2" "$cert" "$1"
+                          done
+                          rm -rf "$dir"
+                        }
+                        report_hit() {
+                          is_distrusted "$1" && echo "  still trusted in $2: $(openssl x509 -noout -subject -in "$1")"
+                        }
+                        blocklist() {
+                          is_distrusted "$1" || return 0
+                          cp "$1" "/etc/pki/ca-trust/source/blocklist/emudhra-$(openssl x509 -noout -fingerprint -sha256 -in "$1" | tr -d ':' | cut -d= -f2).pem"
+                        }
+                        trusted_hits() {
+                          for f in /etc/ssl/certs/* /etc/pki/tls/certs/*; do
+                            [ -f "$f" ] && each_cert "$f" report_hit
+                          done | sort -u
+                        }
+                        if [ ! -f /etc/ssl/certs/ca-certificates.crt ] && [ ! -f /etc/pki/tls/certs/ca-bundle.crt ]; then
+                          echo "RESULT: FAILED, no system CA bundle found"
+                          exit 0
+                        fi
+                        PENDING=/var/lib/emudhra-distrust.restart-pending
+                        if [ -n "$(trusted_hits)" ]; then
+                          if [ -f /etc/ca-certificates.conf ] && command -v update-ca-certificates >/dev/null; then
+                            echo "Debian-style trust store"
+                            for cert in /usr/share/ca-certificates/mozilla/*.crt; do
+                              is_distrusted "$cert" || continue
+                              entry="mozilla/${cert##*/}"
+                              if grep -qxF "$entry" /etc/ca-certificates.conf; then
+                                sed -i "s|^${entry}\$|!${entry}|" /etc/ca-certificates.conf
+                                echo "  deselected $entry"
+                              fi
+                            done
+                            update-ca-certificates --fresh >/dev/null 2>&1
+                          elif command -v update-ca-trust >/dev/null; then
+                            echo "p11-kit trust store"
+                            each_cert /etc/pki/tls/certs/ca-bundle.crt blocklist
+                            echo "  blocklisted $(ls /etc/pki/ca-trust/source/blocklist/ | grep -c '^emudhra-') root(s)"
+                            update-ca-trust extract
+                          else
+                            echo "RESULT: FAILED, unknown trust store layout"
+                            exit 0
+                          fi
+                          touch "$PENDING"
+                        fi
+                        hits=$(trusted_hits)
+                        if [ -n "$hits" ]; then
+                          echo "$hits"
+                          echo "RESULT: FAILED, distrusted roots are still in the system trust store"
+                          exit 0
+                        fi
+                        if [ -f "$PENDING" ]; then
+                          delay=$(( $(uname -n | cksum | cut -d' ' -f1) % 300 ))
+                          echo "Restarting containerd in ${delay}s so image pulls drop the cached roots"
+                          sleep "$delay"
+                          if nsenter --target 1 --mount --uts --ipc --net --pid -- systemctl restart containerd; then
+                            rm -f "$PENDING"
+                          else
+                            echo "WARNING: containerd restart failed, it is retried on the next pod start"
+                          fi
+                        fi
+                        echo "RESULT: node no longer trusts the distrusted eMudhra roots"
+                        EOF
+                        sleep infinity
+                    resources:
+                      requests:
+                        cpu: 10m
+                        memory: 16Mi
+                      limits:
+                        memory: 64Mi
+                    securityContext:
+                      privileged: true
+                    volumeMounts:
+                      - name: host-root
+                        mountPath: /host
+                volumes:
+                  - name: host-root
+                    hostPath:
+                      path: /
+                      type: Directory

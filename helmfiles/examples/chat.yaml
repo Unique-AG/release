@@ -50,6 +50,8 @@ releases:
       - image:
           tag: {{ .Values.qdrant.imageTag }}
         replicaCount: {{ .Values.qdrant | get "replicaCount" 2 }}
+        env:
+          {{ .Values.qdrant | get "env" list | toYaml | nindent 10 }}
         resources:
           {{ .Values.qdrant.resources | toYaml | nindent 10 }}
         persistence:
@@ -237,6 +239,7 @@ releases:
           INGESTION_API_URL: http://node-ingestion.chat.svc.cluster.local:8091
           CONFIGURATION_BACKEND_URL: http://configuration-backend.chat.svc.cluster.local:8095
           AGENTIC_INGESTION_BASE_URL: http://agentic-ingestion.chat.svc.cluster.local:8081
+          SCOPE_MANAGEMENT_URL: http://node-scope-management.chat.svc.cluster.local:8094
           AUDIT_LOG_DIR: /audit
           MAX_HEAP_MB: {{ .Values.chat.nodeIngestionWorker.env.MAX_HEAP_MB }}
           CONVERT_OFFICE_FILES_TO_PDF: {{ .Values.chat.nodeIngestionWorker.env.CONVERT_OFFICE_FILES_TO_PDF | quote }}
@@ -316,6 +319,7 @@ releases:
         env:
           LOG_LEVEL: info
           INGESTION_API_URL: http://node-ingestion.chat.svc.cluster.local:8091
+          SCOPE_MANAGEMENT_URL: http://node-scope-management.chat.svc.cluster.local:8094
           AUDIT_LOG_DIR: /audit
           MAX_HEAP_MB: {{ .Values.chat.nodeIngestionWorker.env.MAX_HEAP_MB }}
           CONVERT_OFFICE_FILES_TO_PDF: {{ .Values.chat.nodeIngestionWorker.env.CONVERT_OFFICE_FILES_TO_PDF | quote }}
@@ -736,19 +740,17 @@ releases:
           FEATURE_FLAG_ENABLE_ELASTICSEARCH_INDEXING: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_ELASTICSEARCH_INDEXING | quote }}
           FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444 | quote }}
           FEATURE_FLAG_ENABLE_LANDSCAPED_PDF_PAGE_BASED_CHUNKING_UN_10606: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_LANDSCAPED_PDF_PAGE_BASED_CHUNKING_UN_10606 | quote }}
-          FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: {{ .Values.chat.configurationBackend.env | get "FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099" false }}
           FEATURE_FLAG_ENABLE_MCP_UN_11963: {{ .Values.chat.configurationBackend.env | get "FEATURE_FLAG_ENABLE_MCP_UN_11963" false }}
-          FEATURE_FLAG_ENABLE_MCP_TOOL_REFRESH_UN_19255: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_MCP_TOOL_REFRESH_UN_19255 | quote }}
           FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608 | quote }}
           FEATURE_FLAG_CONFIGURE_FILE_METADATA_UN_10908: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_CONFIGURE_FILE_METADATA_UN_10908 | quote }}
           FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270 | quote }}
-          FEATURE_FLAG_ENABLE_ADVANCED_FORMATTING_UN_9758: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_ADVANCED_FORMATTING_UN_9758 | quote }}
           FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203 | quote }}
-          FEATURE_FLAG_ENABLE_HTML_RENDERING_UN_15131: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_HTML_RENDERING_UN_15131 | quote }}
           FEATURE_FLAG_ENABLE_DEEP_RESEARCH_UN_12630: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_DEEP_RESEARCH_UN_12630 | quote }}
           FEATURE_FLAG_ENABLE_THINKING_STEPS_UN_13848: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_THINKING_STEPS_UN_13848 | quote }}
-          FEATURE_FLAG_ENABLE_CODE_EXECUTION_UN_17498: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_CODE_EXECUTION_UN_17498 | quote }}
-          FEATURE_FLAG_ENABLE_CODE_EXECUTION_FENCE_UN_17972: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_CODE_EXECUTION_FENCE_UN_17972 | quote }}
+          {{- $codeExecution := .Values.chat.configurationBackend.env | get "COMPANY_CONFIGURATION_CODE_EXECUTION_ENABLED" "" | toString }}
+          {{- if $codeExecution }}
+          COMPANY_CONFIGURATION_CODE_EXECUTION_ENABLED: {{ $codeExecution | quote }}
+          {{- end }}
           # Unique AI Conduct (Beta): adds the Conduct space type; requires helmfiles/conduct.yaml, see docs/conduct-handbook.md.
           # The flag only makes sense together with conduct.enabled (SANDBOX_* on assistants-core) - refuse to render otherwise.
           {{- $swappableIntelligence := .Values.chat.configurationBackend.env | get "FEATURE_FLAG_ENABLE_SWAPPABLE_INTELLIGENCE_UN_18404" "false" | toString }}
@@ -756,11 +758,8 @@ releases:
           {{- fail "FEATURE_FLAG_ENABLE_SWAPPABLE_INTELLIGENCE_UN_18404 is \"true\" but conduct.enabled is false: set conduct.enabled: true (and deploy helmfiles/conduct.yaml) or turn the flag off" }}
           {{- end }}
           FEATURE_FLAG_ENABLE_SWAPPABLE_INTELLIGENCE_UN_18404: {{ $swappableIntelligence | quote }}
-          FEATURE_FLAG_ENABLE_HTML_WITH_FENCE_UN_17927: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_HTML_WITH_FENCE_UN_17927 | quote }}
           FEATURE_FLAG_USE_OPENAI_V1_13819: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_USE_OPENAI_V1_13819 | quote }}
-          FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392 | quote }}
           FEATURE_FLAG_ENABLE_MAGIC_TABLE_UN_8472: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_MAGIC_TABLE_UN_8472 | quote }}
-          FEATURE_FLAG_AGENTIC_TABLE_ERROR_BANNER_UN_11777: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_ERROR_BANNER_UN_11777 | quote }}
           FEATURE_FLAG_AGENTIC_TABLE_ROW_METADATA_UN_14904: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_ROW_METADATA_UN_14904 | quote }}
           FEATURE_FLAG_ENABLE_SUB_AGENTS_UN_13661: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_SUB_AGENTS_UN_13661 | quote }}
           FEATURE_FLAG_ENABLE_END_USER_SPACE_UN_8855: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_END_USER_SPACE_UN_8855 | quote }}
@@ -770,7 +769,6 @@ releases:
           FEATURE_FLAG_ENABLE_IMAGE_CONTENT_EXTRACTION_UN_17223: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_IMAGE_CONTENT_EXTRACTION_UN_17223 | quote }}
           FEATURE_FLAG_ENABLE_FOLDER_PATH_RESOLUTION_FOR_EXCLUSIVE_FILE_ACCESS: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_FOLDER_PATH_RESOLUTION_FOR_EXCLUSIVE_FILE_ACCESS | quote }}
           FEATURE_FLAG_ENABLE_SELECTED_UPLOADED_FILES_UN_18215: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_SELECTED_UPLOADED_FILES_UN_18215 | quote }}
-          FEATURE_FLAG_DEPLOYMENT_VERSION_CHECK: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_DEPLOYMENT_VERSION_CHECK | quote }}
           FEATURE_FLAG_FILE_PREVIEW_UN_19395: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_FILE_PREVIEW_UN_19395 | quote }}
           FEATURE_FLAG_SIDE_MENU_NAVIGATION: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_SIDE_MENU_NAVIGATION | quote }}
           FEATURE_FLAG_ANALYTICS_TIMEZONE_UN_18143: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ANALYTICS_TIMEZONE_UN_18143 | quote }}
@@ -780,15 +778,12 @@ releases:
           FEATURE_FLAG_ENABLE_AGENTIC_INGESTION_PAGE_BATCH_FIGURE_EXTRACTION_UN_19457: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_AGENTIC_INGESTION_PAGE_BATCH_FIGURE_EXTRACTION_UN_19457 | quote }}
           FEATURE_FLAG_ENABLE_ATOMIC_FIGURE_CHUNKING_UN_19136: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_ATOMIC_FIGURE_CHUNKING_UN_19136 | quote }}
           FEATURE_FLAG_ENABLE_MDI_PDF_HYPERLINK_EXTRACTION_UN_19716: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_MDI_PDF_HYPERLINK_EXTRACTION_UN_19716 | quote }}
-          FEATURE_FLAG_AGENTIC_TABLE_COPY_ACTION_UN_20824: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_COPY_ACTION_UN_20824 | quote }}
           FEATURE_FLAG_ENABLE_HTML_INLINE_IMAGE_EXTRACTION_UN_20936: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_HTML_INLINE_IMAGE_EXTRACTION_UN_20936 | quote }}
           FEATURE_FLAG_ENABLE_MULTI_FILE_IMAGE_CONTENT_EXTRACTION_UN_20936: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_MULTI_FILE_IMAGE_CONTENT_EXTRACTION_UN_20936 | quote }}
           FEATURE_FLAG_ENABLE_USER_MODEL_SELECTION_UN_20804: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_USER_MODEL_SELECTION_UN_20804 | quote }}
-          FEATURE_FLAG_ENABLE_MCP_ACCESS_CONTROL_UN_20854: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_MCP_ACCESS_CONTROL_UN_20854 | quote }}
           FEATURE_FLAG_SAVE_MODEL_USAGE_UN_12832: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_SAVE_MODEL_USAGE_UN_12832 | quote }}
           FEATURE_FLAG_SAVE_MODEL_USAGE_DASHBOARD_UN_18889: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_SAVE_MODEL_USAGE_DASHBOARD_UN_18889 | quote }}
           FEATURE_FLAG_MODEL_USAGE_LIMITS_UN_18889: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_MODEL_USAGE_LIMITS_UN_18889 | quote }}
-          FEATURE_FLAG_AGENTIC_TABLE_METADATA_FORM_UN_17903: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_METADATA_FORM_UN_17903 | quote }}
           FEATURE_FLAG_ENABLE_FULL_WIDTH_SCROLL_UN_19453: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_FULL_WIDTH_SCROLL_UN_19453 | quote }}
           FEATURE_FLAG_AGENTIC_TABLE_ASSIGNEE_EMAIL_UN_20992: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_AGENTIC_TABLE_ASSIGNEE_EMAIL_UN_20992 | quote }}
           FEATURE_FLAG_NOTIFICATIONS_BELL_UN_21769: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_NOTIFICATIONS_BELL_UN_21769 | quote }}
@@ -986,7 +981,6 @@ releases:
           SANDBOX_ROUTER_URL: {{ printf "http://%s.%s.svc.cluster.local:%v" .Values.conduct.controller.routerServiceName .Values.conduct.controller.namespace .Values.conduct.controller.routerPort | quote }}
           SANDBOX_CLAIM_TTL_SECONDS: {{ .Values.conduct.sandbox.claimTtlSeconds | quote }}
           {{- end }}
-          FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392: {{ .Values.chat.configurationBackend.env.FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392 | quote }}
         envSecrets:
           AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT_DEFINITIONS: {{ .Values.chat.assistantsCore.envSecrets.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT_DEFINITIONS | fetchSecretValue | quote }}
           GOOGLE_SEARCH_API_KEY: {{ .Values.chat.assistantsCore.envSecrets.GOOGLE_SEARCH_API_KEY | fetchSecretValue | quote }}

@@ -17,21 +17,21 @@ chat:
       USER_API_KEY_GENERATION_ENABLED: "false"
       GRAPHQL_OPERATION_NAME_IN_URL_ENABLED: "false"
     defaultReleases:
-      nextChat:               "2026.38.2"
-      nextKnowledgeUpload:    "2026.38.2"
-      nextTheme:              "2026.38.2"
-      nextAdmin:              "2026.38.2"
-      nodeChat:               "2026.38.2"
-      nodeIngestion:          "2026.38.2"
-      nodeIngestionWorker:    "2026.38.2"
-      configurationBackend:   "2026.38.2"
-      nodeScopeManagement:    "2026.38.2"
-      backendServiceSpeech:   "2026.38.2"
-      assistantsCore:         "2026.38.2"
-      reflector:              "2026.38.2"
-      agenticIngestion:       "2026.38.2"
-      assistantsAgenticTable: "2026.38.2"
-      uniqueApi:              "2026.38.2"
+      nextChat:               "2026.42.9"
+      nextKnowledgeUpload:    "2026.42.9"
+      nextTheme:              "2026.42.9"
+      nextAdmin:              "2026.42.9"
+      nodeChat:               "2026.42.9"
+      nodeIngestion:          "2026.42.9"
+      nodeIngestionWorker:    "2026.42.9"
+      configurationBackend:   "2026.42.9"
+      nodeScopeManagement:    "2026.42.9"
+      backendServiceSpeech:   "2026.42.9"
+      assistantsCore:         "2026.42.9"
+      reflector:              "2026.42.9"
+      agenticIngestion:       "2026.42.9"
+      assistantsAgenticTable: "2026.42.9"
+      uniqueApi:              "2026.42.9"
   nextChat:
     env:
       MAX_FILE_SIZE_IN_MB: 512
@@ -242,27 +242,19 @@ chat:
     env:
       MAX_HEAP_MB: 384
       FEATURE_FLAG_ABOUT_SPACE_SECTION_UN_10270: "false"
-      FEATURE_FLAG_ENABLE_ADVANCED_FORMATTING_UN_9758: "true"
       FEATURE_FLAG_ENABLE_SPACES_2_0_UN_11203: "true" # enable spaces 2.0, BETA feature
-      FEATURE_FLAG_ENABLE_MCP_ADMIN_UN_14099: "false" # BETA MCP admin feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_MCP_UN_11963: "false" # BETA MCP feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_MCP_TOOL_REFRESH_UN_19255: "false" # BETA MCP tool refresh button feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_CAN_MANAGE_ACCESS_UN_11608: "false"
       FEATURE_FLAG_ENABLE_FILE_BASED_ACCESS_UN_12660: "false" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_SEARCH_ADAPTER_ELASTICSEARCH_UN_9883: "true" 
       FEATURE_FLAG_ENABLE_ELASTICSEARCH_INDEXING: "true"
       FEATURE_FLAG_ENABLE_PPT_PAGE_BASED_CHUNKING_UN_9444: "true"
       FEATURE_FLAG_ENABLE_LANDSCAPED_PDF_PAGE_BASED_CHUNKING_UN_10606: "true"
-      FEATURE_FLAG_ENABLE_HTML_RENDERING_UN_15131: "false" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_DEEP_RESEARCH_UN_12630: "false" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_THINKING_STEPS_UN_13848: "false" # Experimental feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_CODE_EXECUTION_UN_17498: "false" # Beta feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_CODE_EXECUTION_FENCE_UN_17972: "false"
-      FEATURE_FLAG_ENABLE_HTML_WITH_FENCE_UN_17927: "false"
+      COMPANY_CONFIGURATION_CODE_EXECUTION_ENABLED: "" # Code Execution by default off for all organizations. Set to "*:true" to enable for all organizations.
       FEATURE_FLAG_USE_OPENAI_V1_13819: "false" # Experimental feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392: "false" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_MAGIC_TABLE_UN_8472: "false"
-      FEATURE_FLAG_AGENTIC_TABLE_ERROR_BANNER_UN_11777: "false"
       FEATURE_FLAG_AGENTIC_TABLE_ROW_METADATA_UN_14904: "false"
       FEATURE_FLAG_ENABLE_SUB_AGENTS_UN_13661: "false"
       FEATURE_FLAG_ENABLE_END_USER_SPACE_UN_8855: "false"
@@ -274,7 +266,6 @@ chat:
       FEATURE_FLAG_ENABLE_SELECTED_UPLOADED_FILES_UN_18215: "false"
       # Allows rolling update strategy for frontends - prompts page refresh on update
       # If disabled, frontend strategy needs to be set to Recreate again
-      FEATURE_FLAG_DEPLOYMENT_VERSION_CHECK: "true"
       FEATURE_FLAG_FILE_PREVIEW_UN_19395: "false" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_SIDE_MENU_NAVIGATION: "false" # Beta feature
       FEATURE_FLAG_ANALYTICS_TIMEZONE_UN_18143: "false"
@@ -284,15 +275,12 @@ chat:
       FEATURE_FLAG_ENABLE_AGENTIC_INGESTION_PAGE_BATCH_FIGURE_EXTRACTION_UN_19457: "false" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_ATOMIC_FIGURE_CHUNKING_UN_19136: "false" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_MDI_PDF_HYPERLINK_EXTRACTION_UN_19716: "false" # Experimental feature, only enable for DEV/TEST
-      FEATURE_FLAG_AGENTIC_TABLE_COPY_ACTION_UN_20824: "false" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_HTML_INLINE_IMAGE_EXTRACTION_UN_20936: "false" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_MULTI_FILE_IMAGE_CONTENT_EXTRACTION_UN_20936: "false" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_ENABLE_USER_MODEL_SELECTION_UN_20804: "false" # Experimental feature, only enable for DEV/TEST
-      FEATURE_FLAG_ENABLE_MCP_ACCESS_CONTROL_UN_20854: "false" # Experimental feature, only enable for DEV/TEST
       FEATURE_FLAG_SAVE_MODEL_USAGE_UN_12832: "false"
       FEATURE_FLAG_SAVE_MODEL_USAGE_DASHBOARD_UN_18889: "false"
       FEATURE_FLAG_MODEL_USAGE_LIMITS_UN_18889: "false"
-      FEATURE_FLAG_AGENTIC_TABLE_METADATA_FORM_UN_17903: "false"
       FEATURE_FLAG_ENABLE_FULL_WIDTH_SCROLL_UN_19453: "false"
       FEATURE_FLAG_AGENTIC_TABLE_ASSIGNEE_EMAIL_UN_20992: "false"
       FEATURE_FLAG_NOTIFICATIONS_BELL_UN_21769: "false"
@@ -300,7 +288,7 @@ chat:
       NOTIFICATION_THROTTLE_DAILY_CAP: "5"
       NOTIFICATION_THROTTLE_WEEKLY_CAP: "0"
       FEATURE_FLAG_ENABLE_SERVICE_USER_API_KEY_UN_22696: "false"
-      FEATURE_FLAG_ENABLE_CONTEXT_MEMORY_UN_22033: "false"
+      FEATURE_FLAG_ENABLE_CONTEXT_MEMORY_UN_22033: "true"
       FEATURE_FLAG_ENABLE_SHARED_CHATS_UN_19869: "false"
       FEATURE_FLAG_NEW_NOTIFICATION_BANNER_UN_23900: "false"
       FEATURE_FLAG_ENFORCE_INTERNAL_SEARCH_WEB_SEARCH_EXCLUSIVITY_UN_22973: "false"
@@ -423,7 +411,6 @@ chat:
       ENABLED_MIME_TYPES_DOCUMENT_TRANSLATION: '["DOCX", "MSEXCEL", "EXCEL", "PPT", "MSPPT"]'
       GOOGLE_SEARCH_API_ENDPOINT: https://customsearch.googleapis.com/customsearch/v1
       GOOGLE_SEARCH_ENGINE_ID: unset_default_value
-      FEATURE_FLAG_ENABLE_NEW_ANSWER_FORMATTING_UN_14392: "false" # Experimental feature, only enable for DEV/TEST
     resources:
       requests:
         cpu: 1
@@ -448,8 +435,12 @@ qdrant:
   releaseName: qdrant-zrs
   replicaCount: 2
   chart:
-    version: 1.15.5
-  imageTag: v1.15.1
+    version: 1.20.0
+  imageTag: v1.20.0
+  # Qdrant phones home to telemetry.qdrant.io by default - the only public TLS call the vector store makes.
+  env:
+    - name: QDRANT__TELEMETRY_DISABLED
+      value: "true"
   resources:
     requests:
       cpu: 200m

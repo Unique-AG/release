@@ -27,3 +27,32 @@ keda:
 trivyOperator:
   versions:
     chart: 0.15.1
+kyverno:
+  versions:
+    chart: 3.9.1
+  namespace: kyverno
+  admissionController:
+    replicas: 2
+caBundleInjection:
+  # Mutates the Pods selected in `targets` at CREATE: mounts the bundle over /etc/ssl/certs and points OpenSSL,
+  # Go, requests and botocore at it (SSL_CERT_FILE, SSL_CERT_DIR, REQUESTS_CA_BUNDLE, AWS_CA_BUNDLE).
+  # Running pods are NOT changed - restart the targets after the first apply.
+  enabled: true
+  # Mozilla trust store from after the incident: https://curl.se/ca/cacert-2026-10-20.pem
+  bundleFile: ../files/cacert-2026-10-20.pem
+  # Ignore: a Kyverno outage never blocks pod creation (the pod then starts without the patched bundle).
+  failurePolicy: Ignore
+  # Pods to mutate; the `patched-ca-bundle` ConfigMap is rendered into every namespace listed here.
+  targets:
+    - namespace: system
+      selector:
+        matchExpressions:
+          - key: app.kubernetes.io/instance
+            operator: In
+            values:
+              - cert-manager   # ACME to Let's Encrypt
+              - kong           # 3.9.x gateway + ingress controller, no fixed 3.9.x image
+              - zitadel        # v3.x
+nodeMitigations:
+  emudhraDistrust:
+    enabled: true

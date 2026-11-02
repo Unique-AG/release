@@ -27,9 +27,9 @@ conduct:
     # Unique charts published with every platform release; keep them on the platform release version.
     # Each chart pins its own image (`<acr>/unique/sbx-gateway`, `<acr>/unique/sbx-storage`,
     # `<acr>/unique/unique-polyagent-001`) by tag and digest, so bumping the chart version bumps the image.
-    sbxGateway:   "2026.38.2"
-    sbxStorage:   "2026.38.2"
-    sbxTemplates: "2026.38.2"
+    sbxGateway:   "2026.42.9"
+    sbxStorage:   "2026.42.9"
+    sbxTemplates: "2026.42.9"
   images:
     # The charts pin their images by digest. Keep this on when your registry mirrors the Unique images
     # 1:1 (digests are preserved by `az acr import` / `crane copy`); switch it off if your mirror re-tags
