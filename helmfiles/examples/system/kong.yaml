@@ -132,6 +132,8 @@ releases:
           config:
             origins:
               - https://{{ .Values.params.zoneName }}
+            credentials: true
+            max_age: 600
         - apiVersion: configuration.konghq.com/v1
           kind: KongClusterPlugin
           metadata:
